@@ -1,0 +1,892 @@
+[
+ {
+  "name": "crew-core-brand-context",
+  "replaces_role": "a brand strategist's onboarding and discovery workshop",
+  "replaces_salary": "$2,000-5,000 per branding engagement, or $150-250/hr consultant time",
+  "replaces_note": "You skip the paid discovery workshop because who you are, what you sell, and how you sound get captured once and reused by every job after it.",
+  "ladder_human_led": "You sit through the interview yourself and approve every line before the file is saved.",
+  "ladder_assisted": "It drafts the brand file from your website and past materials, then you correct what it got wrong.",
+  "ladder_autonomous": "It keeps the file current as your offer, pricing, or voice shifts, and asks for a quick yes on each change.",
+  "human": "Only you know what the business stands for; the words that describe it are yours to sign off."
+ },
+ {
+  "name": "crew-core-context-restore",
+  "replaces_role": "the morning catch-up a project coordinator runs to work out where every job was left",
+  "replaces_salary": "part of a $75-90k/yr coordinator role, or $40-60/hr admin time",
+  "replaces_note": "You open a job that has sat for a fortnight and it tells you exactly where it stopped, so nobody burns the first hour reconstructing it.",
+  "ladder_human_led": "You ask where a project was left and read the summary before touching anything.",
+  "ladder_assisted": "It restores the saved state and flags where reality has drifted from the record.",
+  "ladder_autonomous": "It restores context at the start of every session without being asked, so work always resumes warm.",
+  "human": "You decide which project matters today and whether the drift it flags changes the plan."
+ },
+ {
+  "name": "crew-core-context-save",
+  "replaces_role": "the written handover an office manager or departing contractor would prepare",
+  "replaces_salary": "$300-800 per handover document outsourced, or $40-60/hr admin time",
+  "replaces_note": "Every stopping point gets a proper handover note, so a job can pass between days or people without anything falling through.",
+  "ladder_human_led": "You dictate what happened and it writes the handoff for your review.",
+  "ladder_assisted": "It drafts the full handoff from the session itself and you check the risks and next steps.",
+  "ladder_autonomous": "It saves a handoff at the end of every working session as a matter of routine.",
+  "human": "You confirm the note reflects what actually happened, especially the unfinished and uncomfortable parts."
+ },
+ {
+  "name": "crew-core-guard-boundary",
+  "replaces_role": "a project manager watching that contractors stay inside the agreed scope",
+  "replaces_salary": "part of a $90-110k/yr project manager role",
+  "replaces_note": "It puts an agreed fence around what can be touched, so a quick fix in one corner never quietly rewrites another.",
+  "ladder_human_led": "You name the files and folders in bounds and it writes the boundary record.",
+  "ladder_assisted": "It proposes a sensible scope from the job at hand and you tighten or widen it.",
+  "ladder_autonomous": "It holds the fence across the whole session and asks before anything destructive.",
+  "human": "You decide where the fence sits and you are the only one who can move it."
+ },
+ {
+  "name": "crew-core-idea-pressure-tester",
+  "replaces_role": "a strategy consultant's feasibility study before you commit to building",
+  "replaces_salary": "$3,000-10,000 per study outsourced, or $200-350/hr consultant time",
+  "replaces_note": "Ideas get interrogated for real demand before money is spent, so the weak ones die on paper instead of in the market.",
+  "ladder_human_led": "You pitch the idea and answer its questions while it probes the demand.",
+  "ladder_assisted": "It runs the full pressure-test on a written pitch and returns a verdict with the evidence gaps named.",
+  "ladder_autonomous": "Every new idea passes through the test before any build is scheduled.",
+  "human": "The call to build, park, or kill the idea stays yours."
+ },
+ {
+  "name": "crew-core-plan-reviewer",
+  "replaces_role": "a senior consultant reviewing the plan before work starts",
+  "replaces_salary": "$1,000-3,000 per plan review outsourced, or $150-300/hr consultant time",
+  "replaces_note": "Plans get stress-tested for the expensive gaps before anyone starts building, which is when fixing them is still cheap.",
+  "ladder_human_led": "You hand over a draft plan and talk through the risks it finds.",
+  "ladder_assisted": "It reviews the plan cold and returns risks, gaps, and a recommendation for each.",
+  "ladder_autonomous": "Every plan is reviewed automatically before the first hour of build time is spent.",
+  "human": "You weigh the flagged risks against what you know of the client and the budget, and decide what proceeds."
+ },
+ {
+  "name": "crew-core-quality-checker",
+  "replaces_role": "a freelance QA reviewer or proofing editor checking work before it ships",
+  "replaces_salary": "$200-500 per document reviewed outsourced, or $60-100/hr",
+  "replaces_note": "Nothing goes out the door without being checked line by line against the brief that asked for it.",
+  "ladder_human_led": "You point it at finished work and the brief, and read the report before sending.",
+  "ladder_assisted": "It runs the acceptance check on every deliverable and hands you a fix list ranked by severity.",
+  "ladder_autonomous": "It gates all outgoing work by default, so only clean work reaches you for final send.",
+  "human": "You make the ship or hold call, because you carry the relationship with whoever receives the work."
+ },
+ {
+  "name": "crew-core-using-crew",
+  "replaces_role": "an office manager who knows exactly who handles what",
+  "replaces_salary": "part of a $70-90k/yr office or operations manager role",
+  "replaces_note": "Every request lands with the right specialist first time instead of being handled freehand or bounced around.",
+  "ladder_human_led": "You describe the job and it tells you which specialist should run it and why.",
+  "ladder_assisted": "It routes the work to the matching skill and hands over the context.",
+  "ladder_autonomous": "It dispatches incoming work across the crew without you naming a skill at all.",
+  "human": "You set the priorities; it only decides who does the work, never whether the work matters."
+ },
+ {
+  "name": "crew-sales-audit-deck",
+  "replaces_role": "a presentation designer plus a senior salesperson's afternoon building the deck",
+  "replaces_salary": "$500-1,500 per deck outsourced, or $100-150/hr design time",
+  "replaces_note": "A discovery call turns into a branded audit deck the same day, so you walk into the follow-up already ahead.",
+  "ladder_human_led": "You feed in the call notes and shape each slide before it is built.",
+  "ladder_assisted": "It builds the full deck from your notes and past work, and you review the claims and pricing.",
+  "ladder_autonomous": "Every discovery call produces a draft deck overnight, with the money slides held for your numbers.",
+  "human": "Pricing and every claim about past work stay yours to confirm before the deck leaves the building."
+ },
+ {
+  "name": "crew-sales-crm-cleanup",
+  "replaces_role": "a contract CRM administrator or offshore data cleaner",
+  "replaces_salary": "$1,000-3,000 per cleanup project outsourced, or $30-50/hr admin time",
+  "replaces_note": "The database gets a ranked cleanup plan instead of months of quiet rot, and nothing is merged or deleted without a person's yes.",
+  "ladder_human_led": "You hand over an export and walk through the flagged records together.",
+  "ladder_assisted": "It produces the full prioritised plan and you approve the changes batch by batch.",
+  "ladder_autonomous": "It reviews the CRM on a schedule and keeps a standing cleanup list ready for approval.",
+  "human": "Every merge, delete, and correction is approved by a person; it only ever recommends."
+ },
+ {
+  "name": "crew-sales-follow-up-sequence",
+  "replaces_role": "a freelance sales copywriter writing your chase and nurture sequences",
+  "replaces_salary": "$300-800 per sequence outsourced, or $100-150/hr copywriter time",
+  "replaces_note": "Quiet prospects get a series of fresh reasons to reply instead of the same nag five times.",
+  "ladder_human_led": "You brief the stalled deal and edit each touch before anything is scheduled.",
+  "ladder_assisted": "It drafts the whole sequence with angles and timing and you approve the run.",
+  "ladder_autonomous": "It drafts a tailored sequence the moment a deal goes quiet, ready for your send.",
+  "human": "You know the relationship, so you judge tone, timing, and when to let a prospect go."
+ },
+ {
+  "name": "crew-sales-lead-research",
+  "replaces_role": "a junior SDR's research hours",
+  "replaces_salary": "$65-85k/yr role, or $30-45/hr outsourced researchers",
+  "replaces_note": "Every call starts with a verified brief on the company, its likely pain, and who decides, without a junior spending half a day on it.",
+  "ladder_human_led": "You name the target and read the brief before the call.",
+  "ladder_assisted": "It researches each new lead as it lands and files the brief against the record.",
+  "ladder_autonomous": "It works through your whole target list overnight and queues the briefs.",
+  "human": "You bring the industry read and the relationships; the brief informs the call, it does not make it."
+ },
+ {
+  "name": "crew-sales-outreach-draft",
+  "replaces_role": "a cold outreach copywriter or agency doing first-touch messages",
+  "replaces_salary": "$100-180/hr freelance, or roughly $50-150 per message set from an agency",
+  "replaces_note": "First-touch messages read like you did the homework on that one prospect, because the draft is built from their specifics, not a template.",
+  "ladder_human_led": "You give the hook and it drafts the message for your edit.",
+  "ladder_assisted": "It writes the full first touch from the research brief and you approve each send.",
+  "ladder_autonomous": "It drafts outreach for the whole list and queues everything for your sign-off.",
+  "human": "Your name is on the message, so you approve every send and own the reply that comes back."
+ },
+ {
+  "name": "crew-sales-pipeline-review",
+  "replaces_role": "the weekly pipeline review a sales manager would run",
+  "replaces_salary": "part of a $120-160k/yr sales manager role",
+  "replaces_note": "You get the stuck deals and one next move for each without hiring a manager to run the Monday meeting.",
+  "ladder_human_led": "You bring the pipeline and talk through each flagged deal.",
+  "ladder_assisted": "It reviews the open deals and hands you the stalled list with one action per deal.",
+  "ladder_autonomous": "It runs the review on a weekly schedule and the summary is waiting before your sales meeting.",
+  "human": "You decide which deals deserve the push and which to walk away from; that judgement is yours."
+ },
+ {
+  "name": "crew-sales-proposal-builder",
+  "replaces_role": "a bid or proposal writer",
+  "replaces_salary": "$500-1,500 per proposal outsourced, or $90-130/hr",
+  "replaces_note": "Call notes become a clean, scoped proposal the client can say yes to while the conversation is still warm.",
+  "ladder_human_led": "You walk it through the deal and shape the scope and assumptions yourself.",
+  "ladder_assisted": "It drafts the full proposal from your call notes and you set the price and sign off.",
+  "ladder_autonomous": "Every discovery call yields a draft proposal, with pricing always left for you.",
+  "human": "Price, scope trade-offs, and the promise you are making the client stay in your hands."
+ },
+ {
+  "name": "crew-sales-prospect-brief",
+  "replaces_role": "a sales assistant's pre-call prep",
+  "replaces_salary": "$35-50/hr of assistant time, an hour or two before every call",
+  "replaces_note": "Thirty seconds before you dial, you have the who, the why, the opener, and the likely objections on one page.",
+  "ladder_human_led": "You ask for prep on a named call and read the one-pager first.",
+  "ladder_assisted": "It builds the brief automatically from whatever research exists on the lead.",
+  "ladder_autonomous": "A brief is waiting for every call on your calendar before the day starts.",
+  "human": "The conversation itself is yours; the brief gets you ready, it does not talk for you."
+ },
+ {
+  "name": "crew-marketing-brand-voice-check",
+  "replaces_role": "a freelance copy editor or brand consultant doing voice reviews",
+  "replaces_salary": "$90-150/hr consultant time, or $150-400 per review outsourced",
+  "replaces_note": "Every piece of copy gets checked against how your business actually sounds before it goes out, without waiting a week or paying by the hour.",
+  "ladder_human_led": "You paste in the copy and read the flagged lines yourself before changing anything.",
+  "ladder_assisted": "It flags off-brand lines and suggests rewrites; you accept or reject each one.",
+  "ladder_autonomous": "Routine copy gets checked and corrected automatically, and only pieces that drift badly come to you.",
+  "human": "You own what the brand sounds like, and the final read before publishing stays yours."
+ },
+ {
+  "name": "crew-marketing-campaign-plan",
+  "replaces_role": "a marketing consultant or agency strategist building the campaign plan",
+  "replaces_salary": "$2,000-6,000 per campaign plan from an agency, or $120-200/hr consultant time",
+  "replaces_note": "You get a runnable campaign plan with channels, assets, and success measures in an afternoon instead of a multi-week agency engagement.",
+  "ladder_human_led": "You bring the goal and budget, it drafts a plan, and you rework it line by line.",
+  "ladder_assisted": "It builds the full plan and you adjust channels, spend, and timing before sign-off.",
+  "ladder_autonomous": "It drafts plans for recurring promotions on your calendar and you approve each one.",
+  "human": "The goal, the budget, and the decision to run it stay with you."
+ },
+ {
+  "name": "crew-marketing-carousel-campaign",
+  "replaces_role": "a social ads agency or freelance designer producing Meta carousel creative",
+  "replaces_salary": "$1,500-4,000 per creative kit outsourced, on top of any agency retainer",
+  "replaces_note": "A full set of ready-to-post carousels comes from one offer and one reference image instead of a fortnight of back and forth with an agency.",
+  "ladder_human_led": "You supply the offer and style reference and review every slide before the kit is built out.",
+  "ladder_assisted": "It produces the full six-carousel kit and you swap the slides and captions you don't like.",
+  "ladder_autonomous": "It builds a fresh carousel set for each new offer and you approve the batch before posting.",
+  "human": "You choose the offer, set the ad spend, and decide the moment it goes live."
+ },
+ {
+  "name": "crew-marketing-content-repurpose",
+  "replaces_role": "a content assistant or repurposing service turning one piece into many",
+  "replaces_salary": "$40-70/hr assistant time, or $300-800 per source piece outsourced",
+  "replaces_note": "Every webinar, talk, or article becomes a set of channel-ready assets the same day instead of a job that sits on the list for a month.",
+  "ladder_human_led": "You pick the source and the channels, it drafts the assets, and you rewrite freely.",
+  "ladder_assisted": "It produces the full asset set and you adjust tone and cut what doesn't fit each channel.",
+  "ladder_autonomous": "New source content gets repurposed into your standard channel set automatically, queued for your approval.",
+  "human": "You decide which ideas deserve amplifying and give the final nod before anything goes out."
+ },
+ {
+  "name": "crew-marketing-email-campaign-builder",
+  "replaces_role": "an email marketing freelancer or agency writing launch sequences",
+  "replaces_salary": "$800-3,000 per sequence outsourced, or part of a $75-95k/yr marketing hire",
+  "replaces_note": "A launch sequence that used to take a freelancer two weeks is drafted with subject lines and body copy the same day, ready to load into your email tool.",
+  "ladder_human_led": "It drafts subject lines and copy and you rewrite everything before it goes near your list.",
+  "ladder_assisted": "It builds the full sequence and you edit individual sends and approve the schedule.",
+  "ladder_autonomous": "Standard sequences for repeat offers get built and queued, and you approve before each send.",
+  "human": "Nothing reaches your list without your approval; the trust of that list is yours to protect."
+ },
+ {
+  "name": "crew-marketing-landing-page-review",
+  "replaces_role": "a conversion consultant or CRO agency auditing your page",
+  "replaces_salary": "$500-2,000 per audit outsourced, or $150-250/hr consultant time",
+  "replaces_note": "You find out whether a page will convert before you spend money sending traffic to it, not after.",
+  "ladder_human_led": "You run the audit and decide for yourself which findings are worth acting on.",
+  "ladder_assisted": "It scores the page and rewrites the weakest call to action, and you apply the changes.",
+  "ladder_autonomous": "Every new page gets audited before launch and anything that would block conversion comes straight to you.",
+  "human": "You know the customer, so whether the page's promise is true and worth making stays your call."
+ },
+ {
+  "name": "crew-marketing-seo-page-builder",
+  "replaces_role": "an SEO agency or content writer producing search-optimised pages",
+  "replaces_salary": "$300-800 per page outsourced, or a $1,000-3,000/month SEO retainer",
+  "replaces_note": "Search pages get drafted with the technical checks already done, without a monthly retainer ticking away in the background.",
+  "ladder_human_led": "You choose the keyword and rework the draft until it matches what you actually offer.",
+  "ladder_assisted": "It drafts the page, metadata, and FAQ, and you fact-check and publish.",
+  "ladder_autonomous": "It works through your keyword list page by page and you review each one before it goes live.",
+  "human": "You vouch for every claim on the page; accuracy about your own business is yours to guarantee."
+ },
+ {
+  "name": "crew-marketing-social-post-pack",
+  "replaces_role": "a social media manager or agency running your accounts",
+  "replaces_salary": "$1,000-2,500/month outsourced, or part of a $65-85k/yr social media hire",
+  "replaces_note": "One idea turns into a week of platform-ready posts in minutes, so the channel never goes quiet just because you got busy.",
+  "ladder_human_led": "You bring the idea, it drafts the posts, and you rewrite and schedule them yourself.",
+  "ladder_assisted": "It builds the week's pack with hooks and CTAs, and you swap out anything that doesn't sound like you.",
+  "ladder_autonomous": "Weekly packs are generated from your content plan and you approve each batch before posting.",
+  "human": "Replies, comments, and the relationships in the feed stay human, and you approve what represents you."
+ },
+ {
+  "name": "crew-ops-automation-opportunity-review",
+  "replaces_role": "an automation consultant scoping what your business should automate first",
+  "replaces_salary": "$150-250/hr consultant time, often sold as a $3,000-8,000 discovery engagement",
+  "replaces_note": "You get a ranked, honest answer on which repeated task to automate first, weighed on value and risk, without paying for a discovery project.",
+  "ladder_human_led": "You describe the workflow, it maps the candidates, and you weigh them up yourself.",
+  "ladder_assisted": "It ranks the opportunities on value, risk, and feasibility, and you pick from the shortlist.",
+  "ladder_autonomous": "It reviews your workflows on a schedule and flags new automation candidates as they appear.",
+  "human": "What gets automated in your business, and what deliberately stays human, is your call."
+ },
+ {
+  "name": "crew-ops-operations-dashboard-plan",
+  "replaces_role": "a BI consultant or analyst scoping a dashboard build",
+  "replaces_salary": "$120-180/hr consultant time, with scoping engagements commonly $2,000-5,000",
+  "replaces_note": "You get a build-ready dashboard spec where every metric traces to a real decision, instead of a wall of numbers nobody acts on.",
+  "ladder_human_led": "You name the decisions you make each week, it proposes metrics, and you cut the list down.",
+  "ladder_assisted": "It drafts the full spec with sources, targets, and refresh, and you confirm each metric earns its place.",
+  "ladder_autonomous": "It rechecks the spec as your tools and priorities change and brings you proposed updates.",
+  "human": "Which numbers you run the business on is a judgement only you can make."
+ },
+ {
+  "name": "crew-ops-process-map",
+  "replaces_role": "a process improvement consultant mapping how work really flows",
+  "replaces_salary": "$150-250/hr consultant time, or $2,000-5,000 per mapped process",
+  "replaces_note": "How a job really runs, delays and workarounds included, ends up on one page without a consultant shadowing your team for a week.",
+  "ladder_human_led": "You talk through the process, it drafts the map, and you correct it step by step.",
+  "ladder_assisted": "It maps the process and names the bottlenecks, and you confirm which ones actually hurt.",
+  "ladder_autonomous": "Key processes get re-mapped on a cycle so drift shows up before it costs you money.",
+  "human": "Your people know where the map is wrong, and the conversations that fix the bottlenecks are yours."
+ },
+ {
+  "name": "crew-ops-recurring-task-automation",
+  "replaces_role": "an automation specialist or ops hire designing repeatable workflows",
+  "replaces_salary": "$120-200/hr specialist time, or part of an $85-110k/yr operations role",
+  "replaces_note": "A repeat task becomes a documented workflow with a clear trigger, steps, and checks, instead of living in one person's head.",
+  "ladder_human_led": "You describe the task, it designs the workflow, and you run it manually first to prove it.",
+  "ladder_assisted": "It delivers the full design with triggers, checks, and a maintenance plan, and you approve before it runs.",
+  "ladder_autonomous": "Approved workflows run on their triggers and report only the exceptions to you.",
+  "human": "You decide which tasks are safe to hand over, and the exceptions always land on your desk."
+ },
+ {
+  "name": "crew-ops-workflow-improvement",
+  "replaces_role": "a lean or operations consultant reviewing how work gets done",
+  "replaces_salary": "$150-250/hr consultant time, or a $1,500-2,500 day rate",
+  "replaces_note": "Wasted steps, double handling, and fuzzy ownership get named and fixed without putting an improvement consultant on retainer.",
+  "ladder_human_led": "You walk it through the process, it suggests cuts and checks, and you decide on each one.",
+  "ladder_assisted": "It recommends a leaner workflow with clear owners, and you adjust it and roll it out.",
+  "ladder_autonomous": "It reviews your workflows on a cycle and brings you the next improvement worth making.",
+  "human": "Changing how people work lands through you, and the team conversations stay yours."
+ },
+ {
+  "name": "crew-hr-employee-communication-draft",
+  "replaces_role": "an HR consultant or internal comms writer drafting staff announcements",
+  "replaces_salary": "$120-200/hr consultant time, or a slice of a $90-110k/yr comms role",
+  "replaces_note": "The tricky staff messages that used to sit in your drafts for a week get written properly the same day.",
+  "ladder_human_led": "You describe the situation and the outcome you need, it drafts, you rewrite freely before anything goes out.",
+  "ladder_assisted": "It drafts announcements, change messages, and FAQs in your voice, you edit the sensitive lines and hit send.",
+  "ladder_autonomous": "Routine staff notices go out on schedule in your voice, with anything touching pay, roles, or bad news flagged back to you first.",
+  "human": "You decide what the business actually says, and you sign off every message that affects someone's job, pay, or conditions."
+ },
+ {
+  "name": "crew-hr-interview-guide",
+  "replaces_role": "an external recruiter or HR consultant building structured interview kits",
+  "replaces_salary": "$500-1,500 per role outsourced, or $120-200/hr HR consultant time",
+  "replaces_note": "Every candidate gets asked the same fair questions with a real scoring rubric, instead of whatever came to mind on the day.",
+  "ladder_human_led": "You hand it the role profile, it suggests questions and a rubric, and you assemble the interview yourself.",
+  "ladder_assisted": "It builds the full guide with timed running order and scoring anchors, you adjust the questions before interviews start.",
+  "ladder_autonomous": "A complete interview kit is ready the moment a role profile is signed off, and you give it one review before first use.",
+  "human": "You run the interviews, read the person in the room, and make the hiring call."
+ },
+ {
+  "name": "crew-hr-performance-conversation-prep",
+  "replaces_role": "an HR consultant coaching a manager before a difficult performance conversation",
+  "replaces_salary": "$150-300 per conversation of consultant prep time, or $120-200/hr",
+  "replaces_note": "Managers walk into hard conversations with specific examples and fair words prepared instead of winging it.",
+  "ladder_human_led": "You describe the behaviour you have observed and it helps you turn it into evidence-based talking points.",
+  "ladder_assisted": "It prepares the full conversation plan, coaching questions, and follow-up actions, you tailor them to the person.",
+  "ladder_autonomous": "Prep packs are drafted from your notes ahead of each review cycle, and you check every pack before the meeting.",
+  "human": "The conversation itself is yours, along with the relationship, the judgement about the person, and any decision about their future."
+ },
+ {
+  "name": "crew-hr-policy-summary",
+  "replaces_role": "an HR consultant translating long policies into plain English for staff",
+  "replaces_salary": "$300-800 per policy outsourced, or $120-200/hr consultant time",
+  "replaces_note": "Staff actually understand what the policy asks of them instead of skimming ten pages and guessing.",
+  "ladder_human_led": "You feed it a policy, it drafts the plain-English version, and you check every line against the original.",
+  "ladder_assisted": "It produces the one-page guide, employee summary, and manager checklist, you confirm the meaning has not shifted.",
+  "ladder_autonomous": "Whenever a policy changes, fresh summaries are drafted and waiting for your review before anything circulates.",
+  "human": "You own what the policy means, and anything with legal or award implications goes past you or your advisor before staff see it."
+ },
+ {
+  "name": "crew-hr-role-profile-builder",
+  "replaces_role": "a recruiter or HR consultant writing position descriptions",
+  "replaces_salary": "$300-900 per role outsourced, or $120-200/hr consultant time",
+  "replaces_note": "You get a role description a new hire and their manager both trust, not a wish list copied off a job board.",
+  "ladder_human_led": "You talk through what the role actually does, it structures that into a draft profile you shape yourself.",
+  "ladder_assisted": "It builds the full profile with ranked responsibilities and success measures, you correct anything that does not match reality.",
+  "ladder_autonomous": "Draft profiles are produced whenever you flag a hiring need, ready for one pass of your edits before advertising.",
+  "human": "You decide what the role is for, what success looks like, and who it reports to."
+ },
+ {
+  "name": "crew-finance-admin-automation",
+  "replaces_role": "an operations consultant scoping which finance admin to automate",
+  "replaces_salary": "$1,000-3,000 per scoping engagement, or $150-250/hr consultant time",
+  "replaces_note": "The repeat paperwork that eats your week gets mapped into a flow something else can run, with checkpoints where you stay in the loop.",
+  "ladder_human_led": "You list the admin jobs that repeat, it weighs which are worth automating and why, and you pick the target.",
+  "ladder_assisted": "It designs the trigger and action map for the chosen flow with review points, you approve the design before anything is built.",
+  "ladder_autonomous": "It keeps reviewing your recurring admin for new automation candidates and hands you a proposal, nothing changes without your yes.",
+  "human": "You choose what gets automated, where the review points sit, and what stays a human job."
+ },
+ {
+  "name": "crew-finance-cashflow-brief",
+  "replaces_role": "a bookkeeper's monthly cash reporting or part of a virtual CFO retainer",
+  "replaces_salary": "$300-800 per month of bookkeeper reporting time, or a slice of a $1,500-3,000/month virtual CFO retainer",
+  "replaces_note": "You know your cash position and the timing risks before they bite, not after.",
+  "ladder_human_led": "You hand over money in and money out, it builds the brief, and you interrogate the numbers together.",
+  "ladder_assisted": "It produces the cash read, the risks, and the questions to ask next, you verify the figures and act on them.",
+  "ladder_autonomous": "A fresh brief lands on a regular cycle from the latest figures, with anything alarming flagged to you straight away.",
+  "human": "Every decision about spending, borrowing, chasing, or holding cash stays with you."
+ },
+ {
+  "name": "crew-finance-expense-review",
+  "replaces_role": "a bookkeeper's expense-checking hours",
+  "replaces_salary": "a few hours a month at $60-90/hr bookkeeping rates",
+  "replaces_note": "Odd charges, duplicates, and missing receipts surface every month instead of at tax time.",
+  "ladder_human_led": "You give it the expense records, it sorts and flags, and you work through the exceptions list yourself.",
+  "ladder_assisted": "It delivers the category breakdown, exceptions, and follow-up actions, you confirm the flags and chase the receipts.",
+  "ladder_autonomous": "Each period's expenses are reviewed automatically and only the exceptions reach you, everything clean passes through quietly.",
+  "human": "You decide what counts as acceptable spending and you have the conversation when a flag involves a person."
+ },
+ {
+  "name": "crew-finance-finance-dashboard-plan",
+  "replaces_role": "a consultant or virtual CFO scoping a finance dashboard build",
+  "replaces_salary": "$1,500-5,000 per scoping engagement outsourced",
+  "replaces_note": "You get a buildable one-page plan for the handful of numbers you actually run the business on.",
+  "ladder_human_led": "You talk through the decisions you make each week, it works backwards to the metrics, and you own the plan.",
+  "ladder_assisted": "It produces the full spec with metrics, sources, layout, and refresh cadence, you cut anything you would not actually look at.",
+  "ladder_autonomous": "It revisits the plan as your business changes and proposes updates, the spec never changes without your approval.",
+  "human": "You decide which numbers matter, who sees them, and what you do when one goes red."
+ },
+ {
+  "name": "crew-finance-invoice-workflow",
+  "replaces_role": "a bookkeeper or operations consultant untangling the invoicing process",
+  "replaces_salary": "$1,000-3,000 per process review outsourced, or $60-90/hr bookkeeping time",
+  "replaces_note": "Invoices stop slipping because both directions, paying and getting paid, follow the same written checklist every time.",
+  "ladder_human_led": "You walk it through how invoices actually move today, it maps the mess, and you decide what changes.",
+  "ladder_assisted": "It delivers the process map and run-it-yourself checklist, you adopt it and adjust where reality pushes back.",
+  "ladder_autonomous": "The workflow is re-checked as tools and volumes change, with updated checklists proposed for you to approve.",
+  "human": "Approving payments, signing off credit terms, and the awkward call to a late payer stay yours."
+ },
+ {
+  "name": "crew-finance-monthly-summary",
+  "replaces_role": "a bookkeeper's month-end summary or part of an accountant's management reporting",
+  "replaces_salary": "$300-800 per month outsourced, on top of compliance accounting",
+  "replaces_note": "The month closes with a short readout of key numbers, wins, risks, and next actions instead of a folder of raw reports.",
+  "ladder_human_led": "You hand over the month's scattered data, it assembles the summary, and you draw your own conclusions.",
+  "ladder_assisted": "It writes the decision-ready summary, you verify the numbers and choose which next actions to take.",
+  "ladder_autonomous": "The summary is produced every month-end without being asked, and you read it over coffee instead of building it.",
+  "human": "Reading the story behind the numbers and deciding what the business does about it stays with you."
+ },
+ {
+  "name": "crew-support-escalation-review",
+  "replaces_role": "a support team lead's escalation triage",
+  "replaces_salary": "part of a $75-95k/yr team lead role",
+  "replaces_note": "The risky and the angry cases reach the right person fast, with the context already written up.",
+  "ladder_human_led": "You paste in the issue, it checks it against your escalation triggers, and you decide whether and where it goes.",
+  "ladder_assisted": "It routes the issue with a prepared note, risk level, and the question the owner must answer, you confirm before it moves.",
+  "ladder_autonomous": "Escalations are detected and routed as they arrive, with high-risk cases pinged to you immediately.",
+  "human": "You own the judgement call on genuinely risky customers and any conversation that could lose or save the relationship."
+ },
+ {
+  "name": "crew-support-faq-builder",
+  "replaces_role": "a technical writer or senior support agent building FAQ content",
+  "replaces_salary": "$500-2,000 per FAQ set outsourced, or $80-120/hr freelance writing",
+  "replaces_note": "The questions customers keep asking get answered once, properly, in one place.",
+  "ladder_human_led": "You supply the real questions from your inbox, it drafts answers, and you rewrite them in your own words.",
+  "ladder_assisted": "It builds the full FAQ with short answers and next steps, you approve the flagged items before publishing.",
+  "ladder_autonomous": "New recurring questions are spotted and drafted into the FAQ automatically, published only after your sign-off.",
+  "human": "You approve every answer that makes a promise about price, policy, or what the product can do."
+ },
+ {
+  "name": "crew-support-feedback-summary",
+  "replaces_role": "an analyst or research agency summarising customer feedback",
+  "replaces_salary": "$1,000-4,000 per feedback study outsourced",
+  "replaces_note": "You hear what customers are actually telling you as ranked themes with a likely root cause, not just the loudest complaint.",
+  "ladder_human_led": "You hand it the raw feedback, it clusters and ranks, and you decide what the patterns mean.",
+  "ladder_assisted": "It delivers themes, pain points, and a stated root cause, you test that reading against what you know of the business.",
+  "ladder_autonomous": "Feedback is summarised on a regular cycle and trend shifts are flagged to you as they emerge.",
+  "human": "Deciding which pain point is worth fixing first, and what that fix costs, stays your call."
+ },
+ {
+  "name": "crew-support-help-document-generator",
+  "replaces_role": "a technical writer producing customer help articles",
+  "replaces_salary": "$150-400 per article outsourced, or $80-120/hr freelance",
+  "replaces_note": "Each repeat question becomes an article that answers it before the ticket ever gets raised.",
+  "ladder_human_led": "You pick the question and supply the correct answer, it structures the article, and you edit before it goes anywhere.",
+  "ladder_assisted": "It writes the full article with steps, a worked example, and troubleshooting, you check accuracy and publish.",
+  "ladder_autonomous": "Repeat questions are turned into draft articles automatically and queued for your one-pass review.",
+  "human": "You verify the steps are actually right, because a confident wrong help article is worse than none."
+ },
+ {
+  "name": "crew-support-reply-builder",
+  "replaces_role": "a customer support officer's reply-writing hours",
+  "replaces_salary": "part of a $55-70k/yr support role, or $30-45/hr outsourced support",
+  "replaces_note": "Every customer gets a considered, on-brand reply with the next step built in, even when you are flat out.",
+  "ladder_human_led": "You describe the situation, it drafts a reply and internal note, and you rework it before sending.",
+  "ladder_assisted": "It drafts consistent replies across the inbox, you skim, tweak the tone where it matters, and send.",
+  "ladder_autonomous": "Routine replies go out in your voice with escalation-flagged cases held back for you, nothing sensitive leaves unseen.",
+  "human": "Apologies that carry weight, goodwill gestures, and any reply to a customer you cannot afford to lose stay in your hands."
+ },
+ {
+  "name": "crew-support-ticket-triage",
+  "replaces_role": "a support coordinator sorting the inbound queue",
+  "replaces_salary": "part of a $55-70k/yr support role's daily hours",
+  "replaces_note": "Nothing sits unsorted, every ticket has a topic, a severity, an owner, and a next action by the time you look.",
+  "ladder_human_led": "You paste in a ticket, it proposes the triage card, and you assign it where you think it belongs.",
+  "ladder_assisted": "It triages the queue and flags recurring patterns, you confirm the severity calls before work is assigned.",
+  "ladder_autonomous": "Tickets are sorted and routed as they land, with only the severe or unusual ones interrupting you.",
+  "human": "You set what counts as urgent for your business and you handle the customers where the relationship itself is on the line."
+ },
+ {
+  "name": "crew-docs-client-playbook-builder",
+  "replaces_role": "a freelance copywriter or client services manager writing your welcome and process documents",
+  "replaces_salary": "$800-2,500 per playbook outsourced, or $120-180/hr freelance writing time",
+  "replaces_note": "The polished what-to-expect document clients keep asking for gets written in an afternoon instead of sitting on the someday list.",
+  "ladder_human_led": "You describe the service and the skill drafts one section at a time for you to shape.",
+  "ladder_assisted": "It drafts the full playbook from your description and you mark up the language and pricing before it goes out.",
+  "ladder_autonomous": "It keeps playbooks current as your services change and flags you only when pricing or promises move.",
+  "human": "What you promise clients, the pricing, and the final sign-off before anything carries your name stay with you."
+ },
+ {
+  "name": "crew-docs-compliance-review-check",
+  "replaces_role": "a compliance consultant's document review hours",
+  "replaces_salary": "$1,000-3,000 per document review outsourced, or $150-300/hr consultant time",
+  "replaces_note": "Every draft gets checked line by line against the rules before it goes anywhere near a regulator or a client.",
+  "ladder_human_led": "You paste in the document and the rules and walk through each flag together.",
+  "ladder_assisted": "It runs the full requirement-by-requirement check and you decide which gaps actually need fixing.",
+  "ladder_autonomous": "Every outgoing policy or client document gets a compliance pass automatically, with only the serious gaps escalated to you.",
+  "human": "Judgement on legal risk and the call on acceptable exposure stay with you and your professional advisers."
+ },
+ {
+  "name": "crew-docs-handover-document-writer",
+  "replaces_role": "a departing staff member's paid handover fortnight, or a consultant hired to document a role",
+  "replaces_salary": "$1,500-5,000 per role documented externally, or weeks of paid handover time",
+  "replaces_note": "When someone leaves or goes on leave, what they know gets captured on one page instead of walking out the door.",
+  "ladder_human_led": "You talk through the role or project and it turns your answers into the handover page.",
+  "ladder_assisted": "It drafts the handover from project files and notes, and you fill the gaps only a person would know.",
+  "ladder_autonomous": "It keeps a living handover for each key role updated from the work itself, ready the day you need it.",
+  "human": "The relationships, the unwritten history, and the personal introductions are yours to hand over in person."
+ },
+ {
+  "name": "crew-docs-meeting-notes-to-actions",
+  "replaces_role": "a minute-taker, or the admin hours of an executive assistant",
+  "replaces_salary": "part of a $70-85k/yr EA role, or $60-100 per meeting for outsourced minute-taking",
+  "replaces_note": "Every meeting ends with a clean page of decisions and who does what by when, instead of notes nobody reads again.",
+  "ladder_human_led": "You paste rough notes in and check each action and owner it pulls out.",
+  "ladder_assisted": "It produces the summary and action list straight after each meeting and you skim it before sending.",
+  "ladder_autonomous": "Meeting notes turn into circulated summaries and tracked actions without you touching them.",
+  "human": "You decide what was actually agreed and you hold people to the deadlines; the notes only record it."
+ },
+ {
+  "name": "crew-docs-policy-document-generator",
+  "replaces_role": "an external HR or workplace relations consultant drafting policies",
+  "replaces_salary": "$500-2,000 per policy outsourced, or $150-250/hr consultant time",
+  "replaces_note": "The policies you know you should have get drafted from how you actually run things, ready for a professional to review.",
+  "ladder_human_led": "You explain the rule you want and shape each clause as it drafts.",
+  "ladder_assisted": "It drafts the full policy marked draft pending review and you send it to your adviser.",
+  "ladder_autonomous": "It maintains your policy set and drafts updates when your rules change, always queued for sign-off.",
+  "human": "Final legal review and the decision to adopt a policy stay with you; a draft never becomes law without your sign-off."
+ },
+ {
+  "name": "crew-docs-research-notebooklm",
+  "replaces_role": "a research assistant or junior analyst's reading and summarising hours",
+  "replaces_salary": "$35-50/hr research assistance, or days of your own reading time each month",
+  "replaces_note": "The pile of reports, contracts, and industry papers gets read for you, and answers come back grounded in your own documents.",
+  "ladder_human_led": "You ask questions of your sources and follow the answers up together.",
+  "ladder_assisted": "It builds briefings from your document set and you check the sources it cites.",
+  "ladder_autonomous": "Standing research questions get refreshed briefings as new documents land, delivered on schedule.",
+  "human": "You judge what the findings mean for the business and which recommendations are worth acting on."
+ },
+ {
+  "name": "crew-docs-sop-builder",
+  "replaces_role": "an operations consultant, or the weeks a manager spends writing procedures",
+  "replaces_salary": "$300-1,500 per SOP outsourced, or $120-200/hr process consultant time",
+  "replaces_note": "The way you do things finally gets written down step by step, so the business stops living in your head.",
+  "ladder_human_led": "You describe the process out loud and correct the steps as it writes them.",
+  "ladder_assisted": "It drafts the full SOP with roles and checkpoints and you fix the details only you would know.",
+  "ladder_autonomous": "It keeps your SOP library current as processes change and flags steps that no longer match reality.",
+  "human": "You decide how the work should be done; the SOP only captures the standard you set."
+ },
+ {
+  "name": "crew-docs-training-guide-creator",
+  "replaces_role": "a freelance instructional designer or external training provider building session guides",
+  "replaces_salary": "$2,000-6,000 per course built externally, or $80-120/hr instructional design time",
+  "replaces_note": "Any topic you can explain becomes a training session someone else can run, without hiring a training company.",
+  "ladder_human_led": "You talk through what the team needs to learn and it builds the guide section by section with you.",
+  "ladder_assisted": "It drafts the full facilitator-ready guide and you adjust the timings and examples to your people.",
+  "ladder_autonomous": "Training guides get generated and refreshed from your SOPs and systems as they change.",
+  "human": "Choosing what matters enough to train, and delivering it with credibility, stays with you and your leads."
+ },
+ {
+  "name": "crew-training-assessment-designer",
+  "replaces_role": "an instructional designer's assessment-writing hours or a training provider's test development service",
+  "replaces_salary": "$500-1,500 per assessment outsourced, or $80-120/hr instructional design time",
+  "replaces_note": "Every training module gets a proper test that proves people actually learned it, not a token quiz.",
+  "ladder_human_led": "You give the learning outcomes and review each question and answer as it drafts.",
+  "ladder_assisted": "It builds the full assessment with an answer key and you spot-check the scenarios against real work.",
+  "ladder_autonomous": "Each finished module gets a matched assessment generated automatically, ready for your approval.",
+  "human": "You set the pass mark and decide what competent looks like in your business."
+ },
+ {
+  "name": "crew-training-coaching-conversation-guide",
+  "replaces_role": "an external coach or leadership facilitator preparing your managers",
+  "replaces_salary": "$250-500 per coaching session outsourced, or $150-250/hr leadership consultant time",
+  "replaces_note": "Your managers walk into development conversations with a real structure instead of winging it.",
+  "ladder_human_led": "You name the development topic and work through the GROW questions together before the conversation.",
+  "ladder_assisted": "It prepares the full conversation guide and your manager tailors it to the person.",
+  "ladder_autonomous": "Guides get prepared automatically ahead of scheduled one-on-ones from each person's development plan.",
+  "human": "The conversation itself, the listening, and the relationship stay human; a guide never replaces sitting down with your person."
+ },
+ {
+  "name": "crew-training-facilitator-guide-creator",
+  "replaces_role": "a freelance instructional designer building delivery guides",
+  "replaces_salary": "$1,500-4,000 per session guide outsourced, or $80-120/hr design time",
+  "replaces_note": "A signed-off outline becomes a script anyone on your team can deliver the same way every time.",
+  "ladder_human_led": "You walk through the outline together and check the tone and timing as it scripts each section.",
+  "ladder_assisted": "It writes the full minute-by-minute guide and you adjust the activities to your room.",
+  "ladder_autonomous": "Approved outlines turn into finished facilitator guides on their own, queued for a final look.",
+  "human": "Delivery is still a person in the room; you choose who runs it and vouch for what gets taught."
+ },
+ {
+  "name": "crew-training-learner-workbook-builder",
+  "replaces_role": "a training materials designer or a training provider's printed materials service",
+  "replaces_salary": "$800-2,500 per workbook outsourced, or $80-120/hr materials design time",
+  "replaces_note": "Every session comes with a proper take-away workbook instead of learners scribbling on loose paper.",
+  "ladder_human_led": "You pick which activities need worksheets and shape the reflection questions with it.",
+  "ladder_assisted": "It builds the full workbook from the facilitator guide and you check it matches how you run the session.",
+  "ladder_autonomous": "Workbooks are generated and kept in sync whenever a facilitator guide changes.",
+  "human": "You decide what learners take away and whether the materials meet your standard before printing."
+ },
+ {
+  "name": "crew-training-module-outline-builder",
+  "replaces_role": "a learning and development consultant scoping course structure",
+  "replaces_salary": "$1,000-3,000 per module design outsourced, or part of a $95-115k/yr L&D role",
+  "replaces_note": "A topic on the whiteboard becomes a structured session plan with objectives you can actually measure.",
+  "ladder_human_led": "You bring the topic and shape the objectives and flow together.",
+  "ladder_assisted": "It drafts the full outline with timings and activities and you sign off before anything gets built on it.",
+  "ladder_autonomous": "Training needs turn into ready outlines automatically, waiting in your queue for approval.",
+  "human": "You decide what your people actually need to learn and in what order; the outline serves your call."
+ },
+ {
+  "name": "crew-training-needs-analyser",
+  "replaces_role": "a learning and development consultant's training needs analysis engagement",
+  "replaces_salary": "$3,000-8,000 per needs analysis outsourced, or $150-250/hr consultant time",
+  "replaces_note": "You find out which capability gaps are actually costing you before spending a dollar on training.",
+  "ladder_human_led": "You describe the team and the goal and interrogate the gaps it surfaces together.",
+  "ladder_assisted": "It produces the priority gap report and you weigh it against what you see on the floor.",
+  "ladder_autonomous": "It re-runs the analysis as roles and goals shift and alerts you when a new gap becomes urgent.",
+  "human": "You know your people beyond any report; which gaps to invest in is your call."
+ },
+ {
+  "name": "crew-training-onboarding-programme-builder",
+  "replaces_role": "an HR consultant designing onboarding, or the ad-hoc weeks a manager loses to each new starter",
+  "replaces_salary": "$2,000-6,000 per onboarding programme outsourced, or $130-180/hr HR consultant time",
+  "replaces_note": "Every new hire gets the same structured first quarter instead of learning the job by ambush.",
+  "ladder_human_led": "You talk through the role and it builds each phase checklist with you.",
+  "ladder_assisted": "It drafts the full programme from the role profile and you tune the touchpoints and the buddy pick.",
+  "ladder_autonomous": "A signed offer triggers a ready onboarding programme for that role, waiting for your once-over.",
+  "human": "Welcoming the person, choosing the buddy, and the first-week relationships are yours; paperwork does not make people feel they belong."
+ },
+ {
+  "name": "crew-training-skill-gap-mapper",
+  "replaces_role": "a capability assessment from an HR or change consultant",
+  "replaces_salary": "$4,000-10,000 per capability review outsourced, or $150-250/hr consultant time",
+  "replaces_note": "Before you roll out a new system or service, you see person by person who can do it and who needs help.",
+  "ladder_human_led": "You describe the initiative and rate your people while it prompts the right questions.",
+  "ladder_assisted": "It builds the gap map and development paths and you correct the ratings you know better.",
+  "ladder_autonomous": "Each new initiative gets a refreshed gap map from current role data, flagging the risky gaps to you.",
+  "human": "Honest judgement of your own people, and the conversations about their gaps, stay with you."
+ },
+ {
+  "name": "crew-web-app-builder",
+  "replaces_role": "a freelance automation developer or integration consultant",
+  "replaces_salary": "$90-140/hr contractor time, or $3,000-10,000 per build outsourced",
+  "replaces_note": "Custom internal tools and automations get built in-house instead of paying a developer day rate every time something changes.",
+  "ladder_human_led": "You answer the discovery questions and approve each build phase before the next one starts.",
+  "ladder_assisted": "It scaffolds the project, wires the connections, and writes the tools while you check outputs at each gate.",
+  "ladder_autonomous": "It runs the full build protocol end to end and hands you a working automation to sign off.",
+  "human": "You own what the automation is allowed to touch, the credentials it uses, and the go-live decision."
+ },
+ {
+  "name": "crew-web-booking-site-builder",
+  "replaces_role": "a local web designer building sites for trades, salons, and clinics",
+  "replaces_salary": "$2,000-5,000 per site outsourced, plus edit fees after launch",
+  "replaces_note": "Your booking site gets built and updated the same day instead of waiting weeks and paying again for every change.",
+  "ladder_human_led": "You supply services, prices, and photos, and review each section as it is drafted.",
+  "ladder_assisted": "It builds the whole site from your details and you adjust wording and pricing before it ships.",
+  "ladder_autonomous": "It delivers the complete click-to-call booking site ready for you to publish under your domain.",
+  "human": "You approve the prices, the promises made on the page, and when it goes live."
+ },
+ {
+  "name": "crew-web-cinematic-build",
+  "replaces_role": "a creative web agency's design and motion team",
+  "replaces_salary": "$8,000-25,000 per project at agency rates",
+  "replaces_note": "The scroll-driven showpiece site that used to need an agency quote now comes out of your own toolkit.",
+  "ladder_human_led": "You bring the story and imagery and direct each scene as it takes shape.",
+  "ladder_assisted": "It designs and animates the site while you review the look at set checkpoints.",
+  "ladder_autonomous": "It delivers the finished cinematic site for a single review from you.",
+  "human": "You decide whether the drama fits your brand and whether it ships."
+ },
+ {
+  "name": "crew-web-fly-through-builder",
+  "replaces_role": "a video production house plus a specialist web developer",
+  "replaces_salary": "$10,000-30,000 quoted as a combined film and build job",
+  "replaces_note": "A camera-journey website that would normally need a film crew and a dev team becomes something you can commission on demand.",
+  "ladder_human_led": "You choose the journey, supply or approve the footage, and sign off each leg of the path.",
+  "ladder_assisted": "It generates the camera path and builds the scroll site while you steer the destination and the arrival.",
+  "ladder_autonomous": "It produces the full fly-through experience and you review the final cut.",
+  "human": "You own the story being told and the claim the arrival page makes."
+ },
+ {
+  "name": "crew-web-landing-page-builder",
+  "replaces_role": "a freelance landing page designer and copywriter",
+  "replaces_salary": "$800-2,500 per page outsourced",
+  "replaces_note": "Every campaign, event, or offer can get its own page the same day instead of joining a freelancer's queue.",
+  "ladder_human_led": "You give the offer and audience and approve the copy section by section.",
+  "ladder_assisted": "It writes and builds the page from your brief and you polish the headline and call to action.",
+  "ladder_autonomous": "It turns a one-line offer into a finished page ready for your final read.",
+  "human": "You own the offer itself, the price, and the promise the page makes."
+ },
+ {
+  "name": "crew-web-lead-dashboard-builder",
+  "replaces_role": "a research VA or analyst compiling lead lists and reports",
+  "replaces_salary": "$40-70/hr contractor time, often $500-1,500 per list and report",
+  "replaces_note": "Prospect lists arrive as a ready-to-work dashboard instead of a spreadsheet someone was paid to compile.",
+  "ladder_human_led": "You name the target market and review each batch of leads before they land.",
+  "ladder_assisted": "It scrapes and builds the dashboard and you cull the leads that do not fit.",
+  "ladder_autonomous": "It refreshes the dashboard on its own and you just work the list.",
+  "human": "You decide who is actually worth calling and you make the call."
+ },
+ {
+  "name": "crew-web-page-builder",
+  "replaces_role": "a small web design studio building full business websites",
+  "replaces_salary": "$3,000-8,000 per site outsourced, plus $500-900/yr in typical care plans",
+  "replaces_note": "The full multi-page business website, and every future edit to it, stays in your hands instead of on an agency invoice.",
+  "ladder_human_led": "You provide the content and approve each page before the next is built.",
+  "ladder_assisted": "It drafts the whole site from your business details and you refine tone and photos.",
+  "ladder_autonomous": "It delivers the complete site and you give one final approval before it goes up.",
+  "human": "You own the brand story, the pricing on the page, and the publish button."
+ },
+ {
+  "name": "crew-web-product-film",
+  "replaces_role": "a product video studio plus a landing page developer",
+  "replaces_salary": "$8,000-30,000 for a filmed product page at studio rates",
+  "replaces_note": "A launch page with a cinematic product film gets made from your existing product photos, no shoot day required.",
+  "ladder_human_led": "You pick the product and hero shots and direct the film scene by scene.",
+  "ladder_assisted": "It generates the film and builds the page while you approve the key frames.",
+  "ladder_autonomous": "It delivers the finished product film site for your final viewing.",
+  "human": "You own the product claims and whether the film honestly shows what you sell."
+ },
+ {
+  "name": "crew-web-real-estate-immersive",
+  "replaces_role": "a property videographer plus a custom microsite developer",
+  "replaces_salary": "$1,500-5,000 per listing for video and a one-off microsite",
+  "replaces_note": "Each listing can get its own cinematic tour page without booking a videographer for every property.",
+  "ladder_human_led": "You choose the listing and photos and approve each part of the tour.",
+  "ladder_assisted": "It builds the tour from the live listing and you check the details match.",
+  "ladder_autonomous": "It turns a listing link into a finished tour page for your sign-off.",
+  "human": "You own listing accuracy, the vendor relationship, and what may legally be advertised."
+ },
+ {
+  "name": "crew-web-scrollytelling",
+  "replaces_role": "a digital agency's interactive storytelling team",
+  "replaces_salary": "$10,000-40,000 for interactive scroll pieces at agency rates",
+  "replaces_note": "The one-continuous-shot website that agencies pitch as a flagship project becomes a normal week's deliverable.",
+  "ladder_human_led": "You bring the narrative and it storyboards with you before any build starts.",
+  "ladder_assisted": "It builds the film and content sections while you review each chapter.",
+  "ladder_autonomous": "It delivers the full scrollytelling site and you watch it once and approve.",
+  "human": "You decide the story is true to the business and worth putting your name on."
+ },
+ {
+  "name": "crew-web-slide-deck-builder",
+  "replaces_role": "a freelance presentation designer",
+  "replaces_salary": "$500-1,500 per deck outsourced, or $80-120/hr",
+  "replaces_note": "Pitch and training decks come out branded and finished without a designer's turnaround time.",
+  "ladder_human_led": "You supply the content and approve the deck slide by slide.",
+  "ladder_assisted": "It builds the deck from your outline and you adjust order and emphasis.",
+  "ladder_autonomous": "It turns your notes into a finished deck ready for your run-through.",
+  "human": "You own the argument, the numbers, and the delivery in the room."
+ },
+ {
+  "name": "crew-web-slide-deck-mobile",
+  "replaces_role": "a designer producing phone-ready proposals and story decks",
+  "replaces_salary": "$300-900 per proposal or story deck outsourced",
+  "replaces_note": "Quotes and proposals go out as a link that looks right on the customer's phone, made in minutes rather than commissioned.",
+  "ladder_human_led": "You give the quote details and approve every panel before it is sent.",
+  "ladder_assisted": "It builds the vertical deck from your numbers and you check pricing and terms.",
+  "ladder_autonomous": "It produces a send-ready phone deck from the job details alone.",
+  "human": "You own the price, the terms, and pressing send to the customer."
+ },
+ {
+  "name": "crew-web-stitch",
+  "replaces_role": "a contract UX designer writing design specs and reviewing screens",
+  "replaces_salary": "$110-150/hr contract UX time, or a slice of a $100-140k/yr role",
+  "replaces_note": "The design standards document that keeps generated screens from looking cheap gets written and enforced without hiring a designer.",
+  "ladder_human_led": "You state the product and the taste you want, and it drafts the design contract for your edits.",
+  "ladder_assisted": "It writes the DESIGN.md and checks Stitch's screens against it while you judge the look.",
+  "ladder_autonomous": "It generates the contract and passes or fails screens on its own before you see them.",
+  "human": "You keep the final call on taste and which screens represent your product."
+ },
+ {
+  "name": "crew-web-website-architect",
+  "replaces_role": "a design consultant doing competitor site teardowns",
+  "replaces_salary": "$1,000-3,000 per audit outsourced, or $120-180/hr consultant time",
+  "replaces_note": "You can pull apart any competitor's website and get a build-ready blueprint instead of paying for a strategy report.",
+  "ladder_human_led": "You pick the site to study and read the report before anything is reused.",
+  "ladder_assisted": "It analyses the site and prepares the token kit while you choose what to keep.",
+  "ladder_autonomous": "It feeds the blueprint straight into the page builder for a full draft site.",
+  "human": "You judge what fits your brand and keep the line between inspiration and imitation."
+ },
+ {
+  "name": "crew-voice-receptionist",
+  "replaces_role": "a part-time receptionist or an after-hours answering service",
+  "replaces_salary": "$30-38/hr casual reception cover, or $200-600/mo for an answering service",
+  "replaces_note": "Missed calls get answered, booked, and reported back to you instead of ringing out and going to a competitor.",
+  "ladder_human_led": "You script the greetings and FAQs and read every transcript at first.",
+  "ladder_assisted": "It answers and books on its own while you spot-check transcripts and take the tricky calls.",
+  "ladder_autonomous": "It runs the phones after hours and on overflow and you just read the daily summary.",
+  "human": "You keep the difficult conversations, the regulars who want you personally, and the judgement calls on quotes."
+ },
+ {
+  "name": "crew-design-documents",
+  "replaces_role": "a freelance document designer, the person who lays out your proposals, reports and workbooks",
+  "replaces_salary": "$150-400 per formatted document outsourced, or $75-110/hr freelance design time",
+  "replaces_note": "Every file that leaves your business looks professionally laid out without a designer invoice attached.",
+  "ladder_human_led": "You describe the document and sign off the render spec before anything is built.",
+  "ladder_assisted": "It formats each PDF, workbook or HTML file and shows you the rendered result before it goes anywhere.",
+  "ladder_autonomous": "Every file the other skills produce passes through this delivery standard automatically.",
+  "human": "You still decide what the document says and who receives it."
+ },
+ {
+  "name": "crew-design-engineering",
+  "replaces_role": "a senior front-end developer's polish pass, the specialist who makes software feel right",
+  "replaces_salary": "$130-170k/yr specialist role, or $110-150/hr contract review time",
+  "replaces_note": "Your software gets the detail-level review most small teams never afford, with wrong easings and missing states caught before customers feel them.",
+  "ladder_human_led": "You point it at a screen that feels off and read the Before, After, Why table it returns.",
+  "ladder_assisted": "It reviews new interface code and hands you the exact CSS fixes to apply.",
+  "ladder_autonomous": "Every interface build gets reviewed and corrected at this level before you even see it.",
+  "human": "You decide when polish is worth the time against just shipping."
+ },
+ {
+  "name": "crew-design-quality",
+  "replaces_role": "an external design director's critique before anything ships",
+  "replaces_salary": "$150-250/hr design consultancy time, or $1,000-3,000 per agency design audit",
+  "replaces_note": "Nothing generic-looking leaves your business, because every design is scored and fixed before it ships.",
+  "ladder_human_led": "You ask whether a design is good enough and read the scored verdict with its ranked fixes.",
+  "ladder_assisted": "It gates each design before ship and applies the fixes you approve.",
+  "ladder_autonomous": "Every visual output is quality-checked automatically and only failures reach your desk.",
+  "human": "You own the final call on taste and what your brand should feel like."
+ },
+ {
+  "name": "crew-design-reference",
+  "replaces_role": "a creative director's reference library and the agency retainer that keeps design standards current",
+  "replaces_salary": "$5,000-15,000 for an agency style guide engagement, or a slice of a $140-180k/yr creative director",
+  "replaces_note": "The design knowledge an agency bills for sits inside your business, and every build reads from it at no extra cost.",
+  "ladder_human_led": "You browse the references yourself when choosing a direction for a new piece.",
+  "ladder_assisted": "Builds consult it and show you which standards and patterns they applied.",
+  "ladder_autonomous": "Every design skill loads these standards on startup without being asked.",
+  "human": "You choose which standards actually fit your business and which to ignore."
+ },
+ {
+  "name": "crew-design-styles",
+  "replaces_role": "a freelance art director exploring visual directions for a project",
+  "replaces_salary": "$120-180/hr art direction time, or $1,500-4,000 per style exploration from a studio",
+  "replaces_note": "You get five distinct visual directions on tap instead of paying a studio to explore them each time.",
+  "ladder_human_led": "You pick a lens, brutalist, minimalist, soft, redesign or blueprint, and see it applied to your job.",
+  "ladder_assisted": "It recommends the style that fits the work and applies it once you agree.",
+  "ladder_autonomous": "Builds select and apply the right style lens themselves as part of the job.",
+  "human": "You keep the final say on which look represents your business."
+ },
+ {
+  "name": "crew-animation",
+  "replaces_role": "a freelance motion designer's hours on every website and document build",
+  "replaces_salary": "$85-115k/yr role, or $90-140/hr freelance motion work",
+  "replaces_note": "Your sites and files move like a studio touched them, without a motion invoice on any of them.",
+  "ladder_human_led": "You ask for a specific motion effect and approve it on screen before it stays.",
+  "ladder_assisted": "It proposes the right animation spec for each build and applies it with your nod.",
+  "ladder_autonomous": "Every build draws its motion from these twelve specs automatically.",
+  "human": "You judge when motion helps the message and when it gets in the way."
+ },
+ {
+  "name": "crew-my-second-brain",
+  "replaces_role": "a part-time knowledge manager, the role small businesses never actually get around to hiring",
+  "replaces_salary": "$95-125k/yr as a full-time role, or $130-180/hr knowledge consultant time",
+  "replaces_note": "Everything your AI agents know sits on one living map you can see and question, instead of scattered where nobody can find it.",
+  "ladder_human_led": "You open the map and ask it questions when you need to find something you know is in there.",
+  "ladder_assisted": "It keeps the map current and cites exactly where each answer came from.",
+  "ladder_autonomous": "New memories land on the map live, birthed as nodes without you lifting a finger.",
+  "human": "You decide what belongs in the brain and what stays private."
+ },
+ {
+  "name": "crew-web-immersive-narrative",
+  "replaces_role": "a creative web agency's immersive site team",
+  "replaces_salary": "$20,000-60,000 per site from an agency",
+  "replaces_note": "The story-driven scroll site that used to need an agency team is now a build you commission over a conversation.",
+  "ladder_human_led": "You bring the story and approve each staged reveal before it goes live.",
+  "ladder_assisted": "It builds the stages, video scrubs and gates, and you review the journey and request changes.",
+  "ladder_autonomous": "It delivers the finished narrative site end to end, ready for one final look.",
+  "human": "The story itself, and whether it rings true to your business, stays yours."
+ },
+ {
+  "name": "crew-web-learning-experience",
+  "replaces_role": "an e-learning developer or instructional design studio building your online modules",
+  "replaces_salary": "$5,000-20,000 per module outsourced, or a $90-120k/yr in-house role",
+  "replaces_note": "Finished training becomes a presented online journey without signing an e-learning contract.",
+  "ladder_human_led": "You hand it a finished training guide and step through the journey it builds.",
+  "ladder_assisted": "It builds the journey with its phone remote and in-place editing, and you adjust steps before presenting.",
+  "ladder_autonomous": "Approved training programmes get activated into journeys as soon as they are finished.",
+  "human": "You still deliver the session and read the room."
+ },
+ {
+  "name": "crew-web-spotlight-hero",
+  "replaces_role": "a creative front-end developer building one bespoke interactive homepage hero",
+  "replaces_salary": "$2,000-8,000 per hero freelanced at $100-150/hr rates",
+  "replaces_note": "The interactive homepage moment that used to be a small freelance project becomes a same-day build.",
+  "ladder_human_led": "You supply the two images and approve the cursor reveal effect.",
+  "ladder_assisted": "It builds the hero and tunes the glow and mask to your feedback.",
+  "ladder_autonomous": "It ships the finished hero straight into a larger site build without a separate brief.",
+  "human": "You choose the images and the point the reveal is making."
+ },
+ {
+  "name": "crew-web-webcam-website",
+  "replaces_role": "a creative technology studio's experiential web team",
+  "replaces_salary": "$25,000-80,000 per experiential build from a studio",
+  "replaces_note": "Hand-tracking interactive sites were trade-show budget territory, and now they are something you can trial for one campaign.",
+  "ladder_human_led": "You describe the subject and the transformation, then test it on your own camera.",
+  "ladder_assisted": "It generates the subject and wires the hand tracking while you tune how it feels.",
+  "ladder_autonomous": "It delivers the working experience ready for a final check on real hardware.",
+  "human": "You decide whether the novelty serves the campaign or distracts from it."
+ },
+ {
+  "name": "crew-real-estate-review",
+  "replaces_role": "a property marketing reviewer, once this skill is actually built out",
+  "replaces_salary": "$100-300 per listing review outsourced, indicative only since the skill is not yet written",
+  "replaces_note": "This skill folder is currently empty, so treat it as a reserved seat on the roster, not a working staff member.",
+  "ladder_human_led": "Nothing to run at any level yet, the skill file was never written.",
+  "ladder_assisted": "Once written, expect it to draft listing reviews for your approval.",
+  "ladder_autonomous": "Not on the table until the skill exists and has earned trust.",
+  "human": "All of it for now, because this seat is empty."
+ }
+]

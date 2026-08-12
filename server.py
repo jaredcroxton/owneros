@@ -759,6 +759,43 @@ def api_files_ask(payload):
         return 504, {"ok": False, "error": "The assistant took too long"}
 
 
+def api_workforce():
+    """The skill deck as a workforce: dossiers from workforce.json plus live
+    status computed from the cabinet's handoff records."""
+    skills_data = api_skills()
+    try:
+        dossiers = {d["name"]: d for d in
+                    json.loads(read_text(APP_DIR / "workforce.json") or "[]")}
+    except ValueError:
+        dossiers = {}
+    usage = {}
+    for p in scan_projects():
+        for r in p["records"]:
+            u = usage.setdefault(r["skill"], {"runs": 0, "last_mtime": 0})
+            u["runs"] += 1
+            u["last_mtime"] = max(u["last_mtime"], r["mtime"])
+    packs = []
+    for p in skills_data["packs"]:
+        if not p["skills"]:
+            continue
+        out = []
+        for s in p["skills"]:
+            u = usage.get(s["name"])
+            last_days = days_since(u["last_mtime"]) if u else None
+            status = ("active" if u and last_days <= 30 else
+                      "live" if u else "ready")
+            out.append({**s, "dossier": dossiers.get(s["name"]),
+                        "status": status, "runs": u["runs"] if u else 0,
+                        "last_days": last_days})
+        packs.append({"label": p["label"], "skills": out})
+    if skills_data["unpacked"]:
+        packs.append({"label": "Unfiled", "skills": [
+            {**s, "dossier": dossiers.get(s["name"]), "status": "ready",
+             "runs": 0, "last_days": None} for s in skills_data["unpacked"]]})
+    return {"business": owner()["business"], "packs": packs,
+            "total": sum(len(p["skills"]) for p in packs)}
+
+
 def parse_playbook():
     """Parse playbook.md (app-owned copy of the CREW plays library) fresh per
     request. Tolerant: a play missing fields still renders with what it has."""
@@ -901,6 +938,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(parse_playbook())
         if url.path == "/api/owner":
             return self.send_json(owner())
+        if url.path == "/api/workforce":
+            return self.send_json(api_workforce())
         if url.path == "/api/files":
             data = api_files_list((q.get("root") or ["desktop"])[0],
                                   (q.get("path") or [""])[0])

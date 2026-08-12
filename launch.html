@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Launch · OwnerOS</title>
+<title>Workforce · OwnerOS</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' rx='7' fill='%23ff6b4a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%230b0e13'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
@@ -24,24 +24,20 @@
     font-family: Inter, sans-serif; font-size: 14px; min-height: 100vh;
     display: grid; grid-template-columns: 208px 1fr; overflow-x: hidden;
   }
-  .stage {
-    position: fixed; inset: 0; z-index: -2; background: var(--bg);
-  }
-  .stage img, .stage video {
-    width: 100%; height: 100%; object-fit: cover; object-position: 70% 40%;
-    display: block;
-  }
-  .stage::after {
-    content: ""; position: absolute; inset: 0;
+  body.locked { overflow: hidden; }
+  body::before {
+    content: ""; position: fixed; inset: -40%; z-index: -2; pointer-events: none;
     background:
-      linear-gradient(90deg, rgba(11,14,19,.96) 0%, rgba(11,14,19,.78) 30%,
-        rgba(11,14,19,.22) 58%, rgba(11,14,19,.14) 78%, rgba(11,14,19,.45) 100%),
-      linear-gradient(0deg, rgba(11,14,19,.72) 0%, transparent 22%),
-      linear-gradient(180deg, rgba(11,14,19,.58) 0%, transparent 16%);
+      radial-gradient(ellipse 40% 32% at 60% 42%, rgba(255,107,74,.05), transparent 70%),
+      radial-gradient(ellipse 34% 28% at 30% 70%, rgba(45,212,167,.04), transparent 70%);
+    animation: drift 50s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    from { transform: translate3d(-2%, -1%, 0); }
+    to { transform: translate3d(2%, 2%, 0) scale(1.06); }
   }
   .mono { font-family: "JetBrains Mono", monospace; }
   a { color: inherit; text-decoration: none; }
-
   aside {
     background: var(--panel); backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur);
@@ -73,10 +69,10 @@
   .dot { width: 7px; height: 7px; border-radius: 50%; }
   .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
   .dot.bad { background: var(--bad); }
-
-  main { position: relative; min-height: 100vh; padding: 24px 34px 56px; min-width: 0; }
-  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
-            flex-wrap: wrap; }
+  main { position: relative; min-height: 100vh; min-width: 0; z-index: 2;
+         display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            padding: 24px 34px 0; }
   .topbar h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
   .datechip { font-size: 11px; color: var(--mut); background: var(--card);
               backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
@@ -94,85 +90,124 @@
             background: linear-gradient(135deg, var(--accent), #b3401f);
             display: grid; place-items: center; font-weight: 700; font-size: 14px;
             color: #fff; }
-
-  .sub { color: var(--mut); font-size: 13px; margin-bottom: 26px; }
-  #deck, .sub { max-width: 1180px; }
-  .page-hero { margin: -4px 0 18px; opacity: 0; animation: rise .4s ease forwards; }
-  .page-hero h2 { font-size: clamp(26px, 3.5vw, 34px); font-weight: 700;
-                  letter-spacing: -.6px; }
-  .page-hero .cursor { color: var(--accent); animation: blink 1.2s steps(1) infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) {
-    .page-hero { animation: none; opacity: 1; }
-    .page-hero .cursor { animation: none; }
-  }
-
-
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 10px 34px 0;
+            font-family: "JetBrains Mono", monospace; font-size: 9.5px;
+            letter-spacing: .8px; color: var(--faint); text-transform: uppercase; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .sw { width: 8px; height: 8px; border-radius: 50%; }
+  #mapwrap { flex: 1; min-height: 0; position: relative; }
+  svg#map { width: 100%; height: 100%; display: block; }
+  .filament { stroke: rgba(255,255,255,.07); stroke-width: 1; }
+  .filament.hub { stroke: rgba(255,255,255,.12); }
+  .packlabel { font-family: "JetBrains Mono", monospace; font-size: 10px;
+               letter-spacing: 1.6px; fill: var(--faint); text-transform: uppercase; }
+  .node { cursor: pointer; }
+  .node circle.c { fill: #2a3140; stroke: rgba(255,255,255,.25); stroke-width: 1;
+                   transition: r .15s; }
+  .node.live circle.c { fill: var(--ok); stroke: none; }
+  .node.active circle.c { fill: var(--accent); stroke: none;
+                          filter: drop-shadow(0 0 6px rgba(255,107,74,.8)); }
+  .node text { font-family: Inter, sans-serif; font-size: 9px; fill: var(--faint);
+               text-anchor: middle; pointer-events: none;
+               transition: opacity .15s; }
+  .node.ready text { opacity: 0; }
+  .node.ready:hover text { opacity: 1; }
+  .node:hover circle.c { r: 9; }
+  .node:hover text { fill: var(--text); font-weight: 600; }
+  .node.dimmed { opacity: .12; pointer-events: none; }
+  .center-node circle.ring { fill: none; stroke: var(--accent-edge); stroke-width: 1.5; }
+  .center-node circle.core { fill: var(--accent);
+                             filter: drop-shadow(0 0 18px rgba(255,107,74,.6)); }
+  .center-node text { font-family: "JetBrains Mono", monospace; font-size: 11px;
+                      letter-spacing: 1.5px; fill: var(--text); text-anchor: middle;
+                      text-transform: uppercase; font-weight: 700; }
   .glass {
     background: var(--card); backdrop-filter: var(--blur);
     -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
     border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
   }
-  .pack {
-    background: var(--card); backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
-    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
-    padding: 18px 20px 20px; margin-bottom: 22px;
-    opacity: 0; animation: rise .4s ease forwards;
+  #listFallback { display: none; padding: 16px 22px 44px; }
+  .lrow { display: flex; align-items: center; gap: 10px; padding: 10px 8px;
+          border-top: 1px solid var(--line2); cursor: pointer; font-size: 13px; }
+  .lrow .dot { flex-shrink: 0; }
+  .lrow .n { font-family: "JetBrains Mono", monospace; font-size: 11.5px; }
+  .lcat { font-weight: 700; font-size: 13px; margin: 16px 0 4px; }
+  .scrim { position: fixed; inset: 0; z-index: 30; background: rgba(3,5,9,.72);
+           opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .scrim.on { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 31;
+    width: min(520px, 94vw); background: var(--panel);
+    backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    border-left: 1px solid var(--line); box-shadow: -20px 0 60px rgba(0,0,0,.5);
+    transform: translateX(102%); transition: transform .32s cubic-bezier(.2,.9,.3,1);
+    display: flex; flex-direction: column; padding: 24px 26px; overflow-y: auto;
   }
-  .pack-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .pack-head .plabel { font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
-  .pack-head .pcount {
-    font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 600;
-    color: var(--accent); background: var(--accent-soft);
-    border: 1px solid var(--accent-edge); border-radius: 100px; padding: 2px 9px;
+  .drawer.open { transform: none; }
+  .d-head { display: flex; align-items: flex-start; gap: 12px; }
+  .d-head h2 { font-family: "JetBrains Mono", monospace; font-size: 15px;
+               font-weight: 700; flex: 1; overflow-wrap: anywhere; }
+  .xbtn { width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+          background: rgba(255,255,255,.05); border: 1px solid var(--line);
+          color: var(--mut); cursor: pointer; font-size: 13px; }
+  .xbtn:hover { color: var(--text); border-color: var(--hover); }
+  .d-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+            margin: 10px 0 16px; }
+  .pill { font-size: 10.5px; font-weight: 600; padding: 4px 11px;
+          border-radius: 100px; text-transform: uppercase; letter-spacing: .6px;
+          font-family: "JetBrains Mono", monospace; }
+  .pill.ready { border: 1px solid var(--line); color: var(--faint); }
+  .pill.live { background: rgba(45,212,167,.13); color: var(--ok);
+               border: 1px solid rgba(45,212,167,.4); }
+  .pill.active { background: var(--accent-soft); color: var(--accent);
+                 border: 1px solid var(--accent-edge); }
+  .pill.pack { border: 1px solid var(--line); color: var(--mut);
+               text-transform: none; letter-spacing: 0; }
+  .d-desc { font-size: 13.5px; line-height: 1.65; color: var(--mut);
+            margin-bottom: 16px; }
+  .money { background: var(--accent-soft); border: 1px solid var(--accent-edge);
+           border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; }
+  .money .ml { font-size: 10px; font-weight: 700; letter-spacing: 1px;
+               text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .money .role { font-weight: 700; font-size: 14.5px; }
+  .money .sal { font-family: "JetBrains Mono", monospace; font-size: 18px;
+                font-weight: 700; color: var(--accent); margin: 6px 0; }
+  .money .note { font-size: 12.5px; color: var(--mut); line-height: 1.55; }
+  .d-sec { margin-bottom: 14px; }
+  .d-sec .dl { font-size: 11px; font-weight: 700; letter-spacing: .8px;
+               text-transform: uppercase; color: var(--mut); margin-bottom: 7px; }
+  .rung { display: flex; gap: 10px; padding: 7px 0; font-size: 12.5px;
+          line-height: 1.5; border-top: 1px solid var(--line2); }
+  .rung .rl { font-family: "JetBrains Mono", monospace; font-size: 9px;
+              letter-spacing: .5px; color: var(--faint); text-transform: uppercase;
+              flex-shrink: 0; width: 82px; padding-top: 2px; }
+  .d-human { font-size: 12.5px; color: var(--mut); line-height: 1.55;
+             border-left: 3px solid var(--ok); padding-left: 12px; }
+  .btn { font-size: 12px; font-weight: 600; background: var(--accent); color: #fff;
+         border: 0; border-radius: 100px; padding: 10px 20px; cursor: pointer;
+         transition: opacity .15s; }
+  .btn:hover { opacity: .88; }
+  .pending { font-size: 12px; color: var(--faint); font-style: normal;
+             padding: 10px 0; }
+  .err { color: var(--bad); font-size: 13px; padding: 20px 34px; }
+  @media (max-width: 900px) {
+    #mapwrap svg, .legend { display: none; }
+    #listFallback { display: block; }
   }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-          gap: 14px; }
-  .skill {
-    background: rgba(255,255,255,.04); border: 1px solid var(--line);
-    border-radius: 14px; padding: 15px 17px; cursor: pointer;
-    opacity: 0; animation: rise .4s ease forwards;
-    transition: transform .25s cubic-bezier(.2,.9,.3,1.2), border-color .2s,
-                box-shadow .25s;
-  }
-  .skill:hover { transform: translateY(-3px); border-color: var(--accent-edge);
-                 box-shadow: 0 10px 28px rgba(0,0,0,.35),
-                             0 0 16px rgba(255,107,74,.10); }
-  .skill .invoke { font-family: "JetBrains Mono", monospace; font-size: 12px;
-                   color: var(--text); overflow-wrap: anywhere;
-                   margin-bottom: 8px; transition: color .15s; }
-  .skill .invoke::first-letter { color: var(--accent); }
-  .skill:hover .invoke { color: var(--accent); }
-  .skill .desc { font-size: 12.5px; color: var(--mut); line-height: 1.55;
-                 display: -webkit-box; -webkit-line-clamp: 3;
-                 -webkit-box-orient: vertical; overflow: hidden; }
-  .skill .copied { color: var(--ok); font-weight: 600; }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px); }
-                    to { opacity: 1; transform: none; } }
-  .hidden { display: none !important; }
-  .err { color: var(--bad); font-size: 13px; }
-  .empty { color: var(--faint); font-size: 13px; padding: 8px 0; }
-
-  @media (max-width: 1150px) { main { padding: 22px 22px 48px; } }
   @media (max-width: 760px) {
     body { grid-template-columns: 1fr; }
     aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap;
             align-items: center; border-right: 0;
             border-bottom: 1px solid var(--line); }
     .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
-    main { padding: 20px 18px 44px; }
-    .search { margin-left: 0; min-width: 0; flex: 1 1 100%; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .pack, .skill { animation: none; opacity: 1; }
-    .stage video { display: none; }
-    .stage img { display: block !important; }
+    body::before { animation: none; }
+    .drawer { transition: none; }
   }
 </style>
 </head>
 <body>
-<div class="stage" id="stage"><img src="/assets/dandelion.webp" alt="" id="stageImg"></div>
 <aside>
   <div class="logo"><span class="mark"><span></span></span>Owner<em>OS_</em></div>
   <a class="nav-item" href="/today">
@@ -188,8 +223,8 @@
     <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="17" width="16" height="4" rx="1.5"/></svg>
     Capture</a>
   <a class="nav-item here" href="/launch">
-    <svg viewBox="0 0 24 24"><path d="M12 3c4 3 5 8 3 13l-3 5-3-5C7 11 8 6 12 3z"/><circle cx="12" cy="10" r="2"/></svg>
-    Launch</a>
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><circle cx="5" cy="17" r="2.5"/><circle cx="19" cy="17" r="2.5"/><path d="M12 8.5V12m0 0-5 3m5-3 5 3"/></svg>
+    Workforce</a>
   <a class="nav-item" href="/plays">
     <svg viewBox="0 0 24 24"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-3-4 3-4-3-2 1.5V6a2 2 0 0 1 2-2z"/><path d="M8 9h6M8 13h4"/></svg>
     Plays</a>
@@ -201,99 +236,230 @@
     Roadmap</a>
   <div class="side-foot">
     <div class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></div>
-    <div class="sf-row"><span class="dot ok"></span>local · cabinet read-only</div>
+    <div class="sf-row"><span class="dot ok"></span>your AI staff, mapped</div>
   </div>
 </aside>
 <main>
   <div class="topbar">
-    <h1>Launch</h1>
+    <h1>Workforce</h1>
     <span class="datechip mono" id="countChip">loading…</span>
     <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-      <input id="filter" type="search" placeholder="Filter skills…" aria-label="Filter skills"></label>
+      <input id="filter" type="search" placeholder="Find a role…" aria-label="Find a role"></label>
     <span class="avatar">J</span>
   </div>
-  <div class="page-hero"><h2>Say the word<span class="cursor">_</span></h2></div>
-  <p class="sub" id="subLine">Reading the skill deck…</p>
-  <div id="deck"></div>
-  <div class="empty hidden" id="noMatch">No skill matches that filter.</div>
+  <div class="legend">
+    <span><span class="sw" style="background:#2a3140;border:1px solid rgba(255,255,255,.25)"></span>ready to work</span>
+    <span><span class="sw" style="background:var(--ok)"></span>has worked for you</span>
+    <span><span class="sw" style="background:var(--accent)"></span>worked this month</span>
+    <span>click any role for its dossier</span>
+  </div>
+  <div id="mapwrap">
+    <svg id="map" viewBox="0 0 1600 920" preserveAspectRatio="xMidYMid meet"></svg>
+    <div id="listFallback"></div>
+  </div>
 </main>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="d-head"><h2 id="dName"></h2>
+    <button class="xbtn" id="dClose" type="button" aria-label="Close">✕</button></div>
+  <div class="d-meta">
+    <span class="pill" id="dStatus"></span>
+    <span class="pill pack" id="dPack"></span>
+    <span class="pill pack" id="dRuns" hidden></span>
+  </div>
+  <div class="d-desc" id="dDesc"></div>
+  <div class="money" id="dMoney" hidden>
+    <div class="ml">What this replaces</div>
+    <div class="role" id="dRole"></div>
+    <div class="sal" id="dSal"></div>
+    <div class="note" id="dNote"></div>
+  </div>
+  <div class="d-sec" id="dLadderSec" hidden>
+    <div class="dl">The trust ladder</div>
+    <div class="rung"><span class="rl">Human-led</span><span id="dL1"></span></div>
+    <div class="rung"><span class="rl">Assisted</span><span id="dL2"></span></div>
+    <div class="rung"><span class="rl">Autonomous</span><span id="dL3"></span></div>
+  </div>
+  <div class="d-sec" id="dHumanSec" hidden>
+    <div class="dl">What stays yours</div>
+    <div class="d-human" id="dHuman"></div>
+  </div>
+  <div class="pending" id="dPending" hidden>Dossier pending: run the workforce
+    generator to fill this in.</div>
+  <div style="margin-top:auto;padding-top:16px">
+    <button class="btn" id="dCopy" type="button">Copy invoke phrase</button>
+  </div>
+</aside>
 <script>
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
     (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const copy = (text, btn) => navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } finally { ta.remove(); }
+  }).then(() => {
+    const old = btn.textContent; btn.textContent = "Copied";
+    setTimeout(() => { btn.textContent = old; }, 1200);
+  });
 
-  const copyText = (t) => {
-    const fallback = () => {
-      const ta = document.createElement("textarea");
-      ta.value = t; document.body.appendChild(ta); ta.select();
-      try { document.execCommand("copy"); } finally { ta.remove(); }
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText)
-      return navigator.clipboard.writeText(t).catch(fallback);
-    return Promise.resolve(fallback());
-  };
+  fetch("/api/health").then((r) => r.json()).then((h) => {
+    document.getElementById("brainDot").className = "dot " + (h.brain ? "ok" : "bad");
+    document.getElementById("brainState").textContent =
+      h.brain ? "brain: live on 4880" : "brain: offline";
+  }).catch(() => {
+    document.getElementById("brainState").textContent = "brain: offline";
+  });
 
-  function render(d) {
-    const deck = document.getElementById("deck");
-    const groups = d.packs.filter((p) => p.skills.length);
-    if (d.unpacked.length)
-      groups.push({ id: "unfiled", label: "Unfiled", skills: d.unpacked });
-    document.getElementById("countChip").textContent =
-      d.total + " skills · " + groups.length + " packs";
-    document.getElementById("subLine").textContent =
-      "Click any card to copy its invoke phrase.";
-    let idx = 0;
-    deck.innerHTML = groups.map((p, gi) =>
-      '<section class="pack" style="animation-delay:' + Math.min(gi * 30, 240) +
-      'ms"><div class="pack-head"><span class="plabel">' + esc(p.label) +
-      '</span><span class="pcount">' + p.skills.length + '</span></div>' +
-      '<div class="grid">' +
-      p.skills.map((s) =>
-        '<div class="skill" style="animation-delay:' + (idx++ % 8) * 45 +
-        'ms" data-invoke="' + esc(s.invoke || "") +
-        '" data-search="' + esc((s.name + " " + s.description).toLowerCase()) +
-        '"><div class="invoke">' + esc(s.invoke || s.name) + '</div>' +
-        '<div class="desc">' + esc(s.description) + "</div></div>").join("") +
-      "</div></section>").join("");
-    deck.querySelectorAll(".skill[data-invoke]").forEach((card) => {
-      const desc = card.querySelector(".desc");
-      const original = desc.textContent;
-      let timer = null;
-      card.addEventListener("click", () => {
-        if (!card.dataset.invoke) return;
-        copyText(card.dataset.invoke).then(() => {
-          desc.innerHTML = '<span class="copied">Copied ' +
-            esc(card.dataset.invoke) + " to clipboard</span>";
-          clearTimeout(timer);
-          timer = setTimeout(() => { desc.textContent = original; }, 1400);
-        });
-      });
-    });
-    document.getElementById("filter").addEventListener("input", (e) => {
-      const q = e.target.value.trim().toLowerCase();
-      deck.querySelectorAll(".skill").forEach((card) =>
-        card.classList.toggle("hidden", !!q && !card.dataset.search.includes(q)));
-      deck.querySelectorAll(".pack").forEach((pack) =>
-        pack.classList.toggle("hidden",
-          !pack.querySelector(".skill:not(.hidden)")));
-      document.getElementById("noMatch").classList.toggle("hidden",
-        !!deck.querySelector(".pack:not(.hidden)"));
-    });
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const map = document.getElementById("map");
+  let data = null;
+  let current = null;
+  const skillIndex = {};
+
+  const shortName = (n) => n.replace(/^crew-(core|sales|marketing|ops|hr|finance|support|docs|training|web|design|voice|my|real)?-?/, "")
+    .replace(/-/g, " ");
+
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
   }
+
+  function build() {
+    map.innerHTML = "";
+    const CX = 800, CY = 470;
+    const total = data.packs.reduce((a, p) => a + p.skills.length, 0);
+    const GAP = 0.03;
+    const usable = Math.PI * 2 - GAP * data.packs.length;
+    let angle = -Math.PI / 2;
+    const wires = el("g", {}, map);
+    const nodes = el("g", {}, map);
+
+    data.packs.forEach((p, pi) => {
+      const span = usable * (Math.max(p.skills.length, 2) / Math.max(total, 1));
+      const mid = angle + span / 2;
+      const ax = CX + Math.cos(mid) * 150, ay = CY + Math.sin(mid) * 150 * 0.82;
+      el("line", { x1: CX, y1: CY, x2: ax, y2: ay, class: "filament hub" }, wires);
+      const lr = 435;
+      const lx = CX + Math.cos(mid) * lr, ly = CY + Math.sin(mid) * lr * 0.82;
+      const lbl = el("text", { x: lx, y: ly, class: "packlabel",
+        "text-anchor": Math.cos(mid) > 0.3 ? "start" :
+          Math.cos(mid) < -0.3 ? "end" : "middle" }, nodes);
+      lbl.textContent = p.label + " · " + p.skills.length;
+
+      p.skills.forEach((s, si) => {
+        const t = p.skills.length === 1 ? 0.5 : si / (p.skills.length - 1);
+        const a = angle + span * (0.08 + t * 0.84);
+        const jitter = ((si * 137 + pi * 61) % 47) - 23;
+        const r = (si % 2 === 0 ? 265 : 340) + jitter;
+        const x = CX + Math.cos(a) * r, y = CY + Math.sin(a) * r * 0.82;
+        el("line", { x1: ax, y1: ay, x2: x, y2: y, class: "filament" }, wires);
+        const g = el("g", { class: "node " + s.status, "data-name": s.name }, nodes);
+        el("circle", { cx: x, cy: y, r: 6, class: "c" }, g);
+        const t1 = el("text", { x: x, y: y + 17 }, g);
+        t1.textContent = shortName(s.name);
+        g.addEventListener("click", () => openSkill(s.name));
+        skillIndex[s.name] = { skill: s, pack: p.label, g };
+      });
+      angle += span + GAP;
+    });
+
+    const cg = el("g", { class: "center-node" }, nodes);
+    el("circle", { cx: CX, cy: CY, r: 40, class: "ring" }, cg);
+    el("circle", { cx: CX, cy: CY, r: 26, class: "core" }, cg);
+    const ct = el("text", { x: CX, y: CY + 62 }, cg);
+    ct.textContent = data.business;
+
+    const fb = document.getElementById("listFallback");
+    fb.innerHTML = data.packs.map((p) =>
+      '<div class="lcat">' + esc(p.label) + "</div>" +
+      p.skills.map((s) =>
+        '<div class="lrow" data-name="' + esc(s.name) + '"><span class="dot" ' +
+        'style="background:' + (s.status === "active" ? "var(--accent)" :
+          s.status === "live" ? "var(--ok)" : "#2a3140") + '"></span>' +
+        '<span class="n">' + esc(shortName(s.name)) + "</span></div>").join("")
+    ).join("");
+    fb.querySelectorAll(".lrow").forEach((r) =>
+      r.addEventListener("click", () => openSkill(r.dataset.name)));
+  }
+
+  function openSkill(name) {
+    const entry = skillIndex[name];
+    if (!entry) return;
+    const s = entry.skill;
+    current = s;
+    document.getElementById("dName").textContent = s.invoke || s.name;
+    document.getElementById("dPack").textContent = entry.pack;
+    const st = document.getElementById("dStatus");
+    st.className = "pill " + s.status;
+    st.textContent = s.status === "active" ? "worked this month" :
+      s.status === "live" ? "has worked for you" : "ready to work";
+    const runs = document.getElementById("dRuns");
+    runs.hidden = !s.runs;
+    runs.textContent = s.runs + " job" + (s.runs === 1 ? "" : "s") + " filed";
+    document.getElementById("dDesc").textContent = s.description;
+    const d = s.dossier;
+    document.getElementById("dMoney").hidden = !d;
+    document.getElementById("dLadderSec").hidden = !d;
+    document.getElementById("dHumanSec").hidden = !d;
+    document.getElementById("dPending").hidden = !!d;
+    if (d) {
+      document.getElementById("dRole").textContent = d.replaces_role;
+      document.getElementById("dSal").textContent = d.replaces_salary;
+      document.getElementById("dNote").textContent = d.replaces_note;
+      document.getElementById("dL1").textContent = d.ladder_human_led;
+      document.getElementById("dL2").textContent = d.ladder_assisted;
+      document.getElementById("dL3").textContent = d.ladder_autonomous;
+      document.getElementById("dHuman").textContent = d.human;
+    }
+    document.getElementById("drawer").classList.add("open");
+    document.getElementById("drawer").setAttribute("aria-hidden", "false");
+    document.getElementById("scrim").classList.add("on");
+    document.body.classList.add("locked");
+  }
+
+  function closeDrawer() {
+    const drawer = document.getElementById("drawer");
+    if (drawer.contains(document.activeElement)) document.activeElement.blur();
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+    document.getElementById("scrim").classList.remove("on");
+    document.body.classList.remove("locked");
+  }
+  document.getElementById("dClose").addEventListener("click", closeDrawer);
+  document.getElementById("scrim").addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeDrawer();
+  });
+  document.getElementById("dCopy").addEventListener("click", (e) => {
+    if (current) copy(current.invoke || "/" + current.name, e.target);
+  });
+
+  document.getElementById("filter").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    for (const name in skillIndex) {
+      const { skill, pack, g } = skillIndex[name];
+      const hay = (name + " " + skill.description + " " + pack + " " +
+        JSON.stringify(skill.dossier || "")).toLowerCase();
+      g.classList.toggle("dimmed",
+        !!q && !q.split(/\s+/).every((w) => hay.includes(w)));
+    }
+  });
 
   async function load() {
     try {
-      const h = await (await fetch("/api/health")).json();
-      document.getElementById("brainDot").className = "dot " + (h.brain ? "ok" : "bad");
-      document.getElementById("brainState").textContent =
-        h.brain ? "brain: live on 4880" : "brain: offline";
-    } catch (e) {}
-    try {
-      const d = await (await fetch("/api/skills")).json();
-      render(d);
+      data = await (await fetch("/api/workforce")).json();
+      const withD = data.packs.reduce((a, p) =>
+        a + p.skills.filter((s) => s.dossier).length, 0);
+      const working = data.packs.reduce((a, p) =>
+        a + p.skills.filter((s) => s.status !== "ready").length, 0);
+      document.getElementById("countChip").textContent =
+        data.total + " roles · " + working + " have worked for you";
+      build();
     } catch (err) {
-      document.getElementById("countChip").textContent = "offline";
-      document.getElementById("subLine").innerHTML =
-        '<span class="err">Could not read the skill deck. Is the server running?</span>';
+      document.getElementById("mapwrap").innerHTML =
+        '<div class="err">Could not read the workforce. Is the server running?</div>';
     }
     window.__ready = true;
   }
