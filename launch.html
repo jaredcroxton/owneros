@@ -69,8 +69,8 @@
   .dot { width: 7px; height: 7px; border-radius: 50%; }
   .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
   .dot.bad { background: var(--bad); }
-  main { position: relative; min-height: 100vh; min-width: 0; z-index: 2;
-         display: flex; flex-direction: column; }
+  main { position: relative; height: 100vh; overflow: hidden; min-width: 0;
+         z-index: 2; display: flex; flex-direction: column; }
   .topbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
             padding: 24px 34px 0; }
   .topbar h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
@@ -134,13 +134,16 @@
                         box-shadow: 0 14px 40px rgba(0,0,0,.55),
                                     0 0 22px rgba(255,255,255,.06); }
   .mapnode:hover .orb svg { stroke: var(--text); }
-  .mapnode .nl { font-size: 12px; font-weight: 600; line-height: 1.3;
-                 max-width: 132px; transition: opacity .3s; }
-  .mapnode .ns { font-family: "JetBrains Mono", monospace; font-size: 9px;
-                 letter-spacing: 1px; color: var(--faint);
-                 text-transform: uppercase; transition: opacity .3s; }
-  .mapnode.hub .orb { width: 92px; height: 92px; }
-  .mapnode.hub .orb svg { width: 34px; height: 34px; }
+  .mapnode .nl { font-size: 11.5px; font-weight: 600; line-height: 1.25;
+                 max-width: 118px; transition: opacity .3s;
+                 text-shadow: 0 2px 8px rgba(0,0,0,.9); }
+  .mapnode .ns { font-family: "JetBrains Mono", monospace; font-size: 8.5px;
+                 letter-spacing: .8px; color: var(--faint);
+                 text-transform: uppercase; transition: opacity .3s;
+                 text-shadow: 0 2px 8px rgba(0,0,0,.9);
+                 max-width: 104px; line-height: 1.6; }
+  .mapnode.hub .orb { width: 82px; height: 82px; }
+  .mapnode.hub .orb svg { width: 30px; height: 30px; }
   .mapnode.hub.some-live .orb { border-color: rgba(45,212,167,.45); }
   .mapnode.hub.some-active .orb { border-color: var(--accent-edge);
     box-shadow: 0 10px 34px rgba(0,0,0,.45), 0 0 24px rgba(255,107,74,.14); }
@@ -175,6 +178,7 @@
                     100% { scale: 1.25; opacity: 0; } }
   .mapnode.dimmed { opacity: .12; pointer-events: none; }
   .mapnode.gone { opacity: 0; pointer-events: none; }
+  #nodes.noanim .mapnode, #nodes.noanim .mapnode .orb { transition: none !important; }
 
   .glass {
     background: var(--card); backdrop-filter: var(--blur);
@@ -421,10 +425,11 @@
     data.packs.forEach((p) => {
       const act = p.skills.filter((s) => s.status === "active").length;
       const liv = p.skills.filter((s) => s.status !== "ready").length;
+      const rl = p.skills.length + (p.skills.length === 1 ? " role" : " roles");
       const hub = makeNode("hub" + (act ? " some-active" : liv ? " some-live" : ""),
         "hub:" + p.label,
-        '<span class="orb">' + glyph(p.label, 34) + '</span><span class="nl">' +
-        esc(p.label) + '</span><span class="ns">' + p.skills.length + " roles" +
+        '<span class="orb">' + glyph(p.label, 30) + '</span><span class="nl">' +
+        esc(p.label) + '</span><span class="ns">' + rl +
         (liv ? " · " + liv + " working" : "") + "</span>");
       hub.addEventListener("click", () => {
         if (view.level === 0 || view.pack !== p.label) enterPack(p.label);
@@ -451,14 +456,34 @@
     if (view.level === 0) {
       pos["__core"] = { x: cx, y: cy, cls: "" };
       const n = data.packs.length;
-      const rx = Math.min(W * 0.38, 560), ry = Math.min(H * 0.38, 330);
+      const rx = Math.min(W * 0.355, 520), ry = Math.min(H * 0.355, 300);
+      // Equal spacing along the ellipse perimeter, not equal angle, so side
+      // hubs do not bunch; alternate radius so labels get breathing room.
+      const SAMPLES = 720;
+      const pts = []; let per = 0;
+      let px = cx + rx, py = cy;
+      for (let k = 0; k <= SAMPLES; k++) {
+        const a = (k / SAMPLES) * Math.PI * 2;
+        const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry;
+        if (k) per += Math.hypot(x - px, y - py);
+        pts.push({ a, cum: per }); px = x; py = y;
+      }
+      const angleAt = (frac) => {
+        const target = ((frac % 1) + 1) % 1 * per;
+        for (let k = 0; k < pts.length; k++)
+          if (pts[k].cum >= target) return pts[k].a;
+        return Math.PI * 2;
+      };
+      let topFrac = 0.75;
+      for (let k = 0; k < pts.length; k++)
+        if (pts[k].a >= Math.PI * 1.5) { topFrac = pts[k].cum / per; break; }
       data.packs.forEach((p, i) => {
-        const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-        pos["hub:" + p.label] = { x: cx + Math.cos(a) * rx,
-                                  y: cy + Math.sin(a) * ry, cls: "" };
+        const a = angleAt(topFrac + i / n);
+        const f = i % 2 ? 0.84 : 1.04;
+        const x = cx + Math.cos(a) * rx * f, y = cy + Math.sin(a) * ry * f;
+        pos["hub:" + p.label] = { x, y, cls: "" };
         p.skills.forEach((s) => {
-          pos["role:" + s.name] = { x: cx + Math.cos(a) * rx,
-                                    y: cy + Math.sin(a) * ry, cls: "gone" };
+          pos["role:" + s.name] = { x, y, cls: "gone" };
         });
       });
     } else {
@@ -520,7 +545,17 @@
     }
   }
 
+  let firstLaid = false;
   function rerender(animated) {
+    if (world.clientWidth < 60 || world.clientHeight < 60) return;
+    if (!firstLaid) {
+      firstLaid = true;
+      animated = false;
+      nodesEl.classList.add("noanim");
+      requestAnimationFrame(() => requestAnimationFrame(() =>
+        nodesEl.classList.remove("noanim")));
+      setTimeout(() => nodesEl.classList.remove("noanim"), 200);
+    }
     wires.classList.add("fade");
     const pos = layout();
     const settle = animated ? 560 : 30;
@@ -536,7 +571,8 @@
     } else {
       const p = data.packs.find((x) => x.label === view.pack);
       const working = p.skills.filter((s) => s.status !== "ready").length;
-      ct.textContent = view.pack + " · " + p.skills.length + " roles" +
+      ct.textContent = view.pack + " · " + p.skills.length +
+        (p.skills.length === 1 ? " role" : " roles") +
         (working ? " · " + working + " working" : "");
       back.hidden = false;
     }
