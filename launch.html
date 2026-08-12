@@ -73,9 +73,110 @@
             background: linear-gradient(135deg, var(--accent), #b3401f);
             display: grid; place-items: center; font-weight: 700; font-size: 14px;
             color: #fff; }
-  .viewport { flex: 1; min-height: 0; }
-  .viewport iframe { width: 100%; height: 100%; border: 0; display: block;
-                     background: var(--bg); }
+  .viewport { flex: 1; min-height: 0; overflow-y: auto; padding: 30px 34px 70px; }
+  .org { max-width: 1180px; margin: 0 auto; }
+  .statement { font-size: 26px; font-weight: 700; letter-spacing: -.5px;
+               margin-bottom: 4px; text-align: center; }
+  .statement em { font-style: normal; color: var(--accent); }
+  .sub { font-size: 13px; color: var(--faint); margin-bottom: 8px;
+         text-align: center; }
+  .search-row { display: flex; align-items: center; justify-content: center;
+                gap: 10px; margin: 18px auto 30px; max-width: 1180px; }
+  .wf-search { flex: 1; max-width: 460px; background: var(--card);
+               border: 1px solid var(--line); border-radius: 12px;
+               padding: 11px 16px; color: var(--text); font-size: 13px;
+               font-family: inherit; outline: none;
+               transition: border-color .15s, box-shadow .15s; }
+  .wf-search:focus { border-color: var(--accent-edge);
+                     box-shadow: 0 0 0 3px var(--accent-soft); }
+  .dept:focus-visible, .role:focus-visible, .xbtn:focus-visible,
+  .btn:focus-visible, a.brock:focus-visible, .nav-item:focus-visible {
+    outline: 2px solid var(--accent-edge); outline-offset: 2px; }
+  .wf-search::placeholder { color: var(--faint); }
+  .tile { background: var(--card); backdrop-filter: var(--blur);
+          -webkit-backdrop-filter: var(--blur);
+          border: 1px solid var(--line); border-radius: 14px; }
+  .comp { width: min(380px, 100%); margin: 0 auto; padding: 20px 24px; text-align: center;
+          box-shadow: 0 0 26px rgba(255,107,74,.08); }
+  .comp .cname { font-size: 19px; font-weight: 700; letter-spacing: -.3px; }
+  .comp .cabout { font-size: 12px; color: var(--mut); margin-top: 4px;
+                  line-height: 1.5; }
+  .comp .cowner { font-size: 11px; color: var(--faint); margin-top: 8px; }
+  .comp .cowner b { color: var(--text); font-weight: 600; }
+  .stem { width: 1px; height: 26px; background: var(--line); margin: 0 auto; }
+  .brock { width: min(380px, 100%); margin: 0 auto; padding: 16px 22px; display: flex;
+           align-items: center; gap: 14px; text-align: left;
+           transition: transform .18s, border-color .18s; }
+  a.brock:hover { transform: translateY(-2px); border-color: var(--hover); }
+  .borb { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+          background: radial-gradient(circle at 32% 30%, #ff9d7e, var(--accent) 62%, #b3401f);
+          box-shadow: 0 0 18px var(--accent-glow); display: grid;
+          place-items: center; font-weight: 700; color: #fff; font-size: 16px; }
+  .brock .bname { font-weight: 700; font-size: 15px; }
+  .brock .brole { font-size: 11.5px; color: var(--mut); margin-top: 2px; }
+  .brock .bgo { margin-left: auto; font-size: 11px; color: var(--accent);
+                white-space: nowrap; }
+  .depts { display: grid; gap: 16px; margin-top: 16px; position: relative;
+           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .rail-line { position: absolute; top: -16px; height: 1px;
+               background: var(--line); }
+  .dept { padding: 16px 18px; cursor: pointer; position: relative;
+          transition: transform .18s, border-color .18s, box-shadow .18s;
+          font: inherit; color: inherit; text-align: left; }
+  .dept.stemmed::before { content: ""; position: absolute; top: -16px; left: 50%;
+                          width: 1px; height: 16px; background: var(--line); }
+  .dept:hover { transform: translateY(-2px); border-color: var(--hover); }
+  .dept.open { border-color: var(--accent-edge);
+               box-shadow: 0 0 22px rgba(255,107,74,.12); }
+  .dept .dtop { display: flex; align-items: center; gap: 9px; }
+  .ddot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dept .dname { font-weight: 700; font-size: 14.5px; letter-spacing: -.2px; }
+  .dept .dchev { margin-left: auto; color: var(--faint); font-size: 11px;
+                 transition: transform .18s; }
+  .dept.open .dchev { transform: rotate(90deg); color: var(--accent); }
+  .dept .dmeta { display: flex; gap: 8px; align-items: center; margin-top: 10px;
+                 font-size: 11px; color: var(--faint); }
+  .wchip { font-size: 10px; font-weight: 600; padding: 3px 9px;
+           border-radius: 100px; background: rgba(45,212,167,.13);
+           color: var(--ok); border: 1px solid rgba(45,212,167,.35); }
+  .role-panel { grid-column: 1 / -1; background: var(--panel);
+                backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+                border: 1px solid var(--accent-edge); border-radius: 14px;
+                padding: 18px 20px; animation: drop .28s cubic-bezier(.2,.9,.3,1); }
+  @keyframes drop { from { opacity: 0; transform: translateY(-8px); } }
+  .rp-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+             flex-wrap: wrap; }
+  .rp-head .rpn { font-weight: 700; font-size: 14px; }
+  .rp-head .rpc { font-size: 11px; color: var(--faint); }
+  .rp-head .rph { font-size: 11px; color: var(--faint); font-style: italic; }
+  .rp-head .xbtn { margin-left: auto; }
+  .role .pill.ready { border: 0; padding: 0; background: none;
+                      color: var(--faint); }
+  .roles { display: grid; gap: 10px;
+           grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .role { background: var(--card); border: 1px solid var(--line);
+          border-radius: 12px; padding: 13px 15px; cursor: pointer;
+          transition: transform .15s, border-color .15s; }
+  .role:hover { transform: translateY(-2px); border-color: var(--hover); }
+  .role .rname { font-family: "JetBrains Mono", monospace; font-size: 12.5px;
+                 font-weight: 700; margin-bottom: 7px; overflow-wrap: anywhere; }
+  .role .rrep { font-size: 11.5px; color: var(--faint); margin-top: 7px;
+                line-height: 1.45; }
+  .results { display: none; max-width: 1180px; margin: 0 auto; }
+  .results.on { display: block; }
+  .org.off { display: none; }
+  .res-count { font-size: 12px; color: var(--faint); margin-bottom: 14px; }
+  .res-grid { display: grid; gap: 10px;
+              grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .rtag { font-size: 10px; color: var(--mut); border: 1px solid var(--line);
+          border-radius: 100px; padding: 2px 8px; margin-left: 6px; }
+  .rise { animation: rise .5s cubic-bezier(.2,.9,.3,1) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .rise, .role-panel { animation: none; }
+    .dept, .role, a.brock { transition: none; }
+    .scrim { transition: none; }
+  }
   .scrim { position: fixed; inset: 0; z-index: 30; background: rgba(3,5,9,.72);
            opacity: 0; pointer-events: none; transition: opacity .25s; }
   .scrim.on { opacity: 1; pointer-events: auto; }
@@ -138,6 +239,9 @@
             align-items: center; border-right: 0;
             border-bottom: 1px solid var(--line); }
     .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
+    .viewport { padding: 18px 16px 50px; }
+    body { grid-template-rows: auto 1fr; height: 100dvh; }
+    main { height: auto; min-height: 0; }
   }
   @media (prefers-reduced-motion: reduce) { .drawer { transition: none; } }
 </style>
@@ -180,11 +284,42 @@
     <span class="datechip mono" id="countChip">loading…</span>
     <span class="avatar">J</span>
   </div>
-  <div class="viewport"><iframe id="mapFrame" src="/workforce-map/index.html"
-    title="Workforce map"></iframe></div>
+  <div class="viewport">
+    <div class="statement rise">Your company, on one page<em>_</em></div>
+    <div class="sub rise">The business at the top. Every AI staffer underneath.
+      Click a department to open it.</div>
+    <div class="search-row rise">
+      <input class="wf-search" id="wfSearch" type="search" aria-label="Find a role"
+             placeholder="find a role... try invoice, proposal, onboarding"
+             autocomplete="off">
+    </div>
+    <div class="org" id="org">
+      <div class="tile comp rise" id="compTile">
+        <div class="cname" id="compName">PerformOS</div>
+        <div class="cabout" id="compAbout"></div>
+        <div class="cowner">owner &middot; <b id="ownerName">Jared</b></div>
+      </div>
+      <div class="stem"></div>
+      <a class="tile brock rise" href="/today">
+        <span class="borb">B</span>
+        <span>
+          <span class="bname">Brock</span>
+          <div class="brole">CEO agent &middot; briefs you every morning</div>
+        </span>
+        <span class="bgo">today's briefing &rarr;</span>
+      </a>
+      <div class="stem"></div>
+      <div class="depts" id="depts"></div>
+    </div>
+    <div class="results" id="results">
+      <div class="res-count" id="resCount"></div>
+      <div class="res-grid" id="resGrid"></div>
+    </div>
+  </div>
 </main>
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-hidden="true">
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true"
+       aria-labelledby="dName" inert>
   <div class="d-head"><h2 id="dName"></h2>
     <button class="xbtn" id="dClose" type="button" aria-label="Close">✕</button></div>
   <div class="d-meta">
@@ -232,18 +367,193 @@
     document.getElementById("brainState").textContent = "brain: offline";
   });
 
-  let data = null, current = null;
+  const PALETTE = ["#5EEAD4", "#60A5FA", "#A78BFA", "#7DD3AE", "#38BDF8",
+    "#94A3B8"];
+  const noMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pressable = (el) => {
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); el.click(); }
+    });
+  };
+  const shortName = (n) => n.replace(
+    /^crew-(core|sales|marketing|ops|hr|finance|support|docs|training|web|design|voice|my|real)?-?/,
+    "").replace(/-/g, " ");
+  const statusLabel = (s) => s === "active" ? "worked this month" :
+    s === "live" ? "has worked for you" : "ready to work";
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  let data = null, current = null, openDept = null;
   const index = {};
+
+  function roleCard(s, deptLabel) {
+    const el = document.createElement("div");
+    el.className = "role";
+    const nm = shortName(s.name);
+    el.innerHTML = '<div class="rname">' +
+      esc(nm.charAt(0).toUpperCase() + nm.slice(1)) +
+      (deptLabel ? '<span class="rtag">' + esc(deptLabel) + "</span>" : "") +
+      '</div><span class="pill ' + esc(s.status) + '">' +
+      statusLabel(s.status) + "</span>" +
+      (s.dossier && s.dossier.replaces_role
+        ? '<div class="rrep">replaces ' + esc(s.dossier.replaces_role) + "</div>"
+        : "");
+    el.addEventListener("click", () => openSkill(s.name));
+    pressable(el);
+    return el;
+  }
+
+  function layoutStems() {
+    const tiles = [...document.querySelectorAll(".dept")];
+    const rail = document.getElementById("rail");
+    if (!tiles.length || !rail) return;
+    const top = Math.min(...tiles.map((t) => t.offsetTop));
+    tiles.forEach((t) => t.classList.toggle("stemmed", t.offsetTop === top));
+    const row = tiles.filter((t) => t.offsetTop === top);
+    const c1 = row[0].offsetLeft + row[0].offsetWidth / 2;
+    const last = row[row.length - 1];
+    const c2 = last.offsetLeft + last.offsetWidth / 2;
+    rail.style.display = c2 - c1 > 1 ? "block" : "none";
+    rail.style.left = c1 + "px";
+    rail.style.width = (c2 - c1) + "px";
+  }
+
+  function closePanel() {
+    const p = document.getElementById("rolePanel");
+    if (p) p.remove();
+    document.querySelectorAll(".dept.open").forEach((d) => {
+      d.classList.remove("open");
+      d.setAttribute("aria-expanded", "false");
+    });
+    openDept = null;
+  }
+
+  function openPanel(pack, tile, scroll = true) {
+    closePanel();
+    openDept = pack.label;
+    tile.classList.add("open");
+    tile.setAttribute("aria-expanded", "true");
+    const panel = document.createElement("div");
+    panel.className = "role-panel";
+    panel.id = "rolePanel";
+    if (!scroll) panel.style.animation = "none";
+    const working = pack.skills.filter((s) => s.status !== "ready").length;
+    panel.innerHTML = '<div class="rp-head"><span class="ddot" style="background:' +
+      tile.dataset.color + '"></span><span class="rpn">' + esc(pack.label) +
+      '</span><span class="rpc">' + pack.skills.length + " role" +
+      (pack.skills.length === 1 ? "" : "s") +
+      (working ? " &middot; " + working + " have worked for you" : "") +
+      '</span><span class="rph">click a role for its dossier</span>' +
+      '<button class="xbtn" type="button" aria-label="Close">✕</button></div>';
+    const grid = document.createElement("div");
+    grid.className = "roles";
+    pack.skills.forEach((s) => grid.appendChild(roleCard(s)));
+    panel.appendChild(grid);
+    panel.querySelector(".xbtn").addEventListener("click", (e) => {
+      e.stopPropagation(); closePanel();
+    });
+    const tiles = [...document.querySelectorAll(".dept")];
+    const row = tiles.filter((t) => t.offsetTop === tile.offsetTop);
+    row[row.length - 1].after(panel);
+    if (scroll) panel.scrollIntoView({ block: "nearest",
+      behavior: noMotion ? "auto" : "smooth" });
+  }
+
+  function repositionPanel() {
+    if (!openDept || !data) return;
+    if (document.getElementById("org").classList.contains("off")) return;
+    const p = data.packs.find((x) => x.label === openDept);
+    const tile = [...document.querySelectorAll(".dept")].find((t) =>
+      t.querySelector(".dname").textContent === openDept);
+    if (p && tile) openPanel(p, tile, false);
+  }
+
+  function buildChart() {
+    const host = document.getElementById("depts");
+    host.innerHTML = "";
+    const packs = [...data.packs].map((p, i) =>
+      ({ ...p, color: PALETTE[i % PALETTE.length] }));
+    packs.sort((a, b) => {
+      const wa = a.skills.filter((s) => s.status !== "ready").length;
+      const wb = b.skills.filter((s) => s.status !== "ready").length;
+      return wb - wa || b.skills.length - a.skills.length ||
+        a.label.localeCompare(b.label);
+    });
+    packs.forEach((p, i) => {
+      const working = p.skills.filter((s) => s.status !== "ready").length;
+      const el = document.createElement("div");
+      el.className = "tile dept rise";
+      el.style.animationDelay = Math.min(i * 40, 400) + "ms";
+      el.dataset.color = p.color;
+      el.innerHTML = '<div class="dtop"><span class="ddot" style="background:' +
+        p.color + '"></span><span class="dname">' + esc(p.label) +
+        '</span><span class="dchev">&#9654;</span></div>' +
+        '<div class="dmeta"><span class="mono">' + p.skills.length + " role" +
+        (p.skills.length === 1 ? "" : "s") + "</span>" +
+        (working ? '<span class="wchip">' + working + " have worked</span>" : "") +
+        "</div>";
+      el.setAttribute("aria-expanded", "false");
+      el.addEventListener("click", () =>
+        openDept === p.label ? closePanel() : openPanel(p, el));
+      pressable(el);
+      host.appendChild(el);
+    });
+    const rail = document.createElement("div");
+    rail.className = "rail-line";
+    rail.id = "rail";
+    host.appendChild(rail);
+    layoutStems();
+    const wanted = (new URLSearchParams(location.search).get("open") || "")
+      .toLowerCase().replace(/[^a-z0-9]+/g, "");
+    if (wanted) {
+      const p = packs.find((x) =>
+        x.label.toLowerCase().replace(/[^a-z0-9]+/g, "") === wanted);
+      const tile = p && [...host.querySelectorAll(".dept")].find((t) =>
+        t.querySelector(".dname").textContent === p.label);
+      if (tile) openPanel(p, tile);
+    }
+  }
+
+  function runSearch(term) {
+    const org = document.getElementById("org");
+    const res = document.getElementById("results");
+    if (!term) {
+      org.classList.remove("off"); res.classList.remove("on");
+      layoutStems(); repositionPanel();
+      return;
+    }
+    const hits = [];
+    data.packs.forEach((p) => p.skills.forEach((s) => {
+      const hay = (s.name + " " + (s.invoke || "") + " " + s.description + " " +
+        p.label + " " + (s.dossier ? s.dossier.replaces_role : ""))
+        .toLowerCase();
+      if (term.split(/\s+/).every((w) => hay.includes(w))) hits.push([s, p]);
+    }));
+    org.classList.add("off");
+    res.classList.add("on");
+    document.getElementById("resCount").textContent = hits.length
+      ? hits.length + " role" + (hits.length === 1 ? "" : "s") + " match"
+      : "no roles match that yet, try another word";
+    const grid = document.getElementById("resGrid");
+    grid.innerHTML = "";
+    hits.forEach(([s, p]) => grid.appendChild(roleCard(s, p.label)));
+  }
 
   async function load() {
     try {
       data = await (await fetch("/api/workforce")).json();
+      data.packs.forEach((p) => {
+        if (p.label.toLowerCase() === "hr") p.label = "HR";
+      });
       const working = data.packs.reduce((a, p) =>
         a + p.skills.filter((s) => s.status !== "ready").length, 0);
       document.getElementById("countChip").textContent =
         data.total + " roles · " + working + " have worked for you";
       data.packs.forEach((p) => p.skills.forEach((s) =>
         index[s.name] = { skill: s, pack: p.label }));
+      buildChart();
     } catch (e) {
       document.getElementById("countChip").textContent = "workforce offline";
     }
@@ -251,10 +561,18 @@
   }
   load();
 
-  window.addEventListener("message", (ev) => {
-    const id = ev.data && ev.data.owneros_role;
-    if (!id || !index[id]) return;
-    openSkill(id);
+  const searchEl = document.getElementById("wfSearch");
+  searchEl.addEventListener("input", () =>
+    runSearch(searchEl.value.trim().toLowerCase()));
+
+  let rsTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(rsTimer);
+    rsTimer = setTimeout(() => {
+      if (document.getElementById("org").classList.contains("off")) return;
+      layoutStems();
+      repositionPanel();
+    }, 180);
   });
 
   function openSkill(name) {
@@ -285,22 +603,26 @@
       document.getElementById("dL3").textContent = d.ladder_autonomous;
       document.getElementById("dHuman").textContent = d.human;
     }
-    document.getElementById("drawer").classList.add("open");
-    document.getElementById("drawer").setAttribute("aria-hidden", "false");
+    const drawer = document.getElementById("drawer");
+    drawer.classList.add("open");
+    drawer.inert = false;
     document.getElementById("scrim").classList.add("on");
+    document.getElementById("dClose").focus();
   }
 
   function closeDrawer() {
     const drawer = document.getElementById("drawer");
     if (drawer.contains(document.activeElement)) document.activeElement.blur();
     drawer.classList.remove("open");
-    drawer.setAttribute("aria-hidden", "true");
+    drawer.inert = true;
     document.getElementById("scrim").classList.remove("on");
   }
   document.getElementById("dClose").addEventListener("click", closeDrawer);
   document.getElementById("scrim").addEventListener("click", closeDrawer);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeDrawer();
+    if (e.key !== "Escape" || e.target === searchEl) return;
+    if (document.getElementById("drawer").classList.contains("open")) closeDrawer();
+    else closePanel();
   });
   document.getElementById("dCopy").addEventListener("click", (e) => {
     if (current) copy(current.invoke || "/" + current.name, e.target);
@@ -309,6 +631,8 @@
 <script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
   document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
   var g=document.getElementById("ownerName"); if(g) g.textContent=o.name;
+  var cn=document.getElementById("compName"); if(cn&&o.business) cn.textContent=o.business;
+  var ca=document.getElementById("compAbout"); if(ca&&o.about) ca.textContent=o.about;
 }).catch(function(){});</script>
 </body>
 </html>
