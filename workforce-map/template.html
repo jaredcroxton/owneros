@@ -444,7 +444,8 @@ function computeWheel() {
     return seq;
   };
   const hubItems = new Map(act.map(h => [h.id, itemsOf(h)]));
-  const weights = act.map(h => 3 + Math.pow(hubItems.get(h.id).length, 0.72));
+  const weights = act.map(h =>
+    3 + Math.pow(hubItems.get(h.id).length, 0.72) * (expandedGroups.has(h.group) ? 6 : 1));
   const totalW = weights.reduce((a, b) => a + b, 0);
   const R1 = 340, R2 = 480, ROW = 64, GAP = 34, PAD = 0.03;
   let theta = -Math.PI / 2;
@@ -610,6 +611,7 @@ timelineEl.addEventListener("input", () => {
 
 // interaction state
 let hover = null, selected = null, searchTerm = "", askSet = null;
+let expandedGroups = new Set();
 const kindOn = { memory: true, skill: true, pack: true, project: true, hub: true, brain: true };
 const groupOn = {};
 [...new Set(nodes.map(n => n.group))].forEach(g => groupOn[g] = true);
@@ -620,11 +622,23 @@ function matches(n) {
 }
 function applyFilters() {
   nodes.forEach(n => {
-    n.visible = n.profileOn && (kindOn[n.kind] !== false) && (groupOn[n.group] !== false);
+    n.visible = n.profileOn && (kindOn[n.kind] !== false) && (groupOn[n.group] !== false)
+      && (n.kind !== "skill" || expandedGroups.has(n.group) || (!!searchTerm && matches(n)));
   });
   if (brainNode) brainNode.visible = true;
   alpha = Math.max(alpha, 0.35);
   layoutDirty = true;
+}
+function toggleGroup(hub) {
+  const g = hub.group;
+  const open = expandedGroups.has(g);
+  expandedGroups = new Set(open ? [] : [g]);
+  if (!open) for (const m of nodes) {
+    if (m.kind === "skill" && m.group === g) { m.x = hub.x; m.y = hub.y; m.bornPulse = performance.now(); }
+  }
+  applyFilters();
+  if (open) { if (brainNode) flyTo(brainNode, homeK); }
+  else flyTo(hub, Math.max(cam.k, 0.95));
 }
 function neighborSet(n) {
   const s = new Set([n.id]);
@@ -777,6 +791,7 @@ function draw() {
     }
 
     const showLabel = n.kind === "brain" || n.kind === "hub" || n.kind === "pack"
+      || (n.kind === "skill" && expandedGroups.has(n.group))
       || cam.k > 1.15 || n === hover || n === selected
       || (hi && hi.has(n.id) && cam.k > 0.7)
       || (searching && matches(n) && !dim);
@@ -788,7 +803,17 @@ function draw() {
         : "rgba(" + THEME.inkRGB + ",0.8)";
       ctx.textAlign = "center";
       const txt = n.kind === "hub" || n.kind === "brain" ? n.label.toUpperCase() : n.label;
-      ctx.fillText(txt, n.x, n.y + n.r + fs + 4 / cam.k);
+      if (n.kind === "skill" && expandedGroups.has(n.group) && txt.length > 14 && txt.includes(" ")) {
+        const mid = Math.floor(txt.length / 2);
+        let cut = -1;
+        for (let i = 0; i < txt.length; i++) {
+          if (txt[i] === " " && (cut < 0 || Math.abs(i - mid) < Math.abs(cut - mid))) cut = i;
+        }
+        ctx.fillText(txt.slice(0, cut), n.x, n.y + n.r + fs + 4 / cam.k);
+        ctx.fillText(txt.slice(cut + 1), n.x, n.y + n.r + fs * 2.15 + 4 / cam.k);
+      } else {
+        ctx.fillText(txt, n.x, n.y + n.r + fs + 4 / cam.k);
+      }
       if (n.kind === "hub" || n.kind === "brain") {
         ctx.font = "400 " + fs * 0.62 + "px 'JetBrains Mono', monospace";
         ctx.fillStyle = "rgba(" + THEME.inkRGB + ",0.55)";
@@ -897,11 +922,13 @@ canvas.addEventListener("click", e => {
   if (moved) return;
   askSet = null;
   const n = nodeAt(e.clientX, e.clientY);
+  if (n && n.kind === "hub") toggleGroup(n);
   if (n) selectNode(n); else { selected = null; panel.classList.remove("open"); }
 });
 window.addEventListener("keydown", e => {
   if (e.key === "Escape") {
     askSet = null; selected = null; panel.classList.remove("open");
+    if (expandedGroups.size) { expandedGroups = new Set(); applyFilters(); }
     document.getElementById("drawer").classList.remove("open");
     stopSpeech();
     if (brainNode) brainNode.repulse = false;
@@ -983,6 +1010,7 @@ async function ask(q) {
   stopSpeech();
   thinkingEl.textContent = "your brain is thinking";
   searchTerm = "";
+  applyFilters();
   askSet = new Set([brainNode ? brainNode.id : ""]);
   if (brainNode) { brainNode.repulse = true; brainNode.bornPulse = performance.now(); }
   thinkingEl.classList.add("on");
@@ -1039,6 +1067,7 @@ function flyCitations(ids) {
 }
 searchEl.addEventListener("input", e => {
   searchTerm = e.target.value.trim().toLowerCase();
+  applyFilters();
 });
 searchEl.addEventListener("keydown", e => {
   if (e.key === "Enter" && backend && searchEl.value.trim()) {
@@ -1237,6 +1266,7 @@ micBtn.onclick = () => {
   stopSpeech();
   searchEl.value = "";
   searchTerm = "";
+  applyFilters();
   listening = true;
   micBtn.classList.add("listening");
   thinkingEl.textContent = "listening";
@@ -1288,6 +1318,10 @@ buildHowto();
 
 // boot (after everything above is defined)
 setProfile(profile, true);
+{
+  const g = new URLSearchParams(location.search).get("expand");
+  if (g && hubByGroup[g]) toggleGroup(hubByGroup[g]);
+}
 computeWheel();
 cam.k = skipIntro ? homeK : 2.2;
 if (skipIntro) {
