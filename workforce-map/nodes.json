@@ -1,0 +1,543 @@
+{
+ "memory": [],
+ "gskills": [
+  {
+   "id": "crew-core-brand-context",
+   "label": "brand context",
+   "description": "ready to work \u00b7 replaces a brand strategist's onboarding and discovery workshop \u00b7 $2,000-5,000 per branding engagement, or $150-250/hr consultant time. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-core-context-restore",
+   "label": "context restore",
+   "description": "WORKED THIS MONTH \u00b7 replaces the morning catch-up a project coordinator runs to work out where every job was left \u00b7 part of a $75-90k/yr coordinator role, or $40-60/hr admin time. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-core-context-save",
+   "label": "context save",
+   "description": "WORKED THIS MONTH \u00b7 replaces the written handover an office manager or departing contractor would prepare \u00b7 $300-800 per handover document outsourced, or $40-60/hr admin time. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-core-guard-boundary",
+   "label": "guard boundary",
+   "description": "ready to work \u00b7 replaces a project manager watching that contractors stay inside the agreed scope \u00b7 part of a $90-110k/yr project manager role. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-core-idea-pressure-tester",
+   "label": "idea pressure tester",
+   "description": "ready to work \u00b7 replaces a strategy consultant's feasibility study before you commit to building \u00b7 $3,000-10,000 per study outsourced, or $200-350/hr consultant time. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-core-plan-reviewer",
+   "label": "plan reviewer",
+   "description": "ready to work \u00b7 replaces a senior consultant reviewing the plan before work starts \u00b7 $1,000-3,000 per plan review outsourced, or $150-300/hr consultant time. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-core-quality-checker",
+   "label": "quality checker",
+   "description": "WORKED THIS MONTH \u00b7 replaces a freelance QA reviewer or proofing editor checking work before it ships \u00b7 $200-500 per document reviewed outsourced, or $60-100/hr. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-core-using-crew",
+   "label": "using crew",
+   "description": "ready to work \u00b7 replaces an office manager who knows exactly who handles what \u00b7 part of a $70-90k/yr office or operations manager role. Click for the full dossier.",
+   "group": "core"
+  },
+  {
+   "id": "crew-sales-audit-deck",
+   "label": "audit deck",
+   "description": "ready to work \u00b7 replaces a presentation designer plus a senior salesperson's afternoon building the deck \u00b7 $500-1,500 per deck outsourced, or $100-150/hr design time. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-sales-crm-cleanup",
+   "label": "crm cleanup",
+   "description": "ready to work \u00b7 replaces a contract CRM administrator or offshore data cleaner \u00b7 $1,000-3,000 per cleanup project outsourced, or $30-50/hr admin time. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-sales-follow-up-sequence",
+   "label": "follow up sequence",
+   "description": "ready to work \u00b7 replaces a freelance sales copywriter writing your chase and nurture sequences \u00b7 $300-800 per sequence outsourced, or $100-150/hr copywriter time. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-sales-lead-research",
+   "label": "lead research",
+   "description": "ready to work \u00b7 replaces a junior SDR's research hours \u00b7 $65-85k/yr role, or $30-45/hr outsourced researchers. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-sales-outreach-draft",
+   "label": "outreach draft",
+   "description": "ready to work \u00b7 replaces a cold outreach copywriter or agency doing first-touch messages \u00b7 $100-180/hr freelance, or roughly $50-150 per message set from an agency. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-sales-pipeline-review",
+   "label": "pipeline review",
+   "description": "ready to work \u00b7 replaces the weekly pipeline review a sales manager would run \u00b7 part of a $120-160k/yr sales manager role. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-sales-proposal-builder",
+   "label": "proposal builder",
+   "description": "ready to work \u00b7 replaces a bid or proposal writer \u00b7 $500-1,500 per proposal outsourced, or $90-130/hr. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-sales-prospect-brief",
+   "label": "prospect brief",
+   "description": "ready to work \u00b7 replaces a sales assistant's pre-call prep \u00b7 $35-50/hr of assistant time, an hour or two before every call. Click for the full dossier.",
+   "group": "sales"
+  },
+  {
+   "id": "crew-marketing-brand-voice-check",
+   "label": "brand voice check",
+   "description": "ready to work \u00b7 replaces a freelance copy editor or brand consultant doing voice reviews \u00b7 $90-150/hr consultant time, or $150-400 per review outsourced. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-marketing-campaign-plan",
+   "label": "campaign plan",
+   "description": "ready to work \u00b7 replaces a marketing consultant or agency strategist building the campaign plan \u00b7 $2,000-6,000 per campaign plan from an agency, or $120-200/hr consultant time. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-marketing-carousel-campaign",
+   "label": "carousel campaign",
+   "description": "WORKED THIS MONTH \u00b7 replaces a social ads agency or freelance designer producing Meta carousel creative \u00b7 $1,500-4,000 per creative kit outsourced, on top of any agency retainer. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-marketing-content-repurpose",
+   "label": "content repurpose",
+   "description": "ready to work \u00b7 replaces a content assistant or repurposing service turning one piece into many \u00b7 $40-70/hr assistant time, or $300-800 per source piece outsourced. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-marketing-email-campaign-builder",
+   "label": "email campaign builder",
+   "description": "ready to work \u00b7 replaces an email marketing freelancer or agency writing launch sequences \u00b7 $800-3,000 per sequence outsourced, or part of a $75-95k/yr marketing hire. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-marketing-landing-page-review",
+   "label": "landing page review",
+   "description": "ready to work \u00b7 replaces a conversion consultant or CRO agency auditing your page \u00b7 $500-2,000 per audit outsourced, or $150-250/hr consultant time. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-marketing-seo-page-builder",
+   "label": "seo page builder",
+   "description": "ready to work \u00b7 replaces an SEO agency or content writer producing search-optimised pages \u00b7 $300-800 per page outsourced, or a $1,000-3,000/month SEO retainer. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-marketing-social-post-pack",
+   "label": "social post pack",
+   "description": "ready to work \u00b7 replaces a social media manager or agency running your accounts \u00b7 $1,000-2,500/month outsourced, or part of a $65-85k/yr social media hire. Click for the full dossier.",
+   "group": "marketing"
+  },
+  {
+   "id": "crew-ops-automation-opportunity-review",
+   "label": "automation opportunity review",
+   "description": "ready to work \u00b7 replaces an automation consultant scoping what your business should automate first \u00b7 $150-250/hr consultant time, often sold as a $3,000-8,000 discovery engagement. Click for the full dossier.",
+   "group": "ops"
+  },
+  {
+   "id": "crew-ops-operations-dashboard-plan",
+   "label": "operations dashboard plan",
+   "description": "ready to work \u00b7 replaces a BI consultant or analyst scoping a dashboard build \u00b7 $120-180/hr consultant time, with scoping engagements commonly $2,000-5,000. Click for the full dossier.",
+   "group": "ops"
+  },
+  {
+   "id": "crew-ops-process-map",
+   "label": "process map",
+   "description": "ready to work \u00b7 replaces a process improvement consultant mapping how work really flows \u00b7 $150-250/hr consultant time, or $2,000-5,000 per mapped process. Click for the full dossier.",
+   "group": "ops"
+  },
+  {
+   "id": "crew-ops-recurring-task-automation",
+   "label": "recurring task automation",
+   "description": "ready to work \u00b7 replaces an automation specialist or ops hire designing repeatable workflows \u00b7 $120-200/hr specialist time, or part of an $85-110k/yr operations role. Click for the full dossier.",
+   "group": "ops"
+  },
+  {
+   "id": "crew-ops-workflow-improvement",
+   "label": "workflow improvement",
+   "description": "ready to work \u00b7 replaces a lean or operations consultant reviewing how work gets done \u00b7 $150-250/hr consultant time, or a $1,500-2,500 day rate. Click for the full dossier.",
+   "group": "ops"
+  },
+  {
+   "id": "crew-hr-employee-communication-draft",
+   "label": "employee communication draft",
+   "description": "ready to work \u00b7 replaces an HR consultant or internal comms writer drafting staff announcements \u00b7 $120-200/hr consultant time, or a slice of a $90-110k/yr comms role. Click for the full dossier.",
+   "group": "hr"
+  },
+  {
+   "id": "crew-hr-interview-guide",
+   "label": "interview guide",
+   "description": "ready to work \u00b7 replaces an external recruiter or HR consultant building structured interview kits \u00b7 $500-1,500 per role outsourced, or $120-200/hr HR consultant time. Click for the full dossier.",
+   "group": "hr"
+  },
+  {
+   "id": "crew-hr-performance-conversation-prep",
+   "label": "performance conversation prep",
+   "description": "ready to work \u00b7 replaces an HR consultant coaching a manager before a difficult performance conversation \u00b7 $150-300 per conversation of consultant prep time, or $120-200/hr. Click for the full dossier.",
+   "group": "hr"
+  },
+  {
+   "id": "crew-hr-policy-summary",
+   "label": "policy summary",
+   "description": "ready to work \u00b7 replaces an HR consultant translating long policies into plain English for staff \u00b7 $300-800 per policy outsourced, or $120-200/hr consultant time. Click for the full dossier.",
+   "group": "hr"
+  },
+  {
+   "id": "crew-hr-role-profile-builder",
+   "label": "role profile builder",
+   "description": "ready to work \u00b7 replaces a recruiter or HR consultant writing position descriptions \u00b7 $300-900 per role outsourced, or $120-200/hr consultant time. Click for the full dossier.",
+   "group": "hr"
+  },
+  {
+   "id": "crew-finance-admin-automation",
+   "label": "admin automation",
+   "description": "ready to work \u00b7 replaces an operations consultant scoping which finance admin to automate \u00b7 $1,000-3,000 per scoping engagement, or $150-250/hr consultant time. Click for the full dossier.",
+   "group": "finance"
+  },
+  {
+   "id": "crew-finance-cashflow-brief",
+   "label": "cashflow brief",
+   "description": "ready to work \u00b7 replaces a bookkeeper's monthly cash reporting or part of a virtual CFO retainer \u00b7 $300-800 per month of bookkeeper reporting time, or a slice of a $1,500-3,000/month virtual CFO retainer. Click for the f",
+   "group": "finance"
+  },
+  {
+   "id": "crew-finance-expense-review",
+   "label": "expense review",
+   "description": "ready to work \u00b7 replaces a bookkeeper's expense-checking hours \u00b7 a few hours a month at $60-90/hr bookkeeping rates. Click for the full dossier.",
+   "group": "finance"
+  },
+  {
+   "id": "crew-finance-finance-dashboard-plan",
+   "label": "finance dashboard plan",
+   "description": "ready to work \u00b7 replaces a consultant or virtual CFO scoping a finance dashboard build \u00b7 $1,500-5,000 per scoping engagement outsourced. Click for the full dossier.",
+   "group": "finance"
+  },
+  {
+   "id": "crew-finance-invoice-workflow",
+   "label": "invoice workflow",
+   "description": "ready to work \u00b7 replaces a bookkeeper or operations consultant untangling the invoicing process \u00b7 $1,000-3,000 per process review outsourced, or $60-90/hr bookkeeping time. Click for the full dossier.",
+   "group": "finance"
+  },
+  {
+   "id": "crew-finance-monthly-summary",
+   "label": "monthly summary",
+   "description": "ready to work \u00b7 replaces a bookkeeper's month-end summary or part of an accountant's management reporting \u00b7 $300-800 per month outsourced, on top of compliance accounting. Click for the full dossier.",
+   "group": "finance"
+  },
+  {
+   "id": "crew-support-escalation-review",
+   "label": "escalation review",
+   "description": "ready to work \u00b7 replaces a support team lead's escalation triage \u00b7 part of a $75-95k/yr team lead role. Click for the full dossier.",
+   "group": "support"
+  },
+  {
+   "id": "crew-support-faq-builder",
+   "label": "faq builder",
+   "description": "ready to work \u00b7 replaces a technical writer or senior support agent building FAQ content \u00b7 $500-2,000 per FAQ set outsourced, or $80-120/hr freelance writing. Click for the full dossier.",
+   "group": "support"
+  },
+  {
+   "id": "crew-support-feedback-summary",
+   "label": "feedback summary",
+   "description": "ready to work \u00b7 replaces an analyst or research agency summarising customer feedback \u00b7 $1,000-4,000 per feedback study outsourced. Click for the full dossier.",
+   "group": "support"
+  },
+  {
+   "id": "crew-support-help-document-generator",
+   "label": "help document generator",
+   "description": "ready to work \u00b7 replaces a technical writer producing customer help articles \u00b7 $150-400 per article outsourced, or $80-120/hr freelance. Click for the full dossier.",
+   "group": "support"
+  },
+  {
+   "id": "crew-support-reply-builder",
+   "label": "reply builder",
+   "description": "ready to work \u00b7 replaces a customer support officer's reply-writing hours \u00b7 part of a $55-70k/yr support role, or $30-45/hr outsourced support. Click for the full dossier.",
+   "group": "support"
+  },
+  {
+   "id": "crew-support-ticket-triage",
+   "label": "ticket triage",
+   "description": "ready to work \u00b7 replaces a support coordinator sorting the inbound queue \u00b7 part of a $55-70k/yr support role's daily hours. Click for the full dossier.",
+   "group": "support"
+  },
+  {
+   "id": "crew-docs-client-playbook-builder",
+   "label": "client playbook builder",
+   "description": "ready to work \u00b7 replaces a freelance copywriter or client services manager writing your welcome and process documents \u00b7 $800-2,500 per playbook outsourced, or $120-180/hr freelance writing time. Click for the full dossie",
+   "group": "docs"
+  },
+  {
+   "id": "crew-docs-compliance-review-check",
+   "label": "compliance review check",
+   "description": "ready to work \u00b7 replaces a compliance consultant's document review hours \u00b7 $1,000-3,000 per document review outsourced, or $150-300/hr consultant time. Click for the full dossier.",
+   "group": "docs"
+  },
+  {
+   "id": "crew-docs-handover-document-writer",
+   "label": "handover document writer",
+   "description": "ready to work \u00b7 replaces a departing staff member's paid handover fortnight, or a consultant hired to document a role \u00b7 $1,500-5,000 per role documented externally, or weeks of paid handover time. Click for the full doss",
+   "group": "docs"
+  },
+  {
+   "id": "crew-docs-meeting-notes-to-actions",
+   "label": "meeting notes to actions",
+   "description": "ready to work \u00b7 replaces a minute-taker, or the admin hours of an executive assistant \u00b7 part of a $70-85k/yr EA role, or $60-100 per meeting for outsourced minute-taking. Click for the full dossier.",
+   "group": "docs"
+  },
+  {
+   "id": "crew-docs-policy-document-generator",
+   "label": "policy document generator",
+   "description": "ready to work \u00b7 replaces an external HR or workplace relations consultant drafting policies \u00b7 $500-2,000 per policy outsourced, or $150-250/hr consultant time. Click for the full dossier.",
+   "group": "docs"
+  },
+  {
+   "id": "crew-docs-research-notebooklm",
+   "label": "research notebooklm",
+   "description": "HAS WORKED FOR YOU \u00b7 replaces a research assistant or junior analyst's reading and summarising hours \u00b7 $35-50/hr research assistance, or days of your own reading time each month. Click for the full dossier.",
+   "group": "docs"
+  },
+  {
+   "id": "crew-docs-sop-builder",
+   "label": "sop builder",
+   "description": "ready to work \u00b7 replaces an operations consultant, or the weeks a manager spends writing procedures \u00b7 $300-1,500 per SOP outsourced, or $120-200/hr process consultant time. Click for the full dossier.",
+   "group": "docs"
+  },
+  {
+   "id": "crew-docs-training-guide-creator",
+   "label": "training guide creator",
+   "description": "ready to work \u00b7 replaces a freelance instructional designer or external training provider building session guides \u00b7 $2,000-6,000 per course built externally, or $80-120/hr instructional design time. Click for the full do",
+   "group": "docs"
+  },
+  {
+   "id": "crew-training-assessment-designer",
+   "label": "assessment designer",
+   "description": "WORKED THIS MONTH \u00b7 replaces an instructional designer's assessment-writing hours or a training provider's test development service \u00b7 $500-1,500 per assessment outsourced, or $80-120/hr instructional design time. Click f",
+   "group": "training"
+  },
+  {
+   "id": "crew-training-coaching-conversation-guide",
+   "label": "coaching conversation guide",
+   "description": "ready to work \u00b7 replaces an external coach or leadership facilitator preparing your managers \u00b7 $250-500 per coaching session outsourced, or $150-250/hr leadership consultant time. Click for the full dossier.",
+   "group": "training"
+  },
+  {
+   "id": "crew-training-facilitator-guide-creator",
+   "label": "facilitator guide creator",
+   "description": "WORKED THIS MONTH \u00b7 replaces a freelance instructional designer building delivery guides \u00b7 $1,500-4,000 per session guide outsourced, or $80-120/hr design time. Click for the full dossier.",
+   "group": "training"
+  },
+  {
+   "id": "crew-training-learner-workbook-builder",
+   "label": "learner workbook builder",
+   "description": "WORKED THIS MONTH \u00b7 replaces a training materials designer or a training provider's printed materials service \u00b7 $800-2,500 per workbook outsourced, or $80-120/hr materials design time. Click for the full dossier.",
+   "group": "training"
+  },
+  {
+   "id": "crew-training-module-outline-builder",
+   "label": "module outline builder",
+   "description": "WORKED THIS MONTH \u00b7 replaces a learning and development consultant scoping course structure \u00b7 $1,000-3,000 per module design outsourced, or part of a $95-115k/yr L&D role. Click for the full dossier.",
+   "group": "training"
+  },
+  {
+   "id": "crew-training-needs-analyser",
+   "label": "needs analyser",
+   "description": "ready to work \u00b7 replaces a learning and development consultant's training needs analysis engagement \u00b7 $3,000-8,000 per needs analysis outsourced, or $150-250/hr consultant time. Click for the full dossier.",
+   "group": "training"
+  },
+  {
+   "id": "crew-training-onboarding-programme-builder",
+   "label": "onboarding programme builder",
+   "description": "ready to work \u00b7 replaces an HR consultant designing onboarding, or the ad-hoc weeks a manager loses to each new starter \u00b7 $2,000-6,000 per onboarding programme outsourced, or $130-180/hr HR consultant time. Click for the",
+   "group": "training"
+  },
+  {
+   "id": "crew-training-skill-gap-mapper",
+   "label": "skill gap mapper",
+   "description": "ready to work \u00b7 replaces a capability assessment from an HR or change consultant \u00b7 $4,000-10,000 per capability review outsourced, or $150-250/hr consultant time. Click for the full dossier.",
+   "group": "training"
+  },
+  {
+   "id": "crew-web-app-builder",
+   "label": "app builder",
+   "description": "ready to work \u00b7 replaces a freelance automation developer or integration consultant \u00b7 $90-140/hr contractor time, or $3,000-10,000 per build outsourced. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-booking-site-builder",
+   "label": "booking site builder",
+   "description": "ready to work \u00b7 replaces a local web designer building sites for trades, salons, and clinics \u00b7 $2,000-5,000 per site outsourced, plus edit fees after launch. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-cinematic-build",
+   "label": "cinematic build",
+   "description": "ready to work \u00b7 replaces a creative web agency's design and motion team \u00b7 $8,000-25,000 per project at agency rates. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-fly-through-builder",
+   "label": "fly through builder",
+   "description": "ready to work \u00b7 replaces a video production house plus a specialist web developer \u00b7 $10,000-30,000 quoted as a combined film and build job. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-landing-page-builder",
+   "label": "landing page builder",
+   "description": "ready to work \u00b7 replaces a freelance landing page designer and copywriter \u00b7 $800-2,500 per page outsourced. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-lead-dashboard-builder",
+   "label": "lead dashboard builder",
+   "description": "ready to work \u00b7 replaces a research VA or analyst compiling lead lists and reports \u00b7 $40-70/hr contractor time, often $500-1,500 per list and report. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-page-builder",
+   "label": "page builder",
+   "description": "HAS WORKED FOR YOU \u00b7 replaces a small web design studio building full business websites \u00b7 $3,000-8,000 per site outsourced, plus $500-900/yr in typical care plans. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-product-film",
+   "label": "product film",
+   "description": "ready to work \u00b7 replaces a product video studio plus a landing page developer \u00b7 $8,000-30,000 for a filmed product page at studio rates. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-real-estate-immersive",
+   "label": "real estate immersive",
+   "description": "ready to work \u00b7 replaces a property videographer plus a custom microsite developer \u00b7 $1,500-5,000 per listing for video and a one-off microsite. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-scrollytelling",
+   "label": "scrollytelling",
+   "description": "ready to work \u00b7 replaces a digital agency's interactive storytelling team \u00b7 $10,000-40,000 for interactive scroll pieces at agency rates. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-slide-deck-builder",
+   "label": "slide deck builder",
+   "description": "WORKED THIS MONTH \u00b7 replaces a freelance presentation designer \u00b7 $500-1,500 per deck outsourced, or $80-120/hr. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-slide-deck-mobile",
+   "label": "slide deck mobile",
+   "description": "ready to work \u00b7 replaces a designer producing phone-ready proposals and story decks \u00b7 $300-900 per proposal or story deck outsourced. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-stitch",
+   "label": "stitch",
+   "description": "ready to work \u00b7 replaces a contract UX designer writing design specs and reviewing screens \u00b7 $110-150/hr contract UX time, or a slice of a $100-140k/yr role. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-web-website-architect",
+   "label": "website architect",
+   "description": "HAS WORKED FOR YOU \u00b7 replaces a design consultant doing competitor site teardowns \u00b7 $1,000-3,000 per audit outsourced, or $120-180/hr consultant time. Click for the full dossier.",
+   "group": "webdesign"
+  },
+  {
+   "id": "crew-voice-receptionist",
+   "label": "receptionist",
+   "description": "ready to work \u00b7 replaces a part-time receptionist or an after-hours answering service \u00b7 $30-38/hr casual reception cover, or $200-600/mo for an answering service. Click for the full dossier.",
+   "group": "infrastructure"
+  },
+  {
+   "id": "crew-design-documents",
+   "label": "documents",
+   "description": "WORKED THIS MONTH \u00b7 replaces a freelance document designer, the person who lays out your proposals, reports and workbooks \u00b7 $150-400 per formatted document outsourced, or $75-110/hr freelance design time. Click for the f",
+   "group": "designstandards"
+  },
+  {
+   "id": "crew-design-engineering",
+   "label": "engineering",
+   "description": "ready to work \u00b7 replaces a senior front-end developer's polish pass, the specialist who makes software feel right \u00b7 $130-170k/yr specialist role, or $110-150/hr contract review time. Click for the full dossier.",
+   "group": "designstandards"
+  },
+  {
+   "id": "crew-design-quality",
+   "label": "quality",
+   "description": "ready to work \u00b7 replaces an external design director's critique before anything ships \u00b7 $150-250/hr design consultancy time, or $1,000-3,000 per agency design audit. Click for the full dossier.",
+   "group": "designstandards"
+  },
+  {
+   "id": "crew-design-reference",
+   "label": "reference",
+   "description": "ready to work \u00b7 replaces a creative director's reference library and the agency retainer that keeps design standards current \u00b7 $5,000-15,000 for an agency style guide engagement, or a slice of a $140-180k/yr creative dir",
+   "group": "designstandards"
+  },
+  {
+   "id": "crew-design-styles",
+   "label": "styles",
+   "description": "ready to work \u00b7 replaces a freelance art director exploring visual directions for a project \u00b7 $120-180/hr art direction time, or $1,500-4,000 per style exploration from a studio. Click for the full dossier.",
+   "group": "designstyles"
+  },
+  {
+   "id": "crew-animation",
+   "label": "animation",
+   "description": "ready to work \u00b7 replaces a freelance motion designer's hours on every website and document build \u00b7 $85-115k/yr role, or $90-140/hr freelance motion work. Click for the full dossier.",
+   "group": "animation"
+  },
+  {
+   "id": "crew-my-second-brain",
+   "label": "second brain",
+   "description": "ready to work \u00b7 replaces a part-time knowledge manager, the role small businesses never actually get around to hiring \u00b7 $95-125k/yr as a full-time role, or $130-180/hr knowledge consultant time. Click for the full dossie",
+   "group": "secondbrain"
+  },
+  {
+   "id": "crew-web-immersive-narrative",
+   "label": "immersive narrative",
+   "description": "ready to work \u00b7 replaces a creative web agency's immersive site team \u00b7 $20,000-60,000 per site from an agency. Click for the full dossier.",
+   "group": "showcase"
+  },
+  {
+   "id": "crew-web-learning-experience",
+   "label": "learning experience",
+   "description": "ready to work \u00b7 replaces an e-learning developer or instructional design studio building your online modules \u00b7 $5,000-20,000 per module outsourced, or a $90-120k/yr in-house role. Click for the full dossier.",
+   "group": "showcase"
+  },
+  {
+   "id": "crew-web-spotlight-hero",
+   "label": "spotlight hero",
+   "description": "ready to work \u00b7 replaces a creative front-end developer building one bespoke interactive homepage hero \u00b7 $2,000-8,000 per hero freelanced at $100-150/hr rates. Click for the full dossier.",
+   "group": "showcase"
+  },
+  {
+   "id": "crew-web-webcam-website",
+   "label": "webcam website",
+   "description": "ready to work \u00b7 replaces a creative technology studio's experiential web team \u00b7 $25,000-80,000 per experiential build from a studio. Click for the full dossier.",
+   "group": "showcase"
+  },
+  {
+   "id": "crew-real-estate-review",
+   "label": "estate review",
+   "description": "ready to work \u00b7 replaces a property marketing reviewer, once this skill is actually built out \u00b7 $100-300 per listing review outsourced, indicative only since the skill is not yet written. Click for the full dossier.",
+   "group": "unfiled"
+  }
+ ],
+ "pskills": [],
+ "packs": [],
+ "projects": [],
+ "extra": []
+}

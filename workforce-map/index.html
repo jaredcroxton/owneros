@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Brain</title>
+<style>
+  :root {
+    --bg: #FAF8F2;
+    --panel: rgba(255, 255, 255, 0.94);
+    --line: rgba(20, 24, 28, 0.1);
+    --text: #16181A;
+    --dim: #7A8087;
+    --accent: #9CCF1E;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  canvas { display: block; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+
+  .hud { position: fixed; z-index: 10; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+
+  #brand { top: 20px; left: 24px; }
+  #brand h1 {
+    font-size: 15px; letter-spacing: 0.35em; font-weight: 700;
+    color: var(--text); text-transform: uppercase;
+  }
+  #brand .sub {
+    font-size: 10px; color: var(--dim); letter-spacing: 0.12em; margin-top: 5px;
+  }
+  #brand .sub b { color: var(--accent); font-weight: 600; }
+
+  #lensChip {
+    margin-top: 14px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 20px; padding: 6px 14px; font-size: 10.5px; letter-spacing: 0.1em;
+    color: var(--text); cursor: pointer; user-select: none; display: inline-flex;
+    align-items: center; gap: 8px; backdrop-filter: blur(12px); transition: all 0.15s ease;
+  }
+  #lensChip:hover { border-color: var(--accent); }
+  #lensChip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  #lensChip .lock { font-size: 9px; opacity: 0.6; }
+  .pchip {
+    background: transparent; border: 1px solid var(--line); border-radius: 20px;
+    padding: 7px 14px; font-size: 10.5px; letter-spacing: 0.1em; color: var(--dim);
+    cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px;
+    transition: all 0.15s ease; margin-bottom: 6px;
+  }
+  .pchip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+  .pchip.active { color: var(--text); border-color: var(--accent); font-weight: 600; }
+  .pchip.active .dot { background: var(--accent); }
+  .pchip .lock { font-size: 9px; opacity: 0.6; }
+
+  #searchWrap { top: 20px; left: 50%; transform: translateX(-50%); position: fixed; }
+  #search {
+    width: 400px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; padding: 9px 42px 9px 14px; color: var(--text);
+    font-family: inherit; font-size: 12px; outline: none;
+    backdrop-filter: blur(12px);
+  }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--dim); }
+  #micBtn {
+    position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border-radius: 50%; border: none;
+    background: transparent; color: var(--dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #micBtn:hover { color: var(--text); }
+  #micBtn.listening { color: #E5484D; animation: pulse 1.2s ease infinite; }
+  #micBtn.speaking { color: var(--accent); animation: pulse 1.6s ease infinite; }
+  #micBtn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  #menuBtn {
+    top: 20px; right: 24px; pointer-events: auto;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    color: var(--dim); font-family: inherit; font-size: 10px; letter-spacing: 0.14em;
+    padding: 9px 16px; cursor: pointer; text-transform: uppercase;
+    backdrop-filter: blur(12px); transition: all 0.15s ease;
+  }
+  #menuBtn:hover { color: var(--text); border-color: var(--accent); }
+
+  #drawer {
+    top: 0; right: 0; width: 280px; height: 100%; z-index: 20;
+    background: var(--panel); border-left: 1px solid var(--line);
+    backdrop-filter: blur(16px); padding: 26px 22px;
+    transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+    overflow-y: auto;
+  }
+  #drawer.open { transform: translateX(0); }
+  #drawer .sec { margin-bottom: 26px; }
+  #drawer .sec .lbl {
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 10px;
+  }
+  #drawer #closeDrawer {
+    position: absolute; top: 16px; right: 18px; background: none; border: none;
+    color: var(--dim); font-size: 18px; cursor: pointer; font-family: inherit;
+  }
+  #drawer #closeDrawer:hover { color: var(--text); }
+  #drawer .legendTxt { font-size: 10px; color: var(--dim); line-height: 2; letter-spacing: 0.08em; }
+
+  #layoutToggle {
+    display: flex; gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+  }
+  #layoutToggle button {
+    flex: 1; background: transparent; border: none; color: var(--dim); font-family: inherit;
+    font-size: 10px; letter-spacing: 0.12em; padding: 8px 14px; cursor: pointer;
+    text-transform: uppercase;
+  }
+  #layoutToggle button.active { color: var(--text); font-weight: 700; background: rgba(127,127,127,0.1); }
+
+  #filters { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: transparent; border: 1px solid var(--line); border-radius: 20px;
+    padding: 5px 12px; font-size: 10px; letter-spacing: 0.08em; color: var(--dim);
+    cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .chip.on { color: var(--text); border-color: rgba(127,127,127,0.35); }
+  .chip.off { opacity: 0.35; }
+
+  #howto {
+    bottom: 22px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;
+    max-width: 760px;
+  }
+  #howto .ht { font-size: 9px; letter-spacing: 0.2em; color: var(--dim); text-transform: uppercase; margin-right: 4px; }
+  .qchip {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+    padding: 7px 14px; font-size: 11px; color: var(--dim); cursor: pointer;
+    backdrop-filter: blur(12px); transition: all 0.15s ease; user-select: none;
+  }
+  .qchip:hover { color: var(--text); border-color: var(--accent); }
+
+  #panel {
+    top: 0; right: 0; width: 340px; height: 100%;
+    background: var(--panel); border-left: 1px solid var(--line);
+    backdrop-filter: blur(16px); padding: 28px 24px;
+    transform: translateX(100%); transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+    overflow-y: auto;
+  }
+  #panel.open { transform: translateX(0); }
+  #panel .kind {
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 4px; display: inline-block;
+    border: 1px solid var(--line); color: var(--dim); margin-bottom: 14px;
+  }
+  #panel h2 { font-size: 17px; line-height: 1.35; margin-bottom: 12px; font-weight: 600; }
+  #panel .desc { font-size: 12px; line-height: 1.7; color: var(--dim); margin-bottom: 20px; white-space: pre-wrap; }
+  #panel .row { margin-bottom: 14px; }
+  #panel .row .lbl {
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 5px;
+  }
+  #panel .row .val {
+    font-size: 11px; line-height: 1.6; word-break: break-all; color: var(--text);
+  }
+  #panel .row .val a { color: var(--accent); text-decoration: none; filter: brightness(0.75); }
+  #panel .row .val a:hover { text-decoration: underline; }
+  #panel .val.path { cursor: pointer; }
+  #panel .val.path:hover { color: var(--accent); }
+  #panel #closePanel {
+    position: absolute; top: 18px; right: 18px; background: none; border: none;
+    color: var(--dim); font-size: 18px; cursor: pointer; font-family: inherit;
+  }
+  #panel #closePanel:hover { color: var(--text); }
+  #panel .neigh {
+    font-size: 11px; padding: 7px 10px; border: 1px solid var(--line);
+    border-radius: 6px; margin-bottom: 6px; cursor: pointer; display: flex;
+    align-items: center; gap: 8px; color: var(--dim); transition: all 0.12s;
+  }
+  #panel .neigh:hover { border-color: rgba(127,127,127,0.4); color: var(--text); }
+  #panel .neigh .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+
+  #replayBar {
+    bottom: 22px; right: 24px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+    padding: 6px 14px; backdrop-filter: blur(12px);
+  }
+  #replayBar button {
+    background: none; border: none; color: var(--dim); font-family: inherit;
+    font-size: 10.5px; cursor: pointer; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  #replayBar button:hover { color: var(--text); }
+  #timeline { width: 130px; accent-color: var(--accent); cursor: pointer; display: none; }
+  #replayCaption { font-size: 9.5px; color: var(--dim); letter-spacing: 0.08em; display: none; }
+  #replayBar.live #timeline, #replayBar.live #replayCaption { display: inline-block; }
+
+  #scanline {
+    position: fixed; inset: 0; z-index: 40; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; letter-spacing: 0.25em; color: var(--dim);
+    transition: opacity 0.7s ease; pointer-events: none;
+  }
+  #scanline.gone { opacity: 0; }
+
+  #toasts {
+    position: fixed; bottom: 158px; left: 50%; transform: translateX(-50%);
+    z-index: 30; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    background: var(--panel); border: 1px solid rgba(212, 160, 23, 0.55);
+    border-radius: 8px; padding: 9px 18px; font-size: 11px; letter-spacing: 0.06em;
+    color: var(--text); backdrop-filter: blur(12px);
+    animation: toastIn 0.35s cubic-bezier(0.2, 0, 0, 1);
+  }
+  .toast b { color: #B8860B; font-weight: 600; }
+  .toast.fade { opacity: 0; transition: opacity 0.6s ease; }
+  @keyframes toastIn { from { transform: translateY(14px); opacity: 0; } }
+
+  #thinking {
+    top: 100px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; letter-spacing: 0.2em; color: var(--text);
+    text-transform: uppercase; display: none;
+  }
+  #thinking.on { display: block; animation: pulse 1.4s ease infinite; }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+
+  #panel .answer { font-size: 12px; line-height: 1.75; color: var(--text); margin-bottom: 20px; white-space: pre-wrap; }
+  #panel .cite {
+    display: inline-flex; align-items: center; gap: 7px; margin: 0 6px 6px 0;
+    padding: 6px 11px; border: 1px solid var(--line); border-radius: 16px;
+    font-size: 10.5px; color: var(--dim); cursor: pointer; transition: all 0.12s;
+  }
+  #panel .cite:hover { border-color: rgba(127,127,127,0.45); color: var(--text); }
+  #panel .cite .dot { width: 6px; height: 6px; border-radius: 50%; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="scanline">scanning your brain<span id="dots"></span></div>
+
+<div class="hud" id="brand">
+  <h1 id="brandTitle">Second Brain</h1>
+  <div class="sub"><b id="nCount">0</b> nodes &middot; <b id="eCount">0</b> links &middot; scanned <span id="scanDate"></span></div>
+  <div id="lensChip"><span class="dot"></span><span id="lensLabel"></span><span class="lock" id="lensLock"></span></div>
+</div>
+
+<div class="hud" id="searchWrap">
+  <input id="search" type="text" placeholder="search your workforce..." autocomplete="off">
+  <button id="micBtn" title="ask by voice"><svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></button>
+</div>
+<div class="hud" id="thinking">your brain is thinking</div>
+
+<button class="hud" id="menuBtn">&#9776; menu</button>
+
+<div class="hud" id="drawer">
+  <button id="closeDrawer">&times;</button>
+  <div class="sec">
+    <div class="lbl">Lenses</div>
+    <div id="profiles"></div>
+  </div>
+  <div class="sec">
+    <div class="lbl">View</div>
+    <div id="layoutToggle">
+      <button id="btnWheel">Wheel</button>
+      <button id="btnGalaxy">Galaxy</button>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="lbl">Voice</div>
+    <div id="voiceWrap"></div>
+  </div>
+  <div class="sec">
+    <div class="lbl">Show</div>
+    <div id="filters"></div>
+  </div>
+  <div class="sec">
+    <div class="lbl">Reading the map</div>
+    <div class="legendTxt">
+      dot &middot; skill or project<br>
+      diamond &middot; memory<br>
+      hexagon &middot; skill pack<br>
+      ring &middot; live on the web<br><br>
+      scroll to zoom &middot; drag to pan<br>
+      click a node &middot; Enter asks the brain
+    </div>
+  </div>
+</div>
+
+<div class="hud" id="replayBar" style="display:none">
+  <button id="replayBtn">&#9654; replay growth</button>
+  <input id="timeline" type="range" min="0" max="1000" value="1000">
+  <span id="replayCaption"></span>
+</div>
+
+<div class="hud" id="howto"></div>
+
+<div id="toasts"></div>
+
+<div class="hud" id="panel">
+  <button id="closePanel">&times;</button>
+  <div id="panelBody"></div>
+</div>
+
+<script>
+const GRAPH = {"scanned":"2026-08-12","nodes":[{"id":"brain","label":"PerformOS","kind":"brain","group":"brain","description":"the AI workforce","path":"","url":"","born":null},{"id":"hub-core","label":"Core","kind":"hub","group":"core","description":"8 roles \u00b7 3 working","path":"","url":"","born":null},{"id":"hub-sales","label":"Sales","kind":"hub","group":"sales","description":"8 roles","path":"","url":"","born":null},{"id":"hub-marketing","label":"Marketing","kind":"hub","group":"marketing","description":"8 roles \u00b7 1 working","path":"","url":"","born":null},{"id":"hub-ops","label":"Ops","kind":"hub","group":"ops","description":"5 roles","path":"","url":"","born":null},{"id":"hub-hr","label":"Hr","kind":"hub","group":"hr","description":"5 roles","path":"","url":"","born":null},{"id":"hub-finance","label":"Finance","kind":"hub","group":"finance","description":"6 roles","path":"","url":"","born":null},{"id":"hub-support","label":"Support","kind":"hub","group":"support","description":"6 roles","path":"","url":"","born":null},{"id":"hub-docs","label":"Docs","kind":"hub","group":"docs","description":"8 roles \u00b7 1 working","path":"","url":"","born":null},{"id":"hub-training","label":"Training","kind":"hub","group":"training","description":"8 roles \u00b7 4 working","path":"","url":"","born":null},{"id":"hub-webdesign","label":"Web Design","kind":"hub","group":"webdesign","description":"14 roles \u00b7 3 working","path":"","url":"","born":null},{"id":"hub-infrastructure","label":"Infrastructure","kind":"hub","group":"infrastructure","description":"1 roles","path":"","url":"","born":null},{"id":"hub-designstandards","label":"Design Standards","kind":"hub","group":"designstandards","description":"4 roles \u00b7 1 working","path":"","url":"","born":null},{"id":"hub-designstyles","label":"Design Styles","kind":"hub","group":"designstyles","description":"1 roles","path":"","url":"","born":null},{"id":"hub-animation","label":"Animation","kind":"hub","group":"animation","description":"1 roles","path":"","url":"","born":null},{"id":"hub-secondbrain","label":"Second Brain","kind":"hub","group":"secondbrain","description":"1 roles","path":"","url":"","born":null},{"id":"hub-showcase","label":"Showcase","kind":"hub","group":"showcase","description":"4 roles","path":"","url":"","born":null},{"id":"hub-unfiled","label":"Unfiled","kind":"hub","group":"unfiled","description":"1 roles","path":"","url":"","born":null},{"id":"hub-other","label":"Misc","kind":"hub","group":"other","description":"everything else","path":"","url":"","born":null},{"id":"crew-core-brand-context","label":"brand context","description":"ready to work \u00b7 replaces a brand strategist's onboarding and discovery workshop \u00b7 $2,000-5,000 per branding engagement, or $150-250/hr consultant time. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-core-context-restore","label":"context restore","description":"WORKED THIS MONTH \u00b7 replaces the morning catch-up a project coordinator runs to work out where every job was left \u00b7 part of a $75-90k/yr coordinator role, or $40-60/hr admin time. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-core-context-save","label":"context save","description":"WORKED THIS MONTH \u00b7 replaces the written handover an office manager or departing contractor would prepare \u00b7 $300-800 per handover document outsourced, or $40-60/hr admin time. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-core-guard-boundary","label":"guard boundary","description":"ready to work \u00b7 replaces a project manager watching that contractors stay inside the agreed scope \u00b7 part of a $90-110k/yr project manager role. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-core-idea-pressure-tester","label":"idea pressure tester","description":"ready to work \u00b7 replaces a strategy consultant's feasibility study before you commit to building \u00b7 $3,000-10,000 per study outsourced, or $200-350/hr consultant time. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-core-plan-reviewer","label":"plan reviewer","description":"ready to work \u00b7 replaces a senior consultant reviewing the plan before work starts \u00b7 $1,000-3,000 per plan review outsourced, or $150-300/hr consultant time. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-core-quality-checker","label":"quality checker","description":"WORKED THIS MONTH \u00b7 replaces a freelance QA reviewer or proofing editor checking work before it ships \u00b7 $200-500 per document reviewed outsourced, or $60-100/hr. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-core-using-crew","label":"using crew","description":"ready to work \u00b7 replaces an office manager who knows exactly who handles what \u00b7 part of a $70-90k/yr office or operations manager role. Click for the full dossier.","group":"core","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-audit-deck","label":"audit deck","description":"ready to work \u00b7 replaces a presentation designer plus a senior salesperson's afternoon building the deck \u00b7 $500-1,500 per deck outsourced, or $100-150/hr design time. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-crm-cleanup","label":"crm cleanup","description":"ready to work \u00b7 replaces a contract CRM administrator or offshore data cleaner \u00b7 $1,000-3,000 per cleanup project outsourced, or $30-50/hr admin time. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-follow-up-sequence","label":"follow up sequence","description":"ready to work \u00b7 replaces a freelance sales copywriter writing your chase and nurture sequences \u00b7 $300-800 per sequence outsourced, or $100-150/hr copywriter time. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-lead-research","label":"lead research","description":"ready to work \u00b7 replaces a junior SDR's research hours \u00b7 $65-85k/yr role, or $30-45/hr outsourced researchers. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-outreach-draft","label":"outreach draft","description":"ready to work \u00b7 replaces a cold outreach copywriter or agency doing first-touch messages \u00b7 $100-180/hr freelance, or roughly $50-150 per message set from an agency. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-pipeline-review","label":"pipeline review","description":"ready to work \u00b7 replaces the weekly pipeline review a sales manager would run \u00b7 part of a $120-160k/yr sales manager role. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-proposal-builder","label":"proposal builder","description":"ready to work \u00b7 replaces a bid or proposal writer \u00b7 $500-1,500 per proposal outsourced, or $90-130/hr. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-sales-prospect-brief","label":"prospect brief","description":"ready to work \u00b7 replaces a sales assistant's pre-call prep \u00b7 $35-50/hr of assistant time, an hour or two before every call. Click for the full dossier.","group":"sales","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-brand-voice-check","label":"brand voice check","description":"ready to work \u00b7 replaces a freelance copy editor or brand consultant doing voice reviews \u00b7 $90-150/hr consultant time, or $150-400 per review outsourced. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-campaign-plan","label":"campaign plan","description":"ready to work \u00b7 replaces a marketing consultant or agency strategist building the campaign plan \u00b7 $2,000-6,000 per campaign plan from an agency, or $120-200/hr consultant time. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-carousel-campaign","label":"carousel campaign","description":"WORKED THIS MONTH \u00b7 replaces a social ads agency or freelance designer producing Meta carousel creative \u00b7 $1,500-4,000 per creative kit outsourced, on top of any agency retainer. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-content-repurpose","label":"content repurpose","description":"ready to work \u00b7 replaces a content assistant or repurposing service turning one piece into many \u00b7 $40-70/hr assistant time, or $300-800 per source piece outsourced. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-email-campaign-builder","label":"email campaign builder","description":"ready to work \u00b7 replaces an email marketing freelancer or agency writing launch sequences \u00b7 $800-3,000 per sequence outsourced, or part of a $75-95k/yr marketing hire. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-landing-page-review","label":"landing page review","description":"ready to work \u00b7 replaces a conversion consultant or CRO agency auditing your page \u00b7 $500-2,000 per audit outsourced, or $150-250/hr consultant time. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-seo-page-builder","label":"seo page builder","description":"ready to work \u00b7 replaces an SEO agency or content writer producing search-optimised pages \u00b7 $300-800 per page outsourced, or a $1,000-3,000/month SEO retainer. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-marketing-social-post-pack","label":"social post pack","description":"ready to work \u00b7 replaces a social media manager or agency running your accounts \u00b7 $1,000-2,500/month outsourced, or part of a $65-85k/yr social media hire. Click for the full dossier.","group":"marketing","path":"","url":"","kind":"skill","born":null},{"id":"crew-ops-automation-opportunity-review","label":"automation opportunity review","description":"ready to work \u00b7 replaces an automation consultant scoping what your business should automate first \u00b7 $150-250/hr consultant time, often sold as a $3,000-8,000 discovery engagement. Click for the full dossier.","group":"ops","path":"","url":"","kind":"skill","born":null},{"id":"crew-ops-operations-dashboard-plan","label":"operations dashboard plan","description":"ready to work \u00b7 replaces a BI consultant or analyst scoping a dashboard build \u00b7 $120-180/hr consultant time, with scoping engagements commonly $2,000-5,000. Click for the full dossier.","group":"ops","path":"","url":"","kind":"skill","born":null},{"id":"crew-ops-process-map","label":"process map","description":"ready to work \u00b7 replaces a process improvement consultant mapping how work really flows \u00b7 $150-250/hr consultant time, or $2,000-5,000 per mapped process. Click for the full dossier.","group":"ops","path":"","url":"","kind":"skill","born":null},{"id":"crew-ops-recurring-task-automation","label":"recurring task automation","description":"ready to work \u00b7 replaces an automation specialist or ops hire designing repeatable workflows \u00b7 $120-200/hr specialist time, or part of an $85-110k/yr operations role. Click for the full dossier.","group":"ops","path":"","url":"","kind":"skill","born":null},{"id":"crew-ops-workflow-improvement","label":"workflow improvement","description":"ready to work \u00b7 replaces a lean or operations consultant reviewing how work gets done \u00b7 $150-250/hr consultant time, or a $1,500-2,500 day rate. Click for the full dossier.","group":"ops","path":"","url":"","kind":"skill","born":null},{"id":"crew-hr-employee-communication-draft","label":"employee communication draft","description":"ready to work \u00b7 replaces an HR consultant or internal comms writer drafting staff announcements \u00b7 $120-200/hr consultant time, or a slice of a $90-110k/yr comms role. Click for the full dossier.","group":"hr","path":"","url":"","kind":"skill","born":null},{"id":"crew-hr-interview-guide","label":"interview guide","description":"ready to work \u00b7 replaces an external recruiter or HR consultant building structured interview kits \u00b7 $500-1,500 per role outsourced, or $120-200/hr HR consultant time. Click for the full dossier.","group":"hr","path":"","url":"","kind":"skill","born":null},{"id":"crew-hr-performance-conversation-prep","label":"performance conversation prep","description":"ready to work \u00b7 replaces an HR consultant coaching a manager before a difficult performance conversation \u00b7 $150-300 per conversation of consultant prep time, or $120-200/hr. Click for the full dossier.","group":"hr","path":"","url":"","kind":"skill","born":null},{"id":"crew-hr-policy-summary","label":"policy summary","description":"ready to work \u00b7 replaces an HR consultant translating long policies into plain English for staff \u00b7 $300-800 per policy outsourced, or $120-200/hr consultant time. Click for the full dossier.","group":"hr","path":"","url":"","kind":"skill","born":null},{"id":"crew-hr-role-profile-builder","label":"role profile builder","description":"ready to work \u00b7 replaces a recruiter or HR consultant writing position descriptions \u00b7 $300-900 per role outsourced, or $120-200/hr consultant time. Click for the full dossier.","group":"hr","path":"","url":"","kind":"skill","born":null},{"id":"crew-finance-admin-automation","label":"admin automation","description":"ready to work \u00b7 replaces an operations consultant scoping which finance admin to automate \u00b7 $1,000-3,000 per scoping engagement, or $150-250/hr consultant time. Click for the full dossier.","group":"finance","path":"","url":"","kind":"skill","born":null},{"id":"crew-finance-cashflow-brief","label":"cashflow brief","description":"ready to work \u00b7 replaces a bookkeeper's monthly cash reporting or part of a virtual CFO retainer \u00b7 $300-800 per month of bookkeeper reporting time, or a slice of a $1,500-3,000/month virtual CFO retainer. Click for the f","group":"finance","path":"","url":"","kind":"skill","born":null},{"id":"crew-finance-expense-review","label":"expense review","description":"ready to work \u00b7 replaces a bookkeeper's expense-checking hours \u00b7 a few hours a month at $60-90/hr bookkeeping rates. Click for the full dossier.","group":"finance","path":"","url":"","kind":"skill","born":null},{"id":"crew-finance-finance-dashboard-plan","label":"finance dashboard plan","description":"ready to work \u00b7 replaces a consultant or virtual CFO scoping a finance dashboard build \u00b7 $1,500-5,000 per scoping engagement outsourced. Click for the full dossier.","group":"finance","path":"","url":"","kind":"skill","born":null},{"id":"crew-finance-invoice-workflow","label":"invoice workflow","description":"ready to work \u00b7 replaces a bookkeeper or operations consultant untangling the invoicing process \u00b7 $1,000-3,000 per process review outsourced, or $60-90/hr bookkeeping time. Click for the full dossier.","group":"finance","path":"","url":"","kind":"skill","born":null},{"id":"crew-finance-monthly-summary","label":"monthly summary","description":"ready to work \u00b7 replaces a bookkeeper's month-end summary or part of an accountant's management reporting \u00b7 $300-800 per month outsourced, on top of compliance accounting. Click for the full dossier.","group":"finance","path":"","url":"","kind":"skill","born":null},{"id":"crew-support-escalation-review","label":"escalation review","description":"ready to work \u00b7 replaces a support team lead's escalation triage \u00b7 part of a $75-95k/yr team lead role. Click for the full dossier.","group":"support","path":"","url":"","kind":"skill","born":null},{"id":"crew-support-faq-builder","label":"faq builder","description":"ready to work \u00b7 replaces a technical writer or senior support agent building FAQ content \u00b7 $500-2,000 per FAQ set outsourced, or $80-120/hr freelance writing. Click for the full dossier.","group":"support","path":"","url":"","kind":"skill","born":null},{"id":"crew-support-feedback-summary","label":"feedback summary","description":"ready to work \u00b7 replaces an analyst or research agency summarising customer feedback \u00b7 $1,000-4,000 per feedback study outsourced. Click for the full dossier.","group":"support","path":"","url":"","kind":"skill","born":null},{"id":"crew-support-help-document-generator","label":"help document generator","description":"ready to work \u00b7 replaces a technical writer producing customer help articles \u00b7 $150-400 per article outsourced, or $80-120/hr freelance. Click for the full dossier.","group":"support","path":"","url":"","kind":"skill","born":null},{"id":"crew-support-reply-builder","label":"reply builder","description":"ready to work \u00b7 replaces a customer support officer's reply-writing hours \u00b7 part of a $55-70k/yr support role, or $30-45/hr outsourced support. Click for the full dossier.","group":"support","path":"","url":"","kind":"skill","born":null},{"id":"crew-support-ticket-triage","label":"ticket triage","description":"ready to work \u00b7 replaces a support coordinator sorting the inbound queue \u00b7 part of a $55-70k/yr support role's daily hours. Click for the full dossier.","group":"support","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-client-playbook-builder","label":"client playbook builder","description":"ready to work \u00b7 replaces a freelance copywriter or client services manager writing your welcome and process documents \u00b7 $800-2,500 per playbook outsourced, or $120-180/hr freelance writing time. Click for the full dossie","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-compliance-review-check","label":"compliance review check","description":"ready to work \u00b7 replaces a compliance consultant's document review hours \u00b7 $1,000-3,000 per document review outsourced, or $150-300/hr consultant time. Click for the full dossier.","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-handover-document-writer","label":"handover document writer","description":"ready to work \u00b7 replaces a departing staff member's paid handover fortnight, or a consultant hired to document a role \u00b7 $1,500-5,000 per role documented externally, or weeks of paid handover time. Click for the full doss","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-meeting-notes-to-actions","label":"meeting notes to actions","description":"ready to work \u00b7 replaces a minute-taker, or the admin hours of an executive assistant \u00b7 part of a $70-85k/yr EA role, or $60-100 per meeting for outsourced minute-taking. Click for the full dossier.","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-policy-document-generator","label":"policy document generator","description":"ready to work \u00b7 replaces an external HR or workplace relations consultant drafting policies \u00b7 $500-2,000 per policy outsourced, or $150-250/hr consultant time. Click for the full dossier.","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-research-notebooklm","label":"research notebooklm","description":"HAS WORKED FOR YOU \u00b7 replaces a research assistant or junior analyst's reading and summarising hours \u00b7 $35-50/hr research assistance, or days of your own reading time each month. Click for the full dossier.","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-sop-builder","label":"sop builder","description":"ready to work \u00b7 replaces an operations consultant, or the weeks a manager spends writing procedures \u00b7 $300-1,500 per SOP outsourced, or $120-200/hr process consultant time. Click for the full dossier.","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-docs-training-guide-creator","label":"training guide creator","description":"ready to work \u00b7 replaces a freelance instructional designer or external training provider building session guides \u00b7 $2,000-6,000 per course built externally, or $80-120/hr instructional design time. Click for the full do","group":"docs","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-assessment-designer","label":"assessment designer","description":"WORKED THIS MONTH \u00b7 replaces an instructional designer's assessment-writing hours or a training provider's test development service \u00b7 $500-1,500 per assessment outsourced, or $80-120/hr instructional design time. Click f","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-coaching-conversation-guide","label":"coaching conversation guide","description":"ready to work \u00b7 replaces an external coach or leadership facilitator preparing your managers \u00b7 $250-500 per coaching session outsourced, or $150-250/hr leadership consultant time. Click for the full dossier.","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-facilitator-guide-creator","label":"facilitator guide creator","description":"WORKED THIS MONTH \u00b7 replaces a freelance instructional designer building delivery guides \u00b7 $1,500-4,000 per session guide outsourced, or $80-120/hr design time. Click for the full dossier.","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-learner-workbook-builder","label":"learner workbook builder","description":"WORKED THIS MONTH \u00b7 replaces a training materials designer or a training provider's printed materials service \u00b7 $800-2,500 per workbook outsourced, or $80-120/hr materials design time. Click for the full dossier.","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-module-outline-builder","label":"module outline builder","description":"WORKED THIS MONTH \u00b7 replaces a learning and development consultant scoping course structure \u00b7 $1,000-3,000 per module design outsourced, or part of a $95-115k/yr L&D role. Click for the full dossier.","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-needs-analyser","label":"needs analyser","description":"ready to work \u00b7 replaces a learning and development consultant's training needs analysis engagement \u00b7 $3,000-8,000 per needs analysis outsourced, or $150-250/hr consultant time. Click for the full dossier.","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-onboarding-programme-builder","label":"onboarding programme builder","description":"ready to work \u00b7 replaces an HR consultant designing onboarding, or the ad-hoc weeks a manager loses to each new starter \u00b7 $2,000-6,000 per onboarding programme outsourced, or $130-180/hr HR consultant time. Click for the","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-training-skill-gap-mapper","label":"skill gap mapper","description":"ready to work \u00b7 replaces a capability assessment from an HR or change consultant \u00b7 $4,000-10,000 per capability review outsourced, or $150-250/hr consultant time. Click for the full dossier.","group":"training","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-app-builder","label":"app builder","description":"ready to work \u00b7 replaces a freelance automation developer or integration consultant \u00b7 $90-140/hr contractor time, or $3,000-10,000 per build outsourced. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-booking-site-builder","label":"booking site builder","description":"ready to work \u00b7 replaces a local web designer building sites for trades, salons, and clinics \u00b7 $2,000-5,000 per site outsourced, plus edit fees after launch. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-cinematic-build","label":"cinematic build","description":"ready to work \u00b7 replaces a creative web agency's design and motion team \u00b7 $8,000-25,000 per project at agency rates. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-fly-through-builder","label":"fly through builder","description":"ready to work \u00b7 replaces a video production house plus a specialist web developer \u00b7 $10,000-30,000 quoted as a combined film and build job. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-landing-page-builder","label":"landing page builder","description":"ready to work \u00b7 replaces a freelance landing page designer and copywriter \u00b7 $800-2,500 per page outsourced. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-lead-dashboard-builder","label":"lead dashboard builder","description":"ready to work \u00b7 replaces a research VA or analyst compiling lead lists and reports \u00b7 $40-70/hr contractor time, often $500-1,500 per list and report. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-page-builder","label":"page builder","description":"HAS WORKED FOR YOU \u00b7 replaces a small web design studio building full business websites \u00b7 $3,000-8,000 per site outsourced, plus $500-900/yr in typical care plans. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-product-film","label":"product film","description":"ready to work \u00b7 replaces a product video studio plus a landing page developer \u00b7 $8,000-30,000 for a filmed product page at studio rates. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-real-estate-immersive","label":"real estate immersive","description":"ready to work \u00b7 replaces a property videographer plus a custom microsite developer \u00b7 $1,500-5,000 per listing for video and a one-off microsite. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-scrollytelling","label":"scrollytelling","description":"ready to work \u00b7 replaces a digital agency's interactive storytelling team \u00b7 $10,000-40,000 for interactive scroll pieces at agency rates. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-slide-deck-builder","label":"slide deck builder","description":"WORKED THIS MONTH \u00b7 replaces a freelance presentation designer \u00b7 $500-1,500 per deck outsourced, or $80-120/hr. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-slide-deck-mobile","label":"slide deck mobile","description":"ready to work \u00b7 replaces a designer producing phone-ready proposals and story decks \u00b7 $300-900 per proposal or story deck outsourced. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-stitch","label":"stitch","description":"ready to work \u00b7 replaces a contract UX designer writing design specs and reviewing screens \u00b7 $110-150/hr contract UX time, or a slice of a $100-140k/yr role. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-website-architect","label":"website architect","description":"HAS WORKED FOR YOU \u00b7 replaces a design consultant doing competitor site teardowns \u00b7 $1,000-3,000 per audit outsourced, or $120-180/hr consultant time. Click for the full dossier.","group":"webdesign","path":"","url":"","kind":"skill","born":null},{"id":"crew-voice-receptionist","label":"receptionist","description":"ready to work \u00b7 replaces a part-time receptionist or an after-hours answering service \u00b7 $30-38/hr casual reception cover, or $200-600/mo for an answering service. Click for the full dossier.","group":"infrastructure","path":"","url":"","kind":"skill","born":null},{"id":"crew-design-documents","label":"documents","description":"WORKED THIS MONTH \u00b7 replaces a freelance document designer, the person who lays out your proposals, reports and workbooks \u00b7 $150-400 per formatted document outsourced, or $75-110/hr freelance design time. Click for the f","group":"designstandards","path":"","url":"","kind":"skill","born":null},{"id":"crew-design-engineering","label":"engineering","description":"ready to work \u00b7 replaces a senior front-end developer's polish pass, the specialist who makes software feel right \u00b7 $130-170k/yr specialist role, or $110-150/hr contract review time. Click for the full dossier.","group":"designstandards","path":"","url":"","kind":"skill","born":null},{"id":"crew-design-quality","label":"quality","description":"ready to work \u00b7 replaces an external design director's critique before anything ships \u00b7 $150-250/hr design consultancy time, or $1,000-3,000 per agency design audit. Click for the full dossier.","group":"designstandards","path":"","url":"","kind":"skill","born":null},{"id":"crew-design-reference","label":"reference","description":"ready to work \u00b7 replaces a creative director's reference library and the agency retainer that keeps design standards current \u00b7 $5,000-15,000 for an agency style guide engagement, or a slice of a $140-180k/yr creative dir","group":"designstandards","path":"","url":"","kind":"skill","born":null},{"id":"crew-design-styles","label":"styles","description":"ready to work \u00b7 replaces a freelance art director exploring visual directions for a project \u00b7 $120-180/hr art direction time, or $1,500-4,000 per style exploration from a studio. Click for the full dossier.","group":"designstyles","path":"","url":"","kind":"skill","born":null},{"id":"crew-animation","label":"animation","description":"ready to work \u00b7 replaces a freelance motion designer's hours on every website and document build \u00b7 $85-115k/yr role, or $90-140/hr freelance motion work. Click for the full dossier.","group":"animation","path":"","url":"","kind":"skill","born":null},{"id":"crew-my-second-brain","label":"second brain","description":"ready to work \u00b7 replaces a part-time knowledge manager, the role small businesses never actually get around to hiring \u00b7 $95-125k/yr as a full-time role, or $130-180/hr knowledge consultant time. Click for the full dossie","group":"secondbrain","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-immersive-narrative","label":"immersive narrative","description":"ready to work \u00b7 replaces a creative web agency's immersive site team \u00b7 $20,000-60,000 per site from an agency. Click for the full dossier.","group":"showcase","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-learning-experience","label":"learning experience","description":"ready to work \u00b7 replaces an e-learning developer or instructional design studio building your online modules \u00b7 $5,000-20,000 per module outsourced, or a $90-120k/yr in-house role. Click for the full dossier.","group":"showcase","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-spotlight-hero","label":"spotlight hero","description":"ready to work \u00b7 replaces a creative front-end developer building one bespoke interactive homepage hero \u00b7 $2,000-8,000 per hero freelanced at $100-150/hr rates. Click for the full dossier.","group":"showcase","path":"","url":"","kind":"skill","born":null},{"id":"crew-web-webcam-website","label":"webcam website","description":"ready to work \u00b7 replaces a creative technology studio's experiential web team \u00b7 $25,000-80,000 per experiential build from a studio. Click for the full dossier.","group":"showcase","path":"","url":"","kind":"skill","born":null},{"id":"crew-real-estate-review","label":"estate review","description":"ready to work \u00b7 replaces a property marketing reviewer, once this skill is actually built out \u00b7 $100-300 per listing review outsourced, indicative only since the skill is not yet written. Click for the full dossier.","group":"unfiled","path":"","url":"","kind":"skill","born":null}],"edges":[{"source":"brain","target":"hub-core"},{"source":"brain","target":"hub-sales"},{"source":"brain","target":"hub-marketing"},{"source":"brain","target":"hub-ops"},{"source":"brain","target":"hub-hr"},{"source":"brain","target":"hub-finance"},{"source":"brain","target":"hub-support"},{"source":"brain","target":"hub-docs"},{"source":"brain","target":"hub-training"},{"source":"brain","target":"hub-webdesign"},{"source":"brain","target":"hub-infrastructure"},{"source":"brain","target":"hub-designstandards"},{"source":"brain","target":"hub-designstyles"},{"source":"brain","target":"hub-animation"},{"source":"brain","target":"hub-secondbrain"},{"source":"brain","target":"hub-showcase"},{"source":"brain","target":"hub-unfiled"},{"source":"brain","target":"hub-other"},{"source":"crew-core-brand-context","target":"hub-core"},{"source":"crew-core-context-restore","target":"hub-core"},{"source":"crew-core-context-save","target":"hub-core"},{"source":"crew-core-guard-boundary","target":"hub-core"},{"source":"crew-core-idea-pressure-tester","target":"hub-core"},{"source":"crew-core-plan-reviewer","target":"hub-core"},{"source":"crew-core-quality-checker","target":"hub-core"},{"source":"crew-core-using-crew","target":"hub-core"},{"source":"crew-sales-audit-deck","target":"hub-sales"},{"source":"crew-sales-crm-cleanup","target":"hub-sales"},{"source":"crew-sales-follow-up-sequence","target":"hub-sales"},{"source":"crew-sales-lead-research","target":"hub-sales"},{"source":"crew-sales-outreach-draft","target":"hub-sales"},{"source":"crew-sales-pipeline-review","target":"hub-sales"},{"source":"crew-sales-proposal-builder","target":"hub-sales"},{"source":"crew-sales-prospect-brief","target":"hub-sales"},{"source":"crew-marketing-brand-voice-check","target":"hub-marketing"},{"source":"crew-marketing-campaign-plan","target":"hub-marketing"},{"source":"crew-marketing-carousel-campaign","target":"hub-marketing"},{"source":"crew-marketing-content-repurpose","target":"hub-marketing"},{"source":"crew-marketing-email-campaign-builder","target":"hub-marketing"},{"source":"crew-marketing-landing-page-review","target":"hub-marketing"},{"source":"crew-marketing-seo-page-builder","target":"hub-marketing"},{"source":"crew-marketing-social-post-pack","target":"hub-marketing"},{"source":"crew-ops-automation-opportunity-review","target":"hub-ops"},{"source":"crew-ops-operations-dashboard-plan","target":"hub-ops"},{"source":"crew-ops-process-map","target":"hub-ops"},{"source":"crew-ops-recurring-task-automation","target":"hub-ops"},{"source":"crew-ops-workflow-improvement","target":"hub-ops"},{"source":"crew-hr-employee-communication-draft","target":"hub-hr"},{"source":"crew-hr-interview-guide","target":"hub-hr"},{"source":"crew-hr-performance-conversation-prep","target":"hub-hr"},{"source":"crew-hr-policy-summary","target":"hub-hr"},{"source":"crew-hr-role-profile-builder","target":"hub-hr"},{"source":"crew-finance-admin-automation","target":"hub-finance"},{"source":"crew-finance-cashflow-brief","target":"hub-finance"},{"source":"crew-finance-expense-review","target":"hub-finance"},{"source":"crew-finance-finance-dashboard-plan","target":"hub-finance"},{"source":"crew-finance-invoice-workflow","target":"hub-finance"},{"source":"crew-finance-monthly-summary","target":"hub-finance"},{"source":"crew-support-escalation-review","target":"hub-support"},{"source":"crew-support-faq-builder","target":"hub-support"},{"source":"crew-support-feedback-summary","target":"hub-support"},{"source":"crew-support-help-document-generator","target":"hub-support"},{"source":"crew-support-reply-builder","target":"hub-support"},{"source":"crew-support-ticket-triage","target":"hub-support"},{"source":"crew-docs-client-playbook-builder","target":"hub-docs"},{"source":"crew-docs-compliance-review-check","target":"hub-docs"},{"source":"crew-docs-handover-document-writer","target":"hub-docs"},{"source":"crew-docs-meeting-notes-to-actions","target":"hub-docs"},{"source":"crew-docs-policy-document-generator","target":"hub-docs"},{"source":"crew-docs-research-notebooklm","target":"hub-docs"},{"source":"crew-docs-sop-builder","target":"hub-docs"},{"source":"crew-docs-training-guide-creator","target":"hub-docs"},{"source":"crew-training-assessment-designer","target":"hub-training"},{"source":"crew-training-coaching-conversation-guide","target":"hub-training"},{"source":"crew-training-facilitator-guide-creator","target":"hub-training"},{"source":"crew-training-learner-workbook-builder","target":"hub-training"},{"source":"crew-training-module-outline-builder","target":"hub-training"},{"source":"crew-training-needs-analyser","target":"hub-training"},{"source":"crew-training-onboarding-programme-builder","target":"hub-training"},{"source":"crew-training-skill-gap-mapper","target":"hub-training"},{"source":"crew-web-app-builder","target":"hub-webdesign"},{"source":"crew-web-booking-site-builder","target":"hub-webdesign"},{"source":"crew-web-cinematic-build","target":"hub-webdesign"},{"source":"crew-web-fly-through-builder","target":"hub-webdesign"},{"source":"crew-web-landing-page-builder","target":"hub-webdesign"},{"source":"crew-web-lead-dashboard-builder","target":"hub-webdesign"},{"source":"crew-web-page-builder","target":"hub-webdesign"},{"source":"crew-web-product-film","target":"hub-webdesign"},{"source":"crew-web-real-estate-immersive","target":"hub-webdesign"},{"source":"crew-web-scrollytelling","target":"hub-webdesign"},{"source":"crew-web-slide-deck-builder","target":"hub-webdesign"},{"source":"crew-web-slide-deck-mobile","target":"hub-webdesign"},{"source":"crew-web-stitch","target":"hub-webdesign"},{"source":"crew-web-website-architect","target":"hub-webdesign"},{"source":"crew-voice-receptionist","target":"hub-infrastructure"},{"source":"crew-design-documents","target":"hub-designstandards"},{"source":"crew-design-engineering","target":"hub-designstandards"},{"source":"crew-design-quality","target":"hub-designstandards"},{"source":"crew-design-reference","target":"hub-designstandards"},{"source":"crew-design-styles","target":"hub-designstyles"},{"source":"crew-animation","target":"hub-animation"},{"source":"crew-my-second-brain","target":"hub-secondbrain"},{"source":"crew-web-immersive-narrative","target":"hub-showcase"},{"source":"crew-web-learning-experience","target":"hub-showcase"},{"source":"crew-web-spotlight-hero","target":"hub-showcase"},{"source":"crew-web-webcam-website","target":"hub-showcase"},{"source":"crew-real-estate-review","target":"hub-unfiled"}]};
+const BRAND = {"title":"Workforce","owner":"PerformOS","bg":"#0b0e13","colors":{"brain":"#ff6b4a","other":"#6B7280","core":"#5EEAD4","sales":"#F472B6","marketing":"#22D3EE","ops":"#A78BFA","hr":"#FDE047","finance":"#4ADE80","support":"#60A5FA","docs":"#FB923C","training":"#38BDF8","webdesign":"#E879F9","infrastructure":"#FCA5A5","designstandards":"#86EFAC","designstyles":"#93C5FD","animation":"#FCD34D","secondbrain":"#2DD4BF","showcase":"#C4B5FD","unfiled":"#F9A8D4"},"groupOrder":["core","sales","marketing","ops","hr","finance","support","docs","training","webdesign","infrastructure","designstandards","designstyles","animation","secondbrain","showcase","unfiled","other"],"profiles":[{"id":"all","label":"Everything","mode":"dark","groups":"all","theme":{"bg":"#0b0e13","panel":"rgba(18,21,28,0.94)","line":"rgba(255,255,255,0.08)","text":"#eceef2","dim":"#8b93a5","accent":"#ff6b4a"}}],"examples":["invoice","proposal","onboarding"],"voiceLang":"en-AU"};
+
+const DEFAULT_COLORS = { brain: "#16181A", other: "#9AA1A8" };
+const COLORS = Object.assign({}, DEFAULT_COLORS, BRAND.colors || {});
+const colorOf = n => COLORS[n.group] || COLORS.other;
+const GOLD = "#D4A017";
+
+// ---- profiles (lenses: theme + visibility mask) ----
+const DEFAULT_THEME_DARK = { bg: "#060809", panel: "rgba(13,17,20,0.92)", line: "rgba(255,255,255,0.07)",
+  text: "#E8EDF0", dim: "#7A8691", accent: "#C6F24E" };
+const DEFAULT_THEME_LIGHT = { bg: "#FAF8F2", panel: "rgba(255,255,255,0.94)", line: "rgba(20,24,28,0.1)",
+  text: "#16181A", dim: "#7A8087", accent: "#9CCF1E" };
+const PROFILES = (BRAND.profiles && BRAND.profiles.length) ? BRAND.profiles
+  : [{ id: "all", label: "Everything", mode: "light", groups: "all" }];
+let profile = PROFILES.find(p => p.id === localStorage.getItem("sb_profile")) || PROFILES[0];
+let THEME = {};
+
+function applyTheme() {
+  const base = profile.mode === "dark" ? DEFAULT_THEME_DARK : DEFAULT_THEME_LIGHT;
+  THEME = Object.assign({}, base, profile.theme || {});
+  THEME.light = profile.mode !== "dark";
+  const r = document.documentElement.style;
+  r.setProperty("--bg", THEME.bg);
+  r.setProperty("--panel", THEME.panel);
+  r.setProperty("--line", THEME.line);
+  r.setProperty("--text", THEME.text);
+  r.setProperty("--dim", THEME.dim);
+  r.setProperty("--accent", THEME.accent);
+  THEME.inkRGB = THEME.light ? "20,24,28" : "200,215,225";
+}
+applyTheme();
+
+document.getElementById("brandTitle").textContent = BRAND.title || "Second Brain";
+document.getElementById("scanDate").textContent = GRAPH.scanned;
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let W, H, DPR;
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
+}
+resize();
+window.addEventListener("resize", () => { resize(); layoutDirty = true; });
+
+const nodes = GRAPH.nodes;
+let edges = GRAPH.edges;
+const byId = {};
+nodes.forEach(n => { byId[n.id] = n; });
+edges.forEach(e => { e.s = byId[e.source]; e.t = byId[e.target]; });
+edges = edges.filter(e => e.s && e.t);
+const adj = {};
+nodes.forEach(n => adj[n.id] = []);
+edges.forEach(e => { adj[e.s.id].push(e.t); adj[e.t.id].push(e.s); });
+
+function sizeNode(n) {
+  n.r = n.kind === "brain" ? 26 : n.kind === "hub" ? 13 + Math.min(6, n.deg * 0.12)
+      : n.kind === "pack" ? 8 : n.kind === "memory" ? 6.5
+      : n.kind === "project" ? 5.5 + Math.min(3, n.deg * 0.4) : 4;
+}
+nodes.forEach(n => {
+  n.deg = adj[n.id].length;
+  sizeNode(n);
+  const a = Math.random() * Math.PI * 2, d = 120 + Math.random() * 480;
+  n.x = Math.cos(a) * d; n.y = Math.sin(a) * d;
+  n.tx = n.x; n.ty = n.y;
+  n.vx = 0; n.vy = 0;
+  n.visible = true;
+  n.profileOn = true;
+  n.spawned = false;
+});
+
+const hubs = nodes.filter(n => n.kind === "hub");
+const brainNode = nodes.find(n => n.kind === "brain");
+const hubByGroup = {};
+hubs.forEach(h => hubByGroup[h.group] = h);
+if (brainNode) { brainNode.x = 0; brainNode.y = 0; brainNode.tx = 0; brainNode.ty = 0; }
+hubs.forEach((h, i) => {
+  const a = (i / hubs.length) * Math.PI * 2 - Math.PI / 2;
+  h.x = Math.cos(a) * 560; h.y = Math.sin(a) * 560;
+});
+for (const n of nodes) {
+  if (n.kind === "hub" || n.kind === "brain") continue;
+  n.anchor = adj[n.id].find(m => m.kind === "hub" || m.kind === "pack") || hubByGroup[n.group] || brainNode;
+  if (n.anchor) {
+    const a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 160;
+    n.x = n.anchor.x + Math.cos(a) * d; n.y = n.anchor.y + Math.sin(a) * d;
+  }
+}
+
+const eCountEl = document.getElementById("eCount");
+const nCountEl = document.getElementById("nCount");
+eCountEl.textContent = edges.length;
+let lastCount = -1;
+
+// camera
+let cam = { x: 0, y: 0, k: 0.55 };
+let homeK = 0.55;
+function toWorld(px, py) { return { x: (px - W / 2) / cam.k + cam.x, y: (py - H / 2) / cam.k + cam.y }; }
+
+// ---- layouts: wheel (deterministic rings) and galaxy (force sim) ----
+let layoutMode = localStorage.getItem("sb_layout") || "wheel";
+let layoutDirty = true;
+let wheelRings = [];
+
+function computeWheel() {
+  wheelRings = [];
+  const act = hubs.filter(h => h.visible);
+  if (!act.length) return;
+  const kindRank = { pack: 0, skill: 1, project: 2, memory: 3 };
+  const byHub = new Map(act.map(h => [h.id, []]));
+  const byPack = {};
+  for (const n of nodes) {
+    if (n.kind === "hub" || n.kind === "brain" || !n.visible || !n.spawned) continue;
+    let a = n.anchor;
+    if (a && a.kind === "pack") {
+      (byPack[a.id] = byPack[a.id] || []).push(n);
+      continue;
+    }
+    if (!a || !byHub.has(a.id)) a = hubByGroup[n.group];
+    if (a && byHub.has(a.id)) byHub.get(a.id).push(n);
+    else byHub.get(act[0].id).push(n);
+  }
+  // order each hub's items: packs first, each pack immediately followed by its children
+  const itemsOf = h => {
+    const direct = byHub.get(h.id) || [];
+    direct.sort((a, b) => (kindRank[a.kind] ?? 4) - (kindRank[b.kind] ?? 4) || a.label.localeCompare(b.label));
+    const seq = [];
+    for (const n of direct) {
+      seq.push(n);
+      if (n.kind === "pack" && byPack[n.id]) {
+        byPack[n.id].sort((a, b) => a.label.localeCompare(b.label));
+        seq.push(...byPack[n.id]);
+      }
+    }
+    return seq;
+  };
+  const hubItems = new Map(act.map(h => [h.id, itemsOf(h)]));
+  const weights = act.map(h => 3 + Math.pow(hubItems.get(h.id).length, 0.72));
+  const totalW = weights.reduce((a, b) => a + b, 0);
+  const R1 = 340, R2 = 480, ROW = 64, GAP = 34, PAD = 0.03;
+  let theta = -Math.PI / 2;
+  let maxR = R2;
+  act.forEach((h, i) => {
+    const sector = (weights[i] / totalW) * Math.PI * 2;
+    const mid = theta + sector / 2;
+    h.tx = Math.cos(mid) * R1; h.ty = Math.sin(mid) * R1;
+    const items = hubItems.get(h.id);
+    const a0 = theta + sector * PAD, a1 = theta + sector * (1 - PAD);
+    let idx = 0, R = R2;
+    while (idx < items.length) {
+      const cap = Math.max(1, Math.floor(((a1 - a0) * R) / GAP));
+      const rowCount = Math.min(cap, items.length - idx);
+      for (let j = 0; j < rowCount; j++) {
+        const n = items[idx + j];
+        const a = a0 + ((j + 0.5) / rowCount) * (a1 - a0);
+        n.tx = Math.cos(a) * R; n.ty = Math.sin(a) * R;
+      }
+      idx += rowCount;
+      maxR = Math.max(maxR, R);
+      R += ROW;
+    }
+    theta += sector;
+  });
+  if (brainNode) { brainNode.tx = 0; brainNode.ty = 0; }
+  wheelRings = [R1, R2 - 26, maxR + 34];
+  homeK = Math.min(W, H) / (2 * (maxR + 200));
+}
+
+// force simulation (galaxy mode)
+let alpha = 1;
+function tick() {
+  const vis = nodes.filter(n => n.visible && n.spawned);
+  for (let i = 0; i < vis.length; i++) {
+    const a = vis[i];
+    for (let j = i + 1; j < vis.length; j++) {
+      const b = vis[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let d2 = dx * dx + dy * dy;
+      if (d2 < 1) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 1; }
+      const bothHub = (a.kind === "hub" || a.kind === "brain") && (b.kind === "hub" || b.kind === "brain");
+      if (d2 > (bothHub ? 1600000 : 160000)) continue;
+      const f = (bothHub ? 26000 : a.kind === "hub" || b.kind === "hub" ? 2600 : 900) / d2;
+      const d = Math.sqrt(d2);
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    }
+  }
+  for (const e of edges) {
+    if (!e.s.visible || !e.t.visible || !e.s.spawned || !e.t.spawned) continue;
+    const rest = e.s.kind === "brain" || e.t.kind === "brain" ? 560
+               : e.s.kind === "hub" && e.t.kind === "hub" ? 620
+               : e.s.kind === "hub" || e.t.kind === "hub" ? 130 : 100;
+    let dx = e.t.x - e.s.x, dy = e.t.y - e.s.y;
+    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+    const f = (d - rest) * 0.012;
+    const fx = (dx / d) * f, fy = (dy / d) * f;
+    e.s.vx += fx; e.s.vy += fy; e.t.vx -= fx; e.t.vy -= fy;
+  }
+  for (const n of vis) {
+    n.vx += -n.x * 0.0009; n.vy += -n.y * 0.0009;
+    n.vx *= 0.82; n.vy *= 0.82;
+    if (n.kind !== "brain") { n.x += n.vx * alpha; n.y += n.vy * alpha; }
+  }
+  if (alpha > 0.06) alpha *= 0.996;
+}
+
+// ---- spawn system (shared by intro, replay, live growth) ----
+function spawnNode(n, opts = {}) {
+  if (n.spawned) return;
+  n.spawned = true;
+  if (!opts.quiet) { n.bornPulse = performance.now(); n.pulseColor = opts.gold ? GOLD : null; }
+  for (const e of edges) {
+    if (!e.bornAt && e.s.spawned && e.t.spawned) e.bornAt = opts.quiet ? 1 : performance.now();
+  }
+  alpha = Math.max(alpha, 0.5);
+  layoutDirty = true;
+}
+function spawnAll(quiet) {
+  nodes.forEach(n => spawnNode(n, { quiet: !!quiet }));
+}
+
+// ---- the awakening ----
+const anim = { mode: "idle", t0: 0, queue: [], qi: 0, dur: 0 };
+const skipIntro = new URLSearchParams(location.search).has("nointro")
+  || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function buildIntro() {
+  const q = [];
+  if (brainNode) q.push({ t: 900, n: brainNode });
+  hubs.forEach((h, i) => q.push({ t: 1250 + i * 110, n: h }));
+  const kids = nodes.filter(n => n.kind !== "hub" && n.kind !== "brain");
+  kids.sort((a, b) => (a.kind === "pack" ? 0 : 1) - (b.kind === "pack" ? 0 : 1) || b.deg - a.deg);
+  const t0 = 1250 + hubs.length * 110 + 300;
+  const span = Math.max(2600, Math.min(4400, kids.length * 12));
+  kids.forEach((n, i) => q.push({ t: t0 + (i / Math.max(1, kids.length - 1)) * span, n }));
+  return { q, dur: t0 + span + 700 };
+}
+const easeIO = p => p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+
+const scanEl = document.getElementById("scanline");
+function endScanline() { scanEl.classList.add("gone"); setTimeout(() => scanEl.remove(), 800); }
+let dotsTimer = setInterval(() => {
+  const d = document.getElementById("dots");
+  if (d) d.textContent = ".".repeat((d.textContent.length + 1) % 4);
+}, 320);
+
+function startIntro() {
+  const { q, dur } = buildIntro();
+  anim.mode = "intro"; anim.t0 = performance.now(); anim.queue = q; anim.qi = 0; anim.dur = dur;
+  cam.k = 2.2;
+  setTimeout(endScanline, 800);
+}
+function finishIntro() {
+  anim.mode = "idle";
+  spawnAll(true);
+  cam.k = homeK; cam.x = 0; cam.y = 0;
+  clearInterval(dotsTimer);
+}
+
+// ---- genesis replay ----
+const borns = nodes.filter(n => n.born).map(n => n.born);
+const tmin = borns.length ? Math.min(...borns) : 0;
+const tmax = borns.length ? Math.max(...borns) : 0;
+const replayBar = document.getElementById("replayBar");
+const timelineEl = document.getElementById("timeline");
+const captionEl = document.getElementById("replayCaption");
+if (borns.length > 5 && tmax > tmin) replayBar.style.display = "flex";
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function setCutoff(ts) {
+  for (const n of nodes) {
+    if (n.kind === "hub" || n.kind === "brain") { if (!n.spawned) spawnNode(n, { quiet: true }); continue; }
+    const b = n.born || tmin;
+    if (b <= ts && !n.spawned) spawnNode(n);
+    else if (b > ts && n.spawned) { n.spawned = false; n.bornPulse = 0; layoutDirty = true; }
+  }
+  for (const e of edges) {
+    if (!e.s.spawned || !e.t.spawned) e.bornAt = 0;
+    else if (!e.bornAt) e.bornAt = 1;
+  }
+  const d = new Date(ts * 1000);
+  const count = nodes.filter(n => n.spawned).length;
+  captionEl.textContent = MONTHS[d.getMonth()] + " " + d.getFullYear() + " · " + count + " nodes";
+  alpha = Math.max(alpha, 0.4);
+}
+document.getElementById("replayBtn").addEventListener("click", () => {
+  if (anim.mode === "intro") finishIntro();
+  replayBar.classList.add("live");
+  nodes.forEach(n => { n.spawned = (n.kind === "hub" || n.kind === "brain"); n.bornPulse = 0; });
+  edges.forEach(e => e.bornAt = 0);
+  anim.mode = "replay"; anim.t0 = performance.now();
+  cam.x = 0; cam.y = 0; if (cam.k > homeK * 1.5) cam.k = homeK;
+  layoutDirty = true;
+});
+timelineEl.addEventListener("input", () => {
+  if (anim.mode === "intro") finishIntro();
+  replayBar.classList.add("live");
+  anim.mode = "scrub";
+  setCutoff(tmin + (timelineEl.value / 1000) * (tmax - tmin));
+});
+
+// interaction state
+let hover = null, selected = null, searchTerm = "", askSet = null;
+const kindOn = { memory: true, skill: true, pack: true, project: true, hub: true, brain: true };
+const groupOn = {};
+[...new Set(nodes.map(n => n.group))].forEach(g => groupOn[g] = true);
+
+function matches(n) {
+  if (!searchTerm) return true;
+  return (n.label + " " + n.description + " " + n.id).toLowerCase().includes(searchTerm);
+}
+function applyFilters() {
+  nodes.forEach(n => {
+    n.visible = n.profileOn && (kindOn[n.kind] !== false) && (groupOn[n.group] !== false);
+  });
+  if (brainNode) brainNode.visible = true;
+  alpha = Math.max(alpha, 0.35);
+  layoutDirty = true;
+}
+function neighborSet(n) {
+  const s = new Set([n.id]);
+  adj[n.id].forEach(m => s.add(m.id));
+  return s;
+}
+
+// ---- profiles UI ----
+function profileGroups(p) {
+  return p.groups === "all" || !p.groups ? null : new Set(p.groups);
+}
+function setProfile(p, first) {
+  profile = p;
+  localStorage.setItem("sb_profile", p.id);
+  applyTheme();
+  const allow = profileGroups(p);
+  nodes.forEach(n => {
+    n.profileOn = n.kind === "brain" || !allow || allow.has(n.group)
+      || (n.kind !== "hub" && n.group === "other" && allow.has("other"));
+  });
+  buildGroupChips();
+  applyFilters();
+  if (selected && !selected.visible) { selected = null; panel.classList.remove("open"); }
+  askSet = null;
+  document.querySelectorAll(".pchip").forEach(el => el.classList.toggle("active", el.dataset.id === p.id));
+  document.getElementById("lensLabel").textContent = p.label;
+  document.getElementById("lensLock").textContent = p.hidePaths ? "presenter safe" : "";
+  if (!first) { cam.x = 0; cam.y = 0; cam.k = homeK; }
+}
+const profilesEl = document.getElementById("profiles");
+PROFILES.forEach(p => {
+  const c = document.createElement("div");
+  c.className = "pchip";
+  c.dataset.id = p.id;
+  c.innerHTML = '<span class="dot"></span>' + p.label + (p.hidePaths ? ' <span class="lock">presenter safe</span>' : "");
+  c.onclick = () => setProfile(p);
+  profilesEl.appendChild(c);
+});
+
+function draw() {
+  const now = performance.now();
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = THEME.bg;
+  ctx.fillRect(0, 0, W, H);
+  ctx.translate(W / 2, H / 2);
+  ctx.scale(cam.k, cam.k);
+  ctx.translate(-cam.x, -cam.y);
+
+  const focus = hover || selected;
+  const hi = askSet || (focus ? neighborSet(focus) : null);
+  const searching = searchTerm.length > 0;
+
+  // wheel guide rings
+  if (layoutMode === "wheel" && wheelRings.length) {
+    ctx.strokeStyle = "rgba(" + THEME.inkRGB + ",0.05)";
+    ctx.lineWidth = 1 / cam.k;
+    for (const R of wheelRings) {
+      ctx.beginPath();
+      ctx.arc(0, 0, R, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  for (const e of edges) {
+    if (!e.s.visible || !e.t.visible || !e.s.spawned || !e.t.spawned || !e.bornAt) continue;
+    const p = Math.min(1, (now - e.bornAt) / 400);
+    let a = THEME.light ? 0.07 : 0.05;
+    if (hi) a = (hi.has(e.s.id) && hi.has(e.t.id)) ? 0.4 : 0.02;
+    ctx.strokeStyle = "rgba(" + THEME.inkRGB + "," + a + ")";
+    ctx.lineWidth = 1 / cam.k;
+    ctx.beginPath();
+    ctx.moveTo(e.s.x, e.s.y);
+    ctx.lineTo(e.s.x + (e.t.x - e.s.x) * p, e.s.y + (e.t.y - e.s.y) * p);
+    ctx.stroke();
+  }
+
+  let spawnedCount = 0;
+  for (const n of nodes) {
+    if (n.spawned && n.visible) spawnedCount++;
+    if (!n.visible || !n.spawned) continue;
+    const col = n.kind === "brain" ? (THEME.light ? "#16181A" : "#FFFFFF") : colorOf(n);
+    let dim = false;
+    if (hi && !hi.has(n.id)) dim = true;
+    if (searching && !matches(n)) dim = true;
+    ctx.globalAlpha = dim ? 0.1 : 1;
+
+    if ((n.url || n.kind === "hub" || n.kind === "brain") && !dim) {
+      const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 3.2);
+      g.addColorStop(0, col + (THEME.light ? "2E" : "55"));
+      g.addColorStop(1, col + "00");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r * 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (n.bornPulse) {
+      const age = now - n.bornPulse;
+      if (age < 900) {
+        ctx.save();
+        if (!THEME.light) ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = (1 - age / 900) * 0.8;
+        ctx.strokeStyle = n.pulseColor || col;
+        ctx.lineWidth = 2 / cam.k;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r + (age / 900) * 46, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+        ctx.globalAlpha = dim ? 0.1 : 1;
+      } else if (!n.repulse) { n.bornPulse = 0; }
+      if (n.repulse && age >= 700) n.bornPulse = now;
+    }
+
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    if (n.kind === "memory") {
+      ctx.save(); ctx.translate(n.x, n.y); ctx.rotate(Math.PI / 4);
+      ctx.rect(-n.r * 0.8, -n.r * 0.8, n.r * 1.6, n.r * 1.6);
+      ctx.restore();
+    } else if (n.kind === "pack") {
+      for (let i = 0; i < 6; i++) {
+        const a2 = Math.PI / 3 * i - Math.PI / 6;
+        const px = n.x + Math.cos(a2) * n.r, py = n.y + Math.sin(a2) * n.r;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    } else {
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    if (THEME.light && !dim) {
+      ctx.strokeStyle = "rgba(" + THEME.inkRGB + ",0.22)";
+      ctx.lineWidth = 0.75 / cam.k;
+      ctx.stroke();
+    }
+
+    if (n.url) {
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.2 / cam.k;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r + 3.5 / cam.k, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    if (n === selected) {
+      ctx.strokeStyle = THEME.light ? "#16181A" : "#FFFFFF";
+      ctx.lineWidth = 1.5 / cam.k;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r + 6 / cam.k, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    const showLabel = n.kind === "brain" || n.kind === "hub" || n.kind === "pack"
+      || cam.k > 1.15 || n === hover || n === selected
+      || (hi && hi.has(n.id) && cam.k > 0.7)
+      || (searching && matches(n) && !dim);
+    if (showLabel && !dim) {
+      const fs = (n.kind === "brain" ? 15 : n.kind === "hub" ? 11.5 : 9.5) / Math.max(cam.k, 0.62);
+      ctx.font = (n.kind === "hub" || n.kind === "brain" ? "700 " : "400 ") + fs + "px 'JetBrains Mono', ui-monospace, monospace";
+      ctx.fillStyle = n.kind === "hub" || n.kind === "brain"
+        ? (THEME.light ? "#16181A" : "#FFFFFF")
+        : "rgba(" + THEME.inkRGB + ",0.8)";
+      ctx.textAlign = "center";
+      const txt = n.kind === "hub" || n.kind === "brain" ? n.label.toUpperCase() : n.label;
+      ctx.fillText(txt, n.x, n.y + n.r + fs + 4 / cam.k);
+      if (n.kind === "hub" || n.kind === "brain") {
+        ctx.font = "400 " + fs * 0.62 + "px 'JetBrains Mono', monospace";
+        ctx.fillStyle = "rgba(" + THEME.inkRGB + ",0.55)";
+        ctx.fillText(n.description, n.x, n.y + n.r + fs * 1.85 + 4 / cam.k);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  if (spawnedCount !== lastCount) { nCountEl.textContent = spawnedCount; lastCount = spawnedCount; }
+}
+
+let frame = 0;
+function loop() {
+  const now = performance.now();
+  frame++;
+  if (anim.mode === "intro") {
+    const el = now - anim.t0;
+    while (anim.qi < anim.queue.length && anim.queue[anim.qi].t <= el) {
+      spawnNode(anim.queue[anim.qi].n); anim.qi++;
+    }
+    const p = easeIO(Math.min(1, el / anim.dur));
+    cam.k = 2.2 + (homeK - 2.2) * p;
+    cam.x = 0; cam.y = 0;
+    alpha = Math.max(alpha, 0.5);
+    if (el >= anim.dur) { anim.mode = "idle"; clearInterval(dotsTimer); }
+  } else if (anim.mode === "replay") {
+    const el = now - anim.t0;
+    const f = Math.min(1, el / 15000);
+    setCutoff(tmin + f * (tmax - tmin));
+    timelineEl.value = Math.round(f * 1000);
+    if (f >= 1) anim.mode = "idle";
+  }
+  if (layoutMode === "wheel") {
+    if (layoutDirty && frame % 4 === 0) { computeWheel(); layoutDirty = false; }
+    for (const n of nodes) {
+      if (!n.spawned || !n.visible) continue;
+      n.x += (n.tx - n.x) * 0.14;
+      n.y += (n.ty - n.y) * 0.14;
+    }
+  } else {
+    tick();
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// layout toggle
+const btnWheel = document.getElementById("btnWheel");
+const btnGalaxy = document.getElementById("btnGalaxy");
+function setLayout(mode) {
+  layoutMode = mode;
+  localStorage.setItem("sb_layout", mode);
+  btnWheel.classList.toggle("active", mode === "wheel");
+  btnGalaxy.classList.toggle("active", mode === "galaxy");
+  layoutDirty = true;
+  if (mode === "galaxy") alpha = Math.max(alpha, 0.6);
+  else { cam.x = 0; cam.y = 0; cam.k = Math.min(cam.k, homeK); }
+}
+btnWheel.onclick = () => setLayout("wheel");
+btnGalaxy.onclick = () => setLayout("galaxy");
+btnWheel.classList.toggle("active", layoutMode === "wheel");
+btnGalaxy.classList.toggle("active", layoutMode === "galaxy");
+
+// hit test
+function nodeAt(px, py) {
+  const w = toWorld(px, py);
+  let best = null, bd = Infinity;
+  for (const n of nodes) {
+    if (!n.visible || !n.spawned) continue;
+    const dx = n.x - w.x, dy = n.y - w.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    const hitR = n.r + 8 / cam.k;
+    if (d < hitR && d < bd) { best = n; bd = d; }
+  }
+  return best;
+}
+
+// pan / zoom / hover / click
+let dragging = false, moved = false, lx = 0, ly = 0;
+canvas.addEventListener("mousedown", e => { dragging = true; moved = false; lx = e.clientX; ly = e.clientY; canvas.classList.add("dragging"); });
+window.addEventListener("mouseup", () => { dragging = false; canvas.classList.remove("dragging"); });
+window.addEventListener("mousemove", e => {
+  if (dragging) {
+    const dx = e.clientX - lx, dy = e.clientY - ly;
+    if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+    if (anim.mode === "intro") finishIntro();
+    cam.x -= dx / cam.k; cam.y -= dy / cam.k;
+    lx = e.clientX; ly = e.clientY;
+  } else {
+    hover = nodeAt(e.clientX, e.clientY);
+    canvas.style.cursor = hover ? "pointer" : "grab";
+  }
+});
+canvas.addEventListener("wheel", e => {
+  e.preventDefault();
+  if (anim.mode === "intro") finishIntro();
+  const w = toWorld(e.clientX, e.clientY);
+  const k2 = Math.min(4, Math.max(0.15, cam.k * (e.deltaY < 0 ? 1.12 : 0.89)));
+  cam.x = w.x - (e.clientX - W / 2) / k2;
+  cam.y = w.y - (e.clientY - H / 2) / k2;
+  cam.k = k2;
+}, { passive: false });
+canvas.addEventListener("click", e => {
+  if (anim.mode === "intro") { finishIntro(); return; }
+  if (moved) return;
+  askSet = null;
+  const n = nodeAt(e.clientX, e.clientY);
+  if (n) selectNode(n); else { selected = null; panel.classList.remove("open"); }
+});
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    askSet = null; selected = null; panel.classList.remove("open");
+    document.getElementById("drawer").classList.remove("open");
+    stopSpeech();
+    if (brainNode) brainNode.repulse = false;
+  }
+});
+
+// panel
+const panel = document.getElementById("panel");
+const panelBody = document.getElementById("panelBody");
+document.getElementById("closePanel").onclick = () => { selected = null; askSet = null; panel.classList.remove("open"); };
+
+function esc(s) { return (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+function selectNode(n) {
+  selected = n;
+  try { if (window.parent !== window) window.parent.postMessage({ owneros_role: n.id }, "*"); } catch (e) {}
+  const col = colorOf(n);
+  let html = '<div class="kind" style="border-color:' + col + '88; color:' + (THEME.light ? "#16181A" : col) + '">' + esc(n.kind) + ' &middot; ' + esc(n.group) + '</div>';
+  html += "<h2>" + esc(n.label) + "</h2>";
+  html += '<div class="desc">' + esc(n.description) + "</div>";
+  if (n.url) html += '<div class="row"><div class="lbl">Live</div><div class="val"><a href="' + esc(n.url) + '" target="_blank">' + esc(n.url) + "</a></div></div>";
+  if (n.path && !profile.hidePaths) html += '<div class="row"><div class="lbl">Path (click to copy)</div><div class="val path" data-p="' + esc(n.path) + '">' + esc(n.path) + "</div></div>";
+  if (n.born) {
+    const d = new Date(n.born * 1000);
+    html += '<div class="row"><div class="lbl">Born</div><div class="val">' + MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear() + "</div></div>";
+  }
+  const ns = adj[n.id].filter(m => m.visible);
+  if (ns.length) {
+    html += '<div class="row"><div class="lbl">Connected (' + ns.length + ")</div>";
+    const sorted = [...ns].sort((a, b) => b.deg - a.deg).slice(0, 30);
+    for (const m of sorted) {
+      html += '<div class="neigh" data-id="' + esc(m.id) + '"><span class="dot" style="background:' + colorOf(m) + '"></span>' + esc(m.label) + "</div>";
+    }
+    if (ns.length > 30) html += '<div style="font-size:10px;color:var(--dim);margin-top:4px">+ ' + (ns.length - 30) + " more</div>";
+    html += "</div>";
+  }
+  panelBody.innerHTML = html;
+  panel.classList.add("open");
+  wirePanel();
+}
+function wirePanel() {
+  panelBody.querySelectorAll(".neigh").forEach(el => {
+    el.onclick = () => { const m = byId[el.dataset.id]; if (m) { selectNode(m); flyTo(m); } };
+  });
+  panelBody.querySelectorAll(".path").forEach(el => {
+    el.onclick = () => { navigator.clipboard.writeText(el.dataset.p); el.textContent = "copied"; setTimeout(() => el.textContent = el.dataset.p, 900); };
+  });
+  panelBody.querySelectorAll(".cite").forEach(el => {
+    el.onclick = () => { const m = byId[el.dataset.id]; if (m) { flyTo(m); m.bornPulse = performance.now(); } };
+  });
+}
+function flyTo(n, tk) {
+  const sx = cam.x, sy = cam.y, sk = cam.k;
+  tk = tk || Math.max(cam.k, 1.1);
+  const t0 = performance.now();
+  function step(t) {
+    const p = Math.min(1, (t - t0) / 450), e2 = 1 - Math.pow(1 - p, 3);
+    cam.x = sx + (n.x - sx) * e2; cam.y = sy + (n.y - sy) * e2; cam.k = sk + (tk - sk) * e2;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ---- ask the brain ----
+let backend = false;
+const thinkingEl = document.getElementById("thinking");
+const searchEl = document.getElementById("search");
+let serverVoice = false;
+fetch("/health").then(r => r.ok ? r.json() : null).then(j => { if (j && j.ok) {
+  backend = true;
+  serverVoice = j.voice === "eleven";
+  searchEl.placeholder = "search the brain... Enter or the mic asks it a question";
+  connectEvents();
+}}).catch(() => {});
+
+let asking = false;
+async function ask(q) {
+  if (asking) return;
+  asking = true;
+  stopSpeech();
+  thinkingEl.textContent = "your brain is thinking";
+  searchTerm = "";
+  askSet = new Set([brainNode ? brainNode.id : ""]);
+  if (brainNode) { brainNode.repulse = true; brainNode.bornPulse = performance.now(); }
+  thinkingEl.classList.add("on");
+  try {
+    const r = await fetch("/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q }),
+    });
+    const data = await r.json();
+    if (brainNode) brainNode.repulse = false;
+    thinkingEl.classList.remove("on");
+    const cited = (data.cited || []).filter(id => byId[id] && byId[id].visible);
+    askSet = new Set(cited);
+    if (brainNode) askSet.add(brainNode.id);
+    showAnswer(q, data.answer || "No answer.", cited);
+    flyCitations(cited);
+    speak(data.answer || "");
+  } catch (err) {
+    if (brainNode) brainNode.repulse = false;
+    thinkingEl.classList.remove("on");
+    askSet = null;
+    toast("Brain server not reachable. Start serve_brain.py.");
+  }
+  asking = false;
+}
+function showAnswer(q, answer, cited) {
+  selected = null;
+  let html = '<div class="kind">ask · the brain answered</div>';
+  html += "<h2>" + esc(q) + "</h2>";
+  html += '<div class="answer">' + esc(answer) + "</div>";
+  if (cited.length) {
+    html += '<div class="row"><div class="lbl">It looked at (' + cited.length + ")</div>";
+    for (const id of cited) {
+      const m = byId[id];
+      html += '<span class="cite" data-id="' + esc(id) + '"><span class="dot" style="background:' + colorOf(m) + '"></span>' + esc(m.label) + "</span>";
+    }
+    html += "</div>";
+  }
+  panelBody.innerHTML = html;
+  panel.classList.add("open");
+  wirePanel();
+}
+function flyCitations(ids) {
+  let i = 0;
+  function next() {
+    if (i >= ids.length) return;
+    const n = byId[ids[i]];
+    if (n) { flyTo(n, Math.max(cam.k, 0.95)); n.bornPulse = performance.now(); }
+    i++;
+    setTimeout(next, 1500);
+  }
+  next();
+}
+searchEl.addEventListener("input", e => {
+  searchTerm = e.target.value.trim().toLowerCase();
+});
+searchEl.addEventListener("keydown", e => {
+  if (e.key === "Enter" && backend && searchEl.value.trim()) {
+    ask(searchEl.value.trim());
+  }
+});
+
+// ---- live growth over SSE ----
+const toastsEl = document.getElementById("toasts");
+function toast(html) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.innerHTML = html;
+  toastsEl.appendChild(t);
+  setTimeout(() => t.classList.add("fade"), 3600);
+  setTimeout(() => t.remove(), 4300);
+}
+function addLiveNode(nd) {
+  if (byId[nd.id]) return;
+  const hub = hubByGroup[nd.group] || byId["hub-other"] || brainNode;
+  const n = Object.assign({ vx: 0, vy: 0, visible: true, spawned: false, deg: 0, links: [] }, nd);
+  const a = Math.random() * Math.PI * 2;
+  n.x = hub.x + Math.cos(a) * 30; n.y = hub.y + Math.sin(a) * 30;
+  n.tx = n.x; n.ty = n.y;
+  n.anchor = hub;
+  const allow = profileGroups(profile);
+  n.profileOn = !allow || allow.has(n.group);
+  nodes.push(n); byId[n.id] = n; adj[n.id] = [];
+  const e = { source: n.id, target: hub.id, s: n, t: hub, bornAt: 0 };
+  edges.push(e);
+  adj[n.id].push(hub); adj[hub.id].push(n);
+  n.deg = 1; hub.deg++;
+  sizeNode(n); sizeNode(hub);
+  if (groupOn[n.group] === undefined) groupOn[n.group] = true;
+  n.visible = n.profileOn && (kindOn[n.kind] !== false) && (groupOn[n.group] !== false);
+  spawnNode(n, { gold: true });
+  eCountEl.textContent = edges.length;
+  toast("New " + esc(n.kind) + ": <b>" + esc(n.label) + "</b>");
+}
+function connectEvents() {
+  const es = new EventSource("/events");
+  es.onmessage = m => {
+    let ev;
+    try { ev = JSON.parse(m.data); } catch (err) { return; }
+    if (ev.type === "added" && ev.node) addLiveNode(ev.node);
+    else if (ev.type === "changed" && ev.node && byId[ev.node.id]) {
+      byId[ev.node.id].description = ev.node.description || byId[ev.node.id].description;
+      if (selected && selected.id === ev.node.id) selectNode(selected);
+    } else if (ev.type === "removed" && ev.id && byId[ev.id]) {
+      const n = byId[ev.id];
+      nodes.splice(nodes.indexOf(n), 1);
+      edges = edges.filter(e2 => e2.s !== n && e2.t !== n);
+      adj[n.id].forEach(m2 => { adj[m2.id] = adj[m2.id].filter(x => x !== n); m2.deg--; });
+      delete byId[ev.id]; delete adj[ev.id];
+      if (selected === n) { selected = null; panel.classList.remove("open"); }
+      eCountEl.textContent = edges.length;
+      layoutDirty = true;
+    }
+  };
+}
+
+// filter chips
+const filtersEl = document.getElementById("filters");
+const kindLabels = { memory: "memories", skill: "skills", pack: "packs", project: "projects" };
+Object.keys(kindLabels).forEach(k => {
+  const c = document.createElement("div");
+  c.className = "chip on";
+  c.innerHTML = '<span class="dot" style="background:var(--dim)"></span>' + kindLabels[k];
+  c.onclick = () => { kindOn[k] = !kindOn[k]; c.classList.toggle("off", !kindOn[k]); applyFilters(); };
+  filtersEl.appendChild(c);
+});
+let groupChipEls = [];
+function buildGroupChips() {
+  groupChipEls.forEach(el => el.remove());
+  groupChipEls = [];
+  const allow = profileGroups(profile);
+  const order = (BRAND.groupOrder || Object.keys(groupOn)).filter(g =>
+    g in groupOn && g !== "brain" && (!allow || allow.has(g)));
+  order.forEach(g => {
+    const c = document.createElement("div");
+    c.className = "chip " + (groupOn[g] ? "on" : "off");
+    c.innerHTML = '<span class="dot" style="background:' + (COLORS[g] || COLORS.other) + '"></span>' + g;
+    c.onclick = () => { groupOn[g] = !groupOn[g]; c.classList.toggle("off", !groupOn[g]); applyFilters(); };
+    filtersEl.appendChild(c);
+    groupChipEls.push(c);
+  });
+}
+
+// ---- jarvis: voice in, voice out ----
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const micBtn = document.getElementById("micBtn");
+let voiceOn = localStorage.getItem("sb_voice") !== "off";
+let listening = false, speaking = false, currentAudio = null;
+let rec = null;
+
+if (SR) {
+  rec = new SR();
+  rec.lang = BRAND.voiceLang || navigator.language || "en-US";
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.onresult = ev => {
+    let final = "", interim = "";
+    for (const r of ev.results) { if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript; }
+    searchEl.value = (final || interim).trim();
+  };
+  rec.onend = () => {
+    listening = false;
+    micBtn.classList.remove("listening");
+    thinkingEl.classList.remove("on");
+    const q = searchEl.value.trim();
+    if (q && backend) ask(q);
+  };
+  rec.onerror = () => { listening = false; micBtn.classList.remove("listening"); thinkingEl.classList.remove("on"); };
+}
+
+function stopSpeech() {
+  speaking = false;
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  micBtn.classList.remove("speaking");
+  thinkingEl.classList.remove("on");
+  if (brainNode && !asking) brainNode.repulse = false;
+}
+
+function pickVoice() {
+  if (!window.speechSynthesis) return null;
+  const voices = speechSynthesis.getVoices();
+  const prefs = ["Karen", "Samantha", "Daniel", "Google UK English Female", "Google US English"];
+  for (const p of prefs) { const v = voices.find(v2 => v2.name.includes(p)); if (v) return v; }
+  const lang = BRAND.voiceLang || navigator.language || "en-US";
+  return voices.find(v => v.lang === lang) || voices.find(v => v.lang && v.lang.startsWith("en")) || voices[0] || null;
+}
+if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => pickVoice();
+
+function browserSpeak(text, done) {
+  if (!window.speechSynthesis) { done(); return; }
+  const parts = text.match(/[^.!?]+[.!?]+\s*|[^.!?]+$/g) || [text];
+  const merged = [];
+  let cur = "";
+  for (const p of parts) {
+    if ((cur + p).length > 220) { if (cur) merged.push(cur); cur = p; }
+    else cur += p;
+  }
+  if (cur) merged.push(cur);
+  const v = pickVoice();
+  let i = 0;
+  const next = () => {
+    if (!speaking || i >= merged.length) { done(); return; }
+    const u = new SpeechSynthesisUtterance(merged[i++]);
+    if (v) u.voice = v;
+    u.rate = 1.03;
+    u.onend = next;
+    u.onerror = () => done();
+    speechSynthesis.speak(u);
+  };
+  next();
+}
+
+function speak(text) {
+  if (!voiceOn || !text) return;
+  stopSpeech();
+  speaking = true;
+  micBtn.classList.add("speaking");
+  thinkingEl.textContent = "speaking · click the mic to stop";
+  thinkingEl.classList.add("on");
+  if (brainNode) { brainNode.repulse = true; brainNode.bornPulse = performance.now(); }
+  const done = () => {
+    speaking = false;
+    micBtn.classList.remove("speaking");
+    thinkingEl.classList.remove("on");
+    if (brainNode) brainNode.repulse = false;
+  };
+  if (serverVoice) {
+    fetch("/speak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    }).then(r => { if (!r.ok) throw new Error("tts"); return r.blob(); })
+      .then(b => {
+        if (!speaking) return;
+        currentAudio = new Audio(URL.createObjectURL(b));
+        currentAudio.onended = done;
+        currentAudio.onerror = done;
+        currentAudio.play();
+      })
+      .catch(() => browserSpeak(text, done));
+  } else {
+    browserSpeak(text, done);
+  }
+}
+
+micBtn.onclick = () => {
+  if (speaking) { stopSpeech(); return; }
+  if (!rec) { toast("Voice input needs Chrome."); return; }
+  if (listening) { rec.stop(); return; }
+  stopSpeech();
+  searchEl.value = "";
+  searchTerm = "";
+  listening = true;
+  micBtn.classList.add("listening");
+  thinkingEl.textContent = "listening";
+  thinkingEl.classList.add("on");
+  try { rec.start(); } catch (e) { listening = false; micBtn.classList.remove("listening"); thinkingEl.classList.remove("on"); }
+};
+
+// voice toggle in drawer
+const voiceWrap = document.getElementById("voiceWrap");
+const vChip = document.createElement("div");
+vChip.className = "chip " + (voiceOn ? "on" : "off");
+vChip.innerHTML = '<span class="dot" style="background:var(--accent)"></span>spoken replies';
+vChip.onclick = () => {
+  voiceOn = !voiceOn;
+  localStorage.setItem("sb_voice", voiceOn ? "on" : "off");
+  vChip.classList.toggle("off", !voiceOn);
+  vChip.classList.toggle("on", voiceOn);
+  if (!voiceOn) stopSpeech();
+};
+voiceWrap.appendChild(vChip);
+
+// drawer
+const drawer = document.getElementById("drawer");
+function openDrawer() { drawer.classList.add("open"); panel.classList.remove("open"); }
+document.getElementById("menuBtn").onclick = openDrawer;
+document.getElementById("lensChip").onclick = openDrawer;
+document.getElementById("closeDrawer").onclick = () => drawer.classList.remove("open");
+canvas.addEventListener("mousedown", () => drawer.classList.remove("open"));
+
+// how-to: example questions
+const howtoEl = document.getElementById("howto");
+function buildHowto() {
+  const examples = (BRAND.examples && BRAND.examples.length) ? BRAND.examples
+    : hubs.slice(0, 2).map(h => "What do I know about " + h.label + "?").concat(["What is live on the web?"]);
+  howtoEl.innerHTML = '<span class="ht">try searching</span>';
+  examples.slice(0, 3).forEach(q => {
+    const c = document.createElement("div");
+    c.className = "qchip";
+    c.textContent = q;
+    c.onclick = () => {
+      searchEl.value = q;
+      if (backend) { ask(q); }
+      else { searchTerm = q.toLowerCase(); }
+    };
+    howtoEl.appendChild(c);
+  });
+}
+buildHowto();
+
+// boot (after everything above is defined)
+setProfile(profile, true);
+computeWheel();
+cam.k = skipIntro ? homeK : 2.2;
+if (skipIntro) {
+  endScanline(); clearInterval(dotsTimer);
+  spawnAll(true);
+  computeWheel();
+  if (layoutMode === "galaxy") for (let i = 0; i < 260; i++) tick();
+  else for (const n of nodes) { n.x = n.tx; n.y = n.ty; }
+  cam.k = homeK;
+  anim.mode = "idle";
+} else {
+  startIntro();
+}
+loop();
+</script>
+</body>
+</html>

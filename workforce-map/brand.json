@@ -1,0 +1,153 @@
+{
+ "title": "Workforce",
+ "owner": "PerformOS",
+ "tagline": "the AI workforce",
+ "bg": "#0b0e13",
+ "colors": {
+  "brain": "#ff6b4a",
+  "other": "#6B7280",
+  "core": "#5EEAD4",
+  "sales": "#F472B6",
+  "marketing": "#22D3EE",
+  "ops": "#A78BFA",
+  "hr": "#FDE047",
+  "finance": "#4ADE80",
+  "support": "#60A5FA",
+  "docs": "#FB923C",
+  "training": "#38BDF8",
+  "webdesign": "#E879F9",
+  "infrastructure": "#FCA5A5",
+  "designstandards": "#86EFAC",
+  "designstyles": "#93C5FD",
+  "animation": "#FCD34D",
+  "secondbrain": "#2DD4BF",
+  "showcase": "#C4B5FD",
+  "unfiled": "#F9A8D4"
+ },
+ "hubs": [
+  {
+   "id": "hub-core",
+   "label": "Core",
+   "group": "core",
+   "description": "8 roles \u00b7 3 working"
+  },
+  {
+   "id": "hub-sales",
+   "label": "Sales",
+   "group": "sales",
+   "description": "8 roles"
+  },
+  {
+   "id": "hub-marketing",
+   "label": "Marketing",
+   "group": "marketing",
+   "description": "8 roles \u00b7 1 working"
+  },
+  {
+   "id": "hub-ops",
+   "label": "Ops",
+   "group": "ops",
+   "description": "5 roles"
+  },
+  {
+   "id": "hub-hr",
+   "label": "Hr",
+   "group": "hr",
+   "description": "5 roles"
+  },
+  {
+   "id": "hub-finance",
+   "label": "Finance",
+   "group": "finance",
+   "description": "6 roles"
+  },
+  {
+   "id": "hub-support",
+   "label": "Support",
+   "group": "support",
+   "description": "6 roles"
+  },
+  {
+   "id": "hub-docs",
+   "label": "Docs",
+   "group": "docs",
+   "description": "8 roles \u00b7 1 working"
+  },
+  {
+   "id": "hub-training",
+   "label": "Training",
+   "group": "training",
+   "description": "8 roles \u00b7 4 working"
+  },
+  {
+   "id": "hub-webdesign",
+   "label": "Web Design",
+   "group": "webdesign",
+   "description": "14 roles \u00b7 3 working"
+  },
+  {
+   "id": "hub-infrastructure",
+   "label": "Infrastructure",
+   "group": "infrastructure",
+   "description": "1 roles"
+  },
+  {
+   "id": "hub-designstandards",
+   "label": "Design Standards",
+   "group": "designstandards",
+   "description": "4 roles \u00b7 1 working"
+  },
+  {
+   "id": "hub-designstyles",
+   "label": "Design Styles",
+   "group": "designstyles",
+   "description": "1 roles"
+  },
+  {
+   "id": "hub-animation",
+   "label": "Animation",
+   "group": "animation",
+   "description": "1 roles"
+  },
+  {
+   "id": "hub-secondbrain",
+   "label": "Second Brain",
+   "group": "secondbrain",
+   "description": "1 roles"
+  },
+  {
+   "id": "hub-showcase",
+   "label": "Showcase",
+   "group": "showcase",
+   "description": "4 roles"
+  },
+  {
+   "id": "hub-unfiled",
+   "label": "Unfiled",
+   "group": "unfiled",
+   "description": "1 roles"
+  }
+ ],
+ "examples": [
+  "invoice",
+  "proposal",
+  "onboarding"
+ ],
+ "profiles": [
+  {
+   "id": "all",
+   "label": "Everything",
+   "mode": "dark",
+   "groups": "all",
+   "theme": {
+    "bg": "#0b0e13",
+    "panel": "rgba(18,21,28,0.94)",
+    "line": "rgba(255,255,255,0.08)",
+    "text": "#eceef2",
+    "dim": "#8b93a5",
+    "accent": "#ff6b4a"
+   }
+  }
+ ],
+ "voiceLang": "en-AU"
+}

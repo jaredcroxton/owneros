@@ -21,20 +21,9 @@
   html, body { height: 100%; }
   body {
     background: var(--bg); color: var(--text);
-    font-family: Inter, sans-serif; font-size: 14px; min-height: 100vh;
-    display: grid; grid-template-columns: 208px 1fr; overflow-x: hidden;
-  }
-  body.locked { overflow: hidden; }
-  body::before {
-    content: ""; position: fixed; inset: -40%; z-index: -2; pointer-events: none;
-    background:
-      radial-gradient(ellipse 40% 32% at 60% 42%, rgba(255,107,74,.05), transparent 70%),
-      radial-gradient(ellipse 34% 28% at 30% 70%, rgba(45,212,167,.04), transparent 70%);
-    animation: drift 50s ease-in-out infinite alternate;
-  }
-  @keyframes drift {
-    from { transform: translate3d(-2%, -1%, 0); }
-    to { transform: translate3d(2%, 2%, 0) scale(1.06); }
+    font-family: Inter, sans-serif; font-size: 14px;
+    height: 100vh; overflow: hidden;
+    display: grid; grid-template-columns: 208px 1fr;
   }
   .mono { font-family: "JetBrains Mono", monospace; }
   a { color: inherit; text-decoration: none; }
@@ -43,7 +32,7 @@
     -webkit-backdrop-filter: var(--blur);
     border-right: 1px solid var(--line);
     padding: 22px 14px; display: flex; flex-direction: column; gap: 4px;
-    position: sticky; top: 0; height: 100vh; z-index: 5;
+    height: 100vh; z-index: 5;
   }
   .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px;
           font-weight: 700; font-size: 17px; letter-spacing: -.3px; }
@@ -69,128 +58,24 @@
   .dot { width: 7px; height: 7px; border-radius: 50%; }
   .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
   .dot.bad { background: var(--bad); }
-  main { position: relative; height: 100vh; overflow: hidden; min-width: 0;
-         z-index: 2; display: flex; flex-direction: column; }
+  main { display: flex; flex-direction: column; min-width: 0; height: 100vh;
+         position: relative; }
   .topbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-            padding: 24px 34px 0; }
+            padding: 12px 24px;
+            background: var(--panel); backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border-bottom: 1px solid var(--line); z-index: 4; }
   .topbar h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
   .datechip { font-size: 11px; color: var(--mut); background: var(--card);
-              backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
               border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px; }
-  .search { margin-left: auto; display: flex; align-items: center; gap: 9px;
-            background: var(--card); backdrop-filter: var(--blur);
-            -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
-            border-radius: 100px; padding: 8px 16px; min-width: 220px; }
-  .search svg { width: 14px; height: 14px; stroke: var(--faint); fill: none;
-                stroke-width: 2; }
-  .search input { background: none; border: 0; outline: 0; color: var(--text);
-                  font-family: Inter, sans-serif; font-size: 13px; width: 100%; }
-  .search input::placeholder { color: var(--faint); }
   .avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            margin-left: auto;
             background: linear-gradient(135deg, var(--accent), #b3401f);
             display: grid; place-items: center; font-weight: 700; font-size: 14px;
             color: #fff; }
-  .crumb { display: flex; align-items: center; gap: 14px; padding: 14px 34px 0;
-           min-height: 46px; }
-  .crumb .title { font-family: "JetBrains Mono", monospace; font-size: 15px;
-                  font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; }
-  .crumb .back { font-size: 12px; font-weight: 600; color: var(--mut);
-                 background: var(--card); border: 1px solid var(--line);
-                 border-radius: 100px; padding: 7px 16px; cursor: pointer;
-                 backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-                 transition: color .15s, border-color .15s; }
-  .crumb .back:hover { color: var(--text); border-color: var(--hover); }
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 8px 34px 0;
-            font-family: "JetBrains Mono", monospace; font-size: 9.5px;
-            letter-spacing: .8px; color: var(--faint); text-transform: uppercase; }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend .sw { width: 8px; height: 8px; border-radius: 50%; }
-
-  #world { flex: 1; min-height: 0; position: relative; overflow: hidden; }
-  svg#wires { position: absolute; inset: 0; width: 100%; height: 100%;
-              pointer-events: none; }
-  #wires line { stroke: rgba(255,255,255,.09); stroke-width: 1;
-                transition: opacity .3s; }
-  #wires circle.joint { fill: var(--accent); opacity: .55; }
-  #wires.fade line, #wires.fade circle { opacity: 0; }
-
-  .mapnode { position: absolute; transform: translate(-50%, -50%);
-             display: flex; flex-direction: column; align-items: center; gap: 9px;
-             cursor: pointer; text-align: center;
-             transition: left .55s cubic-bezier(.25,.8,.3,1),
-                         top .55s cubic-bezier(.25,.8,.3,1),
-                         opacity .4s, scale .55s cubic-bezier(.25,.8,.3,1); }
-  .mapnode .orb { border-radius: 50%; display: grid; place-items: center;
-                  background: rgba(28,33,43,.78); backdrop-filter: var(--blur);
-                  -webkit-backdrop-filter: var(--blur);
-                  border: 1.5px solid var(--line);
-                  box-shadow: 0 10px 34px rgba(0,0,0,.45);
-                  transition: width .55s cubic-bezier(.25,.8,.3,1),
-                              height .55s cubic-bezier(.25,.8,.3,1),
-                              border-color .2s, box-shadow .25s; }
-  .mapnode .orb svg { stroke: var(--mut); fill: none; stroke-width: 1.6;
-                      transition: stroke .2s, width .55s, height .55s; }
-  .mapnode:hover .orb { border-color: var(--hover);
-                        box-shadow: 0 14px 40px rgba(0,0,0,.55),
-                                    0 0 22px rgba(255,255,255,.06); }
-  .mapnode:hover .orb svg { stroke: var(--text); }
-  .mapnode .nl { font-size: 11.5px; font-weight: 600; line-height: 1.25;
-                 max-width: 118px; transition: opacity .3s;
-                 text-shadow: 0 2px 8px rgba(0,0,0,.9); }
-  .mapnode .ns { font-family: "JetBrains Mono", monospace; font-size: 8.5px;
-                 letter-spacing: .8px; color: var(--faint);
-                 text-transform: uppercase; transition: opacity .3s;
-                 text-shadow: 0 2px 8px rgba(0,0,0,.9);
-                 max-width: 104px; line-height: 1.6; }
-  .mapnode.hub .orb { width: 82px; height: 82px; }
-  .mapnode.hub .orb svg { width: 30px; height: 30px; }
-  .mapnode.hub.some-live .orb { border-color: rgba(45,212,167,.45); }
-  .mapnode.hub.some-active .orb { border-color: var(--accent-edge);
-    box-shadow: 0 10px 34px rgba(0,0,0,.45), 0 0 24px rgba(255,107,74,.14); }
-  .mapnode.hub.parked .orb { width: 34px; height: 34px; border-width: 1px; }
-  .mapnode.hub.parked .orb svg { width: 14px; height: 14px; }
-  .mapnode.hub.parked .nl, .mapnode.hub.parked .ns { opacity: 0; height: 0;
-    overflow: hidden; margin: 0; }
-  .mapnode.hub.parked { opacity: .45; gap: 0; }
-  .mapnode.hub.parked:hover { opacity: .9; }
-  .mapnode.role .orb { width: 72px; height: 72px; }
-  .mapnode.role .orb svg { width: 26px; height: 26px; }
-  .mapnode.role.live .orb { border-color: rgba(45,212,167,.6); }
-  .mapnode.role.live .orb svg { stroke: var(--ok); }
-  .mapnode.role.active .orb { border-color: var(--accent);
-    box-shadow: 0 10px 34px rgba(0,0,0,.45), 0 0 26px rgba(255,107,74,.35); }
-  .mapnode.role.active .orb svg { stroke: var(--accent); }
-  .mapnode.role .badge { position: absolute; top: -2px; right: -2px;
-    width: 16px; height: 16px; border-radius: 50%; background: var(--accent);
-    color: #fff; font-size: 9px; font-weight: 700; display: grid;
-    place-items: center; font-family: "JetBrains Mono", monospace; }
-  .mapnode.core { cursor: default; }
-  .mapnode.core .orb { width: 118px; height: 118px;
-    background: radial-gradient(circle at 38% 34%, #ff8a66, var(--accent) 60%, #b3401f);
-    border: 0; box-shadow: 0 0 60px rgba(255,107,74,.4); }
-  .mapnode.core .nl { font-family: "JetBrains Mono", monospace;
-    letter-spacing: 2.5px; text-transform: uppercase; font-size: 12px; }
-  .mapnode.core .halo { position: absolute; top: 59px; left: 50%;
-    width: 150px; height: 150px; border-radius: 50%;
-    border: 1px solid var(--accent-edge); transform: translate(-50%, -50%);
-    animation: halo 3.2s ease-out infinite; pointer-events: none; }
-  @keyframes halo { 0% { scale: .82; opacity: .7; }
-                    100% { scale: 1.25; opacity: 0; } }
-  .mapnode.dimmed { opacity: .12; pointer-events: none; }
-  .mapnode.gone { opacity: 0; pointer-events: none; }
-  #nodes.noanim .mapnode, #nodes.noanim .mapnode .orb { transition: none !important; }
-
-  .glass {
-    background: var(--card); backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
-    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
-  }
-  #listFallback { display: none; padding: 16px 22px 44px; overflow-y: auto; }
-  .lrow { display: flex; align-items: center; gap: 10px; padding: 10px 8px;
-          border-top: 1px solid var(--line2); cursor: pointer; font-size: 13px; }
-  .lrow .dot { flex-shrink: 0; }
-  .lrow .n { font-family: "JetBrains Mono", monospace; font-size: 11.5px; }
-  .lcat { font-weight: 700; font-size: 13px; margin: 16px 0 4px; }
+  .viewport { flex: 1; min-height: 0; }
+  .viewport iframe { width: 100%; height: 100%; border: 0; display: block;
+                     background: var(--bg); }
   .scrim { position: fixed; inset: 0; z-index: 30; background: rgba(3,5,9,.72);
            opacity: 0; pointer-events: none; transition: opacity .25s; }
   .scrim.on { opacity: 1; pointer-events: auto; }
@@ -247,11 +132,6 @@
          transition: opacity .15s; }
   .btn:hover { opacity: .88; }
   .pending { font-size: 12px; color: var(--faint); padding: 10px 0; }
-  .err { color: var(--bad); font-size: 13px; padding: 20px 34px; }
-  @media (max-width: 900px) {
-    #world, .legend, .crumb { display: none; }
-    #listFallback { display: block; flex: 1; }
-  }
   @media (max-width: 760px) {
     body { grid-template-columns: 1fr; }
     aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap;
@@ -259,12 +139,7 @@
             border-bottom: 1px solid var(--line); }
     .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    body::before { animation: none; }
-    .mapnode, .mapnode .orb { transition: none; }
-    .mapnode.core .halo { animation: none; opacity: 0; }
-    .drawer { transition: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .drawer { transition: none; } }
 </style>
 </head>
 <body>
@@ -303,25 +178,10 @@
   <div class="topbar">
     <h1>Workforce</h1>
     <span class="datechip mono" id="countChip">loading…</span>
-    <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-      <input id="filter" type="search" placeholder="Find a role…" aria-label="Find a role"></label>
     <span class="avatar">J</span>
   </div>
-  <div class="crumb">
-    <button class="back" id="backBtn" type="button" hidden>← all departments</button>
-    <span class="title mono" id="crumbTitle"></span>
-  </div>
-  <div class="legend">
-    <span><span class="sw" style="background:#2a3140;border:1px solid rgba(255,255,255,.25)"></span>ready</span>
-    <span><span class="sw" style="background:var(--ok)"></span>has worked for you</span>
-    <span><span class="sw" style="background:var(--accent)"></span>worked this month</span>
-    <span>click a department, then a role</span>
-  </div>
-  <div id="world">
-    <svg id="wires"></svg>
-    <div id="nodes"></div>
-  </div>
-  <div id="listFallback"></div>
+  <div class="viewport"><iframe id="mapFrame" src="/workforce-map/index.html"
+    title="Workforce map"></iframe></div>
 </main>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true">
@@ -355,8 +215,6 @@
   </div>
 </aside>
 <script>
-  const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
-    (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const copy = (text, btn) => navigator.clipboard.writeText(text).catch(() => {
     const ta = document.createElement("textarea");
     ta.value = text; document.body.appendChild(ta); ta.select();
@@ -374,231 +232,46 @@
     document.getElementById("brainState").textContent = "brain: offline";
   });
 
-  const GLYPHS = {
-    "Core": '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/>',
-    "Sales": '<path d="M4 17l5-5 4 3 7-8"/><path d="M15 7h5v5"/>',
-    "Marketing": '<path d="M4 11v3l4 1 9 5V4l-9 5-4 1z"/><path d="M19 9a4 4 0 010 6"/>',
-    "Ops": '<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/>',
-    "Hr": '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.5 2.5-5.5 6-5.5s6 2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M15.5 14.5c3 0 5 1.8 5 4.5"/>',
-    "Finance": '<circle cx="12" cy="12" r="8.5"/><path d="M14.5 9.2c-.5-.9-1.4-1.4-2.5-1.4-1.6 0-2.7.9-2.7 2.1 0 3 5.6 1.4 5.6 4.3 0 1.3-1.2 2.2-2.9 2.2-1.3 0-2.3-.6-2.8-1.6M12 6.2v11.6"/>',
-    "Support": '<path d="M4 12a8 8 0 0116 0"/><rect x="3" y="12" width="4" height="6" rx="1.6"/><rect x="17" y="12" width="4" height="6" rx="1.6"/><path d="M20 18a4 4 0 01-4 3h-2"/>',
-    "Docs": '<path d="M13 3H6a1.5 1.5 0 00-1.5 1.5v15A1.5 1.5 0 006 21h12a1.5 1.5 0 001.5-1.5V9z"/><path d="M13 3v6h6.5M8.5 13h7M8.5 16.5h5"/>',
-    "Training": '<path d="M2.5 9.5L12 5l9.5 4.5L12 14z"/><path d="M6.5 12v4.2c0 1.2 2.5 2.6 5.5 2.6s5.5-1.4 5.5-2.6V12"/><path d="M21.5 9.5V15"/>',
-    "Web Design": '<rect x="3" y="4.5" width="18" height="14" rx="2"/><path d="M3 9h18M7.5 6.8h.01M10.3 6.8h.01"/>',
-    "Infrastructure": '<path d="M6 3.5h9a2 2 0 012 2v13a2 2 0 01-2 2H9a2 2 0 01-2-2v-13a2 2 0 012-2z" transform="rotate(8 12 12)"/><path d="M10.7 17.2h.01" transform="rotate(8 12 12)"/>',
-    "Design Standards": '<path d="M4 20l4.5-1.2L20 7.3a2.1 2.1 0 00-3-3L5.5 15.8z"/><path d="M14.5 6.8l3 3"/>',
-    "Design Styles": '<path d="M12 3.5a8.5 8.5 0 100 17c1.3 0 2-.8 2-1.8 0-.9-.6-1.4-.6-2.3 0-1 .8-1.9 2.1-1.9h1.8a3.6 3.6 0 003.7-3.6c0-4.2-4-7.4-9-7.4z"/><circle cx="7.8" cy="10.5" r="1"/><circle cx="12" cy="7.8" r="1"/><circle cx="16.2" cy="10.5" r="1"/>',
-    "Animation": '<circle cx="12" cy="12" r="8.5"/><path d="M10 8.8l5.4 3.2-5.4 3.2z"/>',
-    "Second Brain": '<circle cx="12" cy="12" r="2.2"/><circle cx="5.5" cy="7" r="1.6"/><circle cx="18.5" cy="7" r="1.6"/><circle cx="5.5" cy="17" r="1.6"/><circle cx="18.5" cy="17" r="1.6"/><path d="M7 8l3 2.5M17 8l-3 2.5M7 16l3-2.5M17 16l-3-2.5"/>',
-    "Showcase": '<path d="M12 3.5l2.4 5 5.6.7-4.1 3.8 1.1 5.5-5-2.8-5 2.8 1.1-5.5L4 9.2l5.6-.7z"/>',
-    "Unfiled": '<path d="M4 8l8-4.5L20 8v8l-8 4.5L4 16z"/><path d="M4 8l8 4.5L20 8M12 12.5V20"/>',
-  };
-  const glyph = (pack, size) =>
-    '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '">' +
-    (GLYPHS[pack] || GLYPHS["Unfiled"]) + "</svg>";
+  let data = null, current = null;
+  const index = {};
 
-  const shortName = (n) => n
-    .replace(/^crew-(core|sales|marketing|ops|hr|finance|support|docs|training|web|design|voice|my|real)?-?/, "")
-    .replace(/-/g, " ");
-
-  const world = document.getElementById("world");
-  const nodesEl = document.getElementById("nodes");
-  const wires = document.getElementById("wires");
-  let data = null, view = { level: 0, pack: null }, current = null;
-  const nodeEls = {};
-
-  function makeNode(cls, id, inner) {
-    const el = document.createElement("div");
-    el.className = "mapnode " + cls;
-    el.dataset.id = id;
-    el.innerHTML = inner;
-    nodesEl.appendChild(el);
-    return el;
-  }
-
-  function buildDom() {
-    nodesEl.innerHTML = "";
-    const core = makeNode("core", "__core",
-      '<span class="halo"></span><span class="orb"></span><span class="nl">' +
-      esc(data.business) + "</span>");
-    nodeEls["__core"] = core;
-    data.packs.forEach((p) => {
-      const act = p.skills.filter((s) => s.status === "active").length;
-      const liv = p.skills.filter((s) => s.status !== "ready").length;
-      const rl = p.skills.length + (p.skills.length === 1 ? " role" : " roles");
-      const hub = makeNode("hub" + (act ? " some-active" : liv ? " some-live" : ""),
-        "hub:" + p.label,
-        '<span class="orb">' + glyph(p.label, 30) + '</span><span class="nl">' +
-        esc(p.label) + '</span><span class="ns">' + rl +
-        (liv ? " · " + liv + " working" : "") + "</span>");
-      hub.addEventListener("click", () => {
-        if (view.level === 0 || view.pack !== p.label) enterPack(p.label);
-      });
-      nodeEls["hub:" + p.label] = hub;
-      p.skills.forEach((s) => {
-        const role = makeNode("role " + s.status + " gone", "role:" + s.name,
-          '<span class="orb" style="position:relative">' + glyph(p.label, 26) +
-          (s.runs ? '<span class="badge">' + Math.min(s.runs, 9) + "</span>" : "") +
-          '</span><span class="nl">' + esc(shortName(s.name)) +
-          '</span><span class="ns">' +
-          (s.status === "active" ? "this month" :
-           s.status === "live" ? "has worked" : "ready") + "</span>");
-        role.addEventListener("click", () => openSkill(s.name));
-        nodeEls["role:" + s.name] = role;
-      });
-    });
-  }
-
-  function layout() {
-    const W = world.clientWidth, H = world.clientHeight;
-    const cx = W / 2, cy = H * 0.5;
-    const pos = {};
-    if (view.level === 0) {
-      pos["__core"] = { x: cx, y: cy, cls: "" };
-      const n = data.packs.length;
-      const rx = Math.min(W * 0.355, 520), ry = Math.min(H * 0.355, 300);
-      // Equal spacing along the ellipse perimeter, not equal angle, so side
-      // hubs do not bunch; alternate radius so labels get breathing room.
-      const SAMPLES = 720;
-      const pts = []; let per = 0;
-      let px = cx + rx, py = cy;
-      for (let k = 0; k <= SAMPLES; k++) {
-        const a = (k / SAMPLES) * Math.PI * 2;
-        const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry;
-        if (k) per += Math.hypot(x - px, y - py);
-        pts.push({ a, cum: per }); px = x; py = y;
-      }
-      const angleAt = (frac) => {
-        const target = ((frac % 1) + 1) % 1 * per;
-        for (let k = 0; k < pts.length; k++)
-          if (pts[k].cum >= target) return pts[k].a;
-        return Math.PI * 2;
-      };
-      let topFrac = 0.75;
-      for (let k = 0; k < pts.length; k++)
-        if (pts[k].a >= Math.PI * 1.5) { topFrac = pts[k].cum / per; break; }
-      data.packs.forEach((p, i) => {
-        const a = angleAt(topFrac + i / n);
-        const f = i % 2 ? 0.84 : 1.04;
-        const x = cx + Math.cos(a) * rx * f, y = cy + Math.sin(a) * ry * f;
-        pos["hub:" + p.label] = { x, y, cls: "" };
-        p.skills.forEach((s) => {
-          pos["role:" + s.name] = { x, y, cls: "gone" };
-        });
-      });
-    } else {
-      const p = data.packs.find((x) => x.label === view.pack);
-      pos["__core"] = { x: cx, y: cy, cls: "gone" };
-      pos["hub:" + p.label] = { x: cx, y: cy, cls: "" };
-      const n = p.skills.length;
-      const base = Math.min(W * 0.30, H * 0.34, 330);
-      p.skills.forEach((s, i) => {
-        const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-        const r = n > 9 ? base + (i % 2 ? 62 : -18) : base;
-        pos["role:" + s.name] = { x: cx + Math.cos(a) * r,
-                                  y: cy + Math.sin(a) * r * 0.86, cls: "" };
-      });
-      const others = data.packs.filter((x) => x.label !== view.pack);
-      others.forEach((o, i) => {
-        const a = -Math.PI / 2 + (i / others.length) * Math.PI * 2;
-        const rx = W * 0.47, ry = H * 0.475;
-        pos["hub:" + o.label] = { x: cx + Math.cos(a) * rx,
-                                  y: cy + Math.sin(a) * ry, cls: "parked" };
-        o.skills.forEach((s) => {
-          pos["role:" + s.name] = { x: cx + Math.cos(a) * rx,
-                                    y: cy + Math.sin(a) * ry, cls: "gone" };
-        });
-      });
+  async function load() {
+    try {
+      data = await (await fetch("/api/workforce")).json();
+      const working = data.packs.reduce((a, p) =>
+        a + p.skills.filter((s) => s.status !== "ready").length, 0);
+      document.getElementById("countChip").textContent =
+        data.total + " roles · " + working + " have worked for you";
+      data.packs.forEach((p) => p.skills.forEach((s) =>
+        index[s.name] = { skill: s, pack: p.label }));
+    } catch (e) {
+      document.getElementById("countChip").textContent = "workforce offline";
     }
-    for (const id in pos) {
-      const el = nodeEls[id];
-      if (!el) continue;
-      el.style.left = pos[id].x + "px";
-      el.style.top = pos[id].y + "px";
-      el.classList.toggle("gone", pos[id].cls === "gone");
-      el.classList.toggle("parked", pos[id].cls === "parked");
-    }
-    return pos;
+    window.__ready = true;
   }
+  load();
 
-  function drawWires(pos) {
-    wires.innerHTML = "";
-    const SVGNS = "http://www.w3.org/2000/svg";
-    const line = (a, b) => {
-      if (!pos[a] || !pos[b]) return;
-      const l = document.createElementNS(SVGNS, "line");
-      l.setAttribute("x1", pos[a].x); l.setAttribute("y1", pos[a].y);
-      l.setAttribute("x2", pos[b].x); l.setAttribute("y2", pos[b].y);
-      wires.appendChild(l);
-      const j = document.createElementNS(SVGNS, "circle");
-      j.setAttribute("class", "joint");
-      j.setAttribute("r", 2.5);
-      j.setAttribute("cx", pos[a].x + (pos[b].x - pos[a].x) * 0.55);
-      j.setAttribute("cy", pos[a].y + (pos[b].y - pos[a].y) * 0.55);
-      wires.appendChild(j);
-    };
-    if (view.level === 0) {
-      data.packs.forEach((p) => line("__core", "hub:" + p.label));
-    } else {
-      const p = data.packs.find((x) => x.label === view.pack);
-      p.skills.forEach((s) => line("hub:" + p.label, "role:" + s.name));
-    }
-  }
-
-  let firstLaid = false;
-  function rerender(animated) {
-    if (world.clientWidth < 60 || world.clientHeight < 60) return;
-    if (!firstLaid) {
-      firstLaid = true;
-      animated = false;
-      nodesEl.classList.add("noanim");
-      requestAnimationFrame(() => requestAnimationFrame(() =>
-        nodesEl.classList.remove("noanim")));
-      setTimeout(() => nodesEl.classList.remove("noanim"), 200);
-    }
-    wires.classList.add("fade");
-    const pos = layout();
-    const settle = animated ? 560 : 30;
-    setTimeout(() => {
-      drawWires(pos);
-      wires.classList.remove("fade");
-    }, settle);
-    const ct = document.getElementById("crumbTitle");
-    const back = document.getElementById("backBtn");
-    if (view.level === 0) {
-      ct.textContent = "";
-      back.hidden = true;
-    } else {
-      const p = data.packs.find((x) => x.label === view.pack);
-      const working = p.skills.filter((s) => s.status !== "ready").length;
-      ct.textContent = view.pack + " · " + p.skills.length +
-        (p.skills.length === 1 ? " role" : " roles") +
-        (working ? " · " + working + " working" : "");
-      back.hidden = false;
-    }
-  }
-
-  function enterPack(label) { view = { level: 1, pack: label }; rerender(true); applyFilter(); }
-  function exitPack() { view = { level: 0, pack: null }; rerender(true); applyFilter(); }
-  document.getElementById("backBtn").addEventListener("click", exitPack);
+  window.addEventListener("message", (ev) => {
+    const id = ev.data && ev.data.owneros_role;
+    if (!id || !index[id]) return;
+    openSkill(id);
+  });
 
   function openSkill(name) {
-    let found = null, packLabel = "";
-    data.packs.forEach((p) => p.skills.forEach((s) => {
-      if (s.name === name) { found = s; packLabel = p.label; } }));
-    if (!found) return;
-    current = found;
-    document.getElementById("dName").textContent = found.invoke || found.name;
-    document.getElementById("dPack").textContent = packLabel;
+    const entry = index[name];
+    const s = entry.skill;
+    current = s;
+    document.getElementById("dName").textContent = s.invoke || s.name;
+    document.getElementById("dPack").textContent = entry.pack;
     const st = document.getElementById("dStatus");
-    st.className = "pill " + found.status;
-    st.textContent = found.status === "active" ? "worked this month" :
-      found.status === "live" ? "has worked for you" : "ready to work";
+    st.className = "pill " + s.status;
+    st.textContent = s.status === "active" ? "worked this month" :
+      s.status === "live" ? "has worked for you" : "ready to work";
     const runs = document.getElementById("dRuns");
-    runs.hidden = !found.runs;
-    runs.textContent = found.runs + " job" + (found.runs === 1 ? "" : "s") + " filed";
-    document.getElementById("dDesc").textContent = found.description;
-    const d = found.dossier;
+    runs.hidden = !s.runs;
+    runs.textContent = s.runs + " job" + (s.runs === 1 ? "" : "s") + " filed";
+    document.getElementById("dDesc").textContent = s.description;
+    const d = s.dossier;
     document.getElementById("dMoney").hidden = !d;
     document.getElementById("dLadderSec").hidden = !d;
     document.getElementById("dHumanSec").hidden = !d;
@@ -615,7 +288,6 @@
     document.getElementById("drawer").classList.add("open");
     document.getElementById("drawer").setAttribute("aria-hidden", "false");
     document.getElementById("scrim").classList.add("on");
-    document.body.classList.add("locked");
   }
 
   function closeDrawer() {
@@ -624,78 +296,15 @@
     drawer.classList.remove("open");
     drawer.setAttribute("aria-hidden", "true");
     document.getElementById("scrim").classList.remove("on");
-    document.body.classList.remove("locked");
   }
   document.getElementById("dClose").addEventListener("click", closeDrawer);
   document.getElementById("scrim").addEventListener("click", closeDrawer);
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape") return;
-    if (document.getElementById("drawer").classList.contains("open")) closeDrawer();
-    else if (view.level === 1) exitPack();
+    if (e.key === "Escape") closeDrawer();
   });
   document.getElementById("dCopy").addEventListener("click", (e) => {
     if (current) copy(current.invoke || "/" + current.name, e.target);
   });
-
-  let query = "";
-  function applyFilter() {
-    const q = query;
-    data.packs.forEach((p) => {
-      let packHit = !q;
-      p.skills.forEach((s) => {
-        const hay = (s.name + " " + s.description + " " + p.label + " " +
-          JSON.stringify(s.dossier || "")).toLowerCase();
-        const hit = !q || q.split(/\s+/).every((w) => hay.includes(w));
-        if (hit) packHit = true;
-        const el = nodeEls["role:" + s.name];
-        if (el && view.level === 1 && view.pack === p.label)
-          el.classList.toggle("dimmed", !hit);
-      });
-      const hub = nodeEls["hub:" + p.label];
-      if (hub && view.level === 0) hub.classList.toggle("dimmed", !packHit);
-      if (hub && view.level === 1) hub.classList.remove("dimmed");
-    });
-  }
-  document.getElementById("filter").addEventListener("input", (e) => {
-    query = e.target.value.trim().toLowerCase();
-    applyFilter();
-  });
-
-  let resizeTimer = null;
-  function scheduleRelayout() {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { if (data) rerender(false); }, 120);
-  }
-  window.addEventListener("resize", scheduleRelayout);
-  new ResizeObserver(scheduleRelayout).observe(world);
-
-  async function load() {
-    try {
-      data = await (await fetch("/api/workforce")).json();
-      const working = data.packs.reduce((a, p) =>
-        a + p.skills.filter((s) => s.status !== "ready").length, 0);
-      document.getElementById("countChip").textContent =
-        data.total + " roles · " + working + " have worked for you";
-      buildDom();
-      rerender(false);
-      const fb = document.getElementById("listFallback");
-      fb.innerHTML = data.packs.map((p) =>
-        '<div class="lcat">' + esc(p.label) + "</div>" +
-        p.skills.map((s) =>
-          '<div class="lrow" data-name="' + esc(s.name) + '"><span class="dot" ' +
-          'style="background:' + (s.status === "active" ? "var(--accent)" :
-            s.status === "live" ? "var(--ok)" : "#2a3140") + '"></span>' +
-          '<span class="n">' + esc(shortName(s.name)) + "</span></div>").join("")
-      ).join("");
-      fb.querySelectorAll(".lrow").forEach((r) =>
-        r.addEventListener("click", () => openSkill(r.dataset.name)));
-    } catch (err) {
-      document.getElementById("world").innerHTML =
-        '<div class="err">Could not read the workforce. Is the server running?</div>';
-    }
-    window.__ready = true;
-  }
-  load();
 </script>
 <script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
   document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
