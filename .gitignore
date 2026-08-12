@@ -1,0 +1,20 @@
+# Not ours: pre-existing database, leave untouched and unshipped
+tasks.db
+
+# Private build memory (contains client and project details)
+progress.md
+findings.md
+task_plan.md
+
+# Local artifacts
+screenshots/
+brock-voice-test.mp3
+*.log
+.tmp/
+.DS_Store
+
+# Archival 2K sources live in the owneros-assets repo; runtime uses webp
+assets/*.png
+
+# Pre-existing files in this folder that are not part of the OS
+Poppins-*.ttf

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Capture · OwnerOS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' rx='7' fill='%23ff6b4a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%230b0e13'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+  :root {
+    --bg: #0b0e13; --panel: rgba(18,21,28,.66); --card: rgba(23,27,35,.55);
+    --card-solid: #171b23; --line: rgba(255,255,255,.08); --line2: rgba(255,255,255,.05);
+    --hover: rgba(255,255,255,.16);
+    --text: #eceef2; --mut: #9aa2b1; --faint: #8b93a5;
+    --accent: #ff6b4a; --accent-soft: rgba(255,107,74,.16);
+    --accent-edge: rgba(255,107,74,.5); --accent-glow: rgba(255,107,74,.32);
+    --ok: #2dd4a7; --warn: #e8b931; --bad: #ef5350; --info: #4a9eff;
+    --blur: blur(18px) saturate(1.25);
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: Inter, sans-serif; font-size: 14px; min-height: 100vh;
+    display: grid; grid-template-columns: 208px 1fr; overflow-x: hidden;
+  }
+  .stage {
+    position: fixed; inset: 0; z-index: -2; background: var(--bg);
+  }
+  .stage img, .stage video {
+    width: 100%; height: 100%; object-fit: cover; object-position: 70% 40%;
+    display: block;
+  }
+  .stage::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, rgba(11,14,19,.96) 0%, rgba(11,14,19,.72) 30%,
+        rgba(11,14,19,.18) 58%, rgba(11,14,19,.08) 78%, rgba(11,14,19,.42) 100%),
+      linear-gradient(0deg, rgba(11,14,19,.65) 0%, transparent 22%),
+      linear-gradient(180deg, rgba(11,14,19,.5) 0%, transparent 16%);
+  }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  a { color: inherit; text-decoration: none; }
+
+  aside {
+    background: var(--panel); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-right: 1px solid var(--line);
+    padding: 22px 14px; display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 0; height: 100vh; z-index: 5;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px;
+          font-weight: 700; font-size: 17px; letter-spacing: -.3px; }
+  .logo .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent);
+                display: grid; place-items: center; box-shadow: 0 0 18px var(--accent-glow); }
+  .logo .mark span { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); }
+  .logo em { font-style: normal; color: var(--accent); }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px; padding: 10px 12px;
+    border-radius: 10px; color: var(--mut); font-weight: 500; font-size: 13.5px;
+    border: 1px solid transparent; transition: color .15s, background .15s;
+  }
+  .nav-item:hover { color: var(--text); background: var(--card); }
+  .nav-item.here { color: var(--text); background: var(--card);
+                   border-color: var(--accent-edge);
+                   box-shadow: 0 0 14px rgba(255,107,74,.14); }
+  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none;
+                  stroke-width: 1.7; flex-shrink: 0; }
+  .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--line);
+               display: grid; gap: 8px; }
+  .sf-row { display: flex; align-items: center; gap: 8px; font-size: 11px;
+            color: var(--faint); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .dot.bad { background: var(--bad); }
+
+  main { position: relative; min-height: 100vh; padding: 24px 34px 56px; min-width: 0; }
+  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 30px;
+            flex-wrap: wrap; }
+  .topbar h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+  .datechip { font-size: 11px; color: var(--mut); background: var(--card);
+              backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+              border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px; }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            margin-left: auto;
+            background: linear-gradient(135deg, var(--accent), #b3401f);
+            display: grid; place-items: center; font-weight: 700; font-size: 14px;
+            color: #fff; }
+
+  .glass {
+    background: var(--card); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
+  }
+
+  .col { max-width: 620px; position: relative; z-index: 2; margin-top: 22px; }
+  .hero-head { margin-bottom: 22px; opacity: 0; animation: rise .4s ease forwards; }
+  .hero-head h2 { font-size: clamp(28px, 4vw, 38px); font-weight: 700;
+                  letter-spacing: -.6px; }
+  .hero-head h2 .cursor { color: var(--accent); animation: blink 1.2s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hero-head p { color: var(--mut); font-size: 13.5px; margin-top: 8px;
+                 line-height: 1.6; max-width: 480px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); }
+                    to { opacity: 1; transform: none; } }
+
+  .composer {
+    padding: 26px 28px 24px;
+    opacity: 0; animation: rise .4s ease .12s forwards;
+    transition: border-color .2s, box-shadow .25s;
+  }
+  .composer:hover { border-color: var(--hover); }
+  input[type="text"], textarea {
+    width: 100%; background: rgba(11,14,19,.55); color: var(--text);
+    border: 1px solid var(--line); border-radius: 12px;
+    font-family: Inter, sans-serif; font-size: 15px; padding: 14px 18px;
+    outline: none;
+    transition: border-color .2s, box-shadow .25s;
+  }
+  input[type="text"]::placeholder, textarea::placeholder { color: var(--faint); }
+  input[type="text"]:focus, textarea:focus {
+    border-color: var(--accent-edge);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  input[type="text"] { margin-bottom: 14px; }
+  textarea { min-height: 240px; resize: none; line-height: 1.6; }
+  textarea.glow-ok {
+    border-color: var(--ok);
+    box-shadow: 0 0 0 3px rgba(45,212,167,.13), 0 0 22px rgba(45,212,167,.18);
+  }
+
+  .bar { display: flex; align-items: center; gap: 12px; margin-top: 18px;
+         flex-wrap: wrap; }
+  .btn { font-size: 13px; font-weight: 600; background: var(--accent); color: #fff;
+         border: 0; border-radius: 100px; padding: 12px 26px; cursor: pointer;
+         font-family: Inter, sans-serif;
+         box-shadow: 0 0 18px var(--accent-glow);
+         transition: opacity .15s, transform .25s cubic-bezier(.2,.9,.3,1.2); }
+  .btn:hover { opacity: .88; transform: translateY(-2px); }
+  .btn:disabled { opacity: .4; cursor: default; transform: none; }
+  .btn.ghost { background: rgba(255,255,255,.04); border: 1px solid var(--line);
+               color: var(--mut);
+               box-shadow: none; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.ghost:hover { color: var(--text); border-color: var(--hover); opacity: 1; }
+  .btn.ghost.rec { border-color: var(--accent-edge); color: var(--accent);
+                   box-shadow: 0 0 14px rgba(255,107,74,.12); }
+  .btn.ghost.rec::before { content: ""; width: 8px; height: 8px; border-radius: 50%;
+                           background: var(--bad);
+                           animation: recPulse 1.1s ease-in-out infinite; }
+  @keyframes recPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,83,80,.5); }
+    50% { opacity: .55; box-shadow: 0 0 0 6px rgba(239,83,80,0); }
+  }
+  .note { font-size: 12px; color: var(--faint); }
+  .chip { margin-left: auto; font-size: 11px; color: var(--faint);
+          background: var(--card); backdrop-filter: var(--blur);
+          -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+          border-radius: 100px; padding: 5px 12px; white-space: nowrap; }
+
+  .err { max-width: 620px; margin: 18px 0 0; color: var(--bad);
+         font-size: 13px; display: none; position: relative; z-index: 2; }
+
+  .toast {
+    position: fixed; right: 24px; bottom: 24px; z-index: 50;
+    background: var(--card-solid); border: 1px solid var(--ok); border-radius: 14px;
+    padding: 14px 18px; font-size: 13px; max-width: 340px;
+    box-shadow: 0 0 30px rgba(45,212,167,.25);
+    transform: translateY(20px); opacity: 0; pointer-events: none;
+    transition: transform .35s cubic-bezier(.2,.9,.3,1.3), opacity .3s;
+  }
+  .toast.on { transform: none; opacity: 1; }
+  .toast b { color: var(--ok); }
+  .toast code { font-family: "JetBrains Mono", monospace; font-size: 11.5px;
+                color: var(--text); background: rgba(255,255,255,.06);
+                border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+
+  @media (max-width: 760px) {
+    body { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap;
+            align-items: center; border-right: 0;
+            border-bottom: 1px solid var(--line); }
+    .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
+    main { padding: 20px 18px 44px; }
+    .col { margin-top: 8px; }
+    .composer { padding: 18px 16px 16px; }
+    .chip { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-head, .composer { animation: none; opacity: 1; }
+    .hero-head h2 .cursor { animation: none; }
+    .btn.ghost.rec::before { animation: none; }
+    .toast { transition: none; }
+    .stage video { display: none; }
+    .stage img { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"><img src="/assets/droplet.webp" alt="" id="stageImg"></div>
+<aside>
+  <div class="logo"><span class="mark"><span></span></span>Owner<em>OS_</em></div>
+  <a class="nav-item" href="/today">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Today</a>
+  <a class="nav-item" href="/projects">
+    <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    Projects</a>
+  <a class="nav-item" href="/brain">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>
+    Brain</a>
+  <a class="nav-item here" href="/capture">
+    <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="17" width="16" height="4" rx="1.5"/></svg>
+    Capture</a>
+  <a class="nav-item" href="/launch">
+    <svg viewBox="0 0 24 24"><path d="M12 3c4 3 5 8 3 13l-3 5-3-5C7 11 8 6 12 3z"/><circle cx="12" cy="10" r="2"/></svg>
+    Launch</a>
+  <a class="nav-item" href="/plays">
+    <svg viewBox="0 0 24 24"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-3-4 3-4-3-2 1.5V6a2 2 0 0 1 2-2z"/><path d="M8 9h6M8 13h4"/></svg>
+    Plays</a>
+  <a class="nav-item" href="/files">
+    <svg viewBox="0 0 24 24"><path d="M13 3H6a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V9z"/><path d="M13 3v6h6.5"/></svg>
+    Files</a>
+  <a class="nav-item" href="/roadmap">
+    <svg viewBox="0 0 24 24"><path d="M4 19V5M4 17c5-3 11 3 16 0M4 9c5-3 11 3 16 0"/></svg>
+    Roadmap</a>
+  <div class="side-foot">
+    <div class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></div>
+    <div class="sf-row"><span class="dot ok"></span>local · inbox writable</div>
+  </div>
+</aside>
+<main>
+  <div class="topbar">
+    <h1>Capture</h1>
+    <span class="datechip mono" id="dateChip"></span>
+    <span class="avatar">J</span>
+  </div>
+  <div class="col">
+    <div class="hero-head">
+      <h2>Drop it in the Brain<span class="cursor">_</span></h2>
+      <p>A thought, a win, a client note, a lesson. It lands in the inbox and is
+        born into the Brain as a live node while you watch.</p>
+    </div>
+    <div class="glass composer">
+      <input type="text" id="title" aria-label="Title"
+             placeholder="Title (optional, first line used if empty)">
+      <textarea id="text" aria-label="Capture text"
+                placeholder="Type it, or press the mic and say it."></textarea>
+      <div class="bar">
+        <button class="btn" id="save" type="button">Capture it</button>
+        <button class="btn ghost" id="mic" type="button">start mic</button>
+        <span class="note" id="hint"></span>
+        <span class="chip mono" id="voiceState">voice: checking…</span>
+      </div>
+    </div>
+    <div class="err" id="err"></div>
+  </div>
+</main>
+<div class="toast" id="flash"><b>Node born.</b> <span id="flashText">Filed as
+  <code></code>. Watch the Brain: a new node is being born.</span></div>
+<script>
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+    (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  document.getElementById("dateChip").textContent =
+    new Date().toLocaleDateString("en-AU",
+      { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+
+  const text = document.getElementById("text");
+  const title = document.getElementById("title");
+  const save = document.getElementById("save");
+  const mic = document.getElementById("mic");
+  const hint = document.getElementById("hint");
+  const flash = document.getElementById("flash");
+  const err = document.getElementById("err");
+  const voiceState = document.getElementById("voiceState");
+  let fishReady = false;
+
+  fetch("/api/health").then((r) => r.json()).then((h) => {
+    fishReady = !!h.fish;
+    voiceState.textContent = fishReady ? "voice: fish" : "voice: browser";
+    document.getElementById("brainDot").className = "dot " + (h.brain ? "ok" : "bad");
+    document.getElementById("brainState").textContent =
+      h.brain ? "brain: live on 4880" : "brain: offline";
+    window.__ready = true;
+  }).catch(() => {
+    voiceState.textContent = "voice: browser";
+    document.getElementById("brainDot").className = "dot bad";
+    document.getElementById("brainState").textContent = "brain: offline";
+    window.__ready = true;
+  });
+
+  function fail(msg) {
+    err.textContent = msg; err.style.display = "block";
+    setTimeout(() => { err.style.display = "none"; }, 5000);
+  }
+
+  save.addEventListener("click", async () => {
+    const payload = { text: text.value, title: title.value };
+    if (!payload.text.trim()) { fail("Nothing to capture yet."); return; }
+    save.disabled = true;
+    try {
+      const resp = await (await fetch("/api/capture", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload) })).json();
+      if (!resp.ok) throw new Error(resp.error || "capture failed");
+      document.getElementById("flashText").innerHTML =
+        "Filed as <code></code>. Watch the Brain: a new node is being born.";
+      document.querySelector("#flashText code").textContent = resp.name;
+      flash.classList.add("on");
+      text.classList.add("glow-ok");
+      setTimeout(() => text.classList.remove("glow-ok"), 1800);
+      text.value = ""; title.value = "";
+      setTimeout(() => flash.classList.remove("on"), 6000);
+    } catch (ex) {
+      fail("Capture failed: " + ex.message);
+    }
+    save.disabled = false;
+  });
+
+  let recognition = null, recorder = null, chunks = [], listening = false;
+
+  function stopUi() {
+    listening = false; mic.textContent = "start mic"; mic.classList.remove("rec");
+    hint.textContent = "";
+  }
+
+  async function fishStart() {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = [];
+    recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+    recorder.addEventListener("dataavailable", (e) => chunks.push(e.data));
+    recorder.addEventListener("stop", async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      hint.textContent = "transcribing with Fish…";
+      try {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        const resp = await fetch("/api/transcribe",
+          { method: "POST", headers: { "Content-Type": "audio/webm" }, body: blob });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || "transcription failed");
+        text.value = (text.value ? text.value + " " : "") + (data.text || "");
+      } catch (ex) { fail(ex.message); }
+      stopUi();
+    });
+    recorder.start();
+    hint.textContent = "recording… press stop when done";
+  }
+
+  function browserStart() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { fail("No speech support in this browser. Type instead."); stopUi(); return; }
+    recognition = new SR();
+    recognition.lang = "en-AU";
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.addEventListener("result", (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++)
+        if (e.results[i].isFinal)
+          text.value = (text.value ? text.value + " " : "") +
+            e.results[i][0].transcript.trim();
+    });
+    recognition.addEventListener("error", (e) => {
+      if (e.error !== "no-speech") fail("Mic error: " + e.error);
+      stopUi();
+    });
+    recognition.addEventListener("end", () => { if (listening) stopUi(); });
+    recognition.start();
+    hint.textContent = "listening (en-AU)… press stop when done";
+  }
+
+  mic.addEventListener("click", async () => {
+    if (listening) {
+      const fishing = recorder && recorder.state === "recording";
+      if (fishing) recorder.stop();
+      if (recognition) recognition.stop();
+      listening = false;
+      mic.textContent = "start mic"; mic.classList.remove("rec");
+      if (!fishing) hint.textContent = "";
+      return;
+    }
+    listening = true; mic.textContent = "stop"; mic.classList.add("rec");
+    try {
+      if (fishReady) await fishStart(); else browserStart();
+    } catch (ex) { fail("Mic unavailable: " + ex.message); stopUi(); }
+  });
+</script>
+<script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
+  document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
+  var g=document.getElementById("ownerName"); if(g) g.textContent=o.name;
+}).catch(function(){});</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+{
+ "packs": [
+  {
+   "id": "01-core",
+   "label": "Core",
+   "count": 8
+  },
+  {
+   "id": "02-sales",
+   "label": "Sales",
+   "count": 8
+  },
+  {
+   "id": "03-marketing",
+   "label": "Marketing",
+   "count": 8
+  },
+  {
+   "id": "04-ops",
+   "label": "Ops",
+   "count": 5
+  },
+  {
+   "id": "05-hr",
+   "label": "Hr",
+   "count": 5
+  },
+  {
+   "id": "06-finance",
+   "label": "Finance",
+   "count": 6
+  },
+  {
+   "id": "07-support",
+   "label": "Support",
+   "count": 6
+  },
+  {
+   "id": "08-docs",
+   "label": "Docs",
+   "count": 8
+  },
+  {
+   "id": "09-training",
+   "label": "Training",
+   "count": 8
+  },
+  {
+   "id": "10-web-design",
+   "label": "Web Design",
+   "count": 14
+  },
+  {
+   "id": "11-infrastructure",
+   "label": "Infrastructure",
+   "count": 1
+  },
+  {
+   "id": "12-design-standards",
+   "label": "Design Standards",
+   "count": 4
+  },
+  {
+   "id": "13-design-styles",
+   "label": "Design Styles",
+   "count": 1
+  },
+  {
+   "id": "14-animation",
+   "label": "Animation",
+   "count": 1
+  },
+  {
+   "id": "15-second-brain",
+   "label": "Second Brain",
+   "count": 1
+  },
+  {
+   "id": "16-showcase",
+   "label": "Showcase",
+   "count": 4
+  }
+ ],
+ "skills": {
+  "crew-core-brand-context": "01-core",
+  "crew-core-context-restore": "01-core",
+  "crew-core-context-save": "01-core",
+  "crew-core-guard-boundary": "01-core",
+  "crew-core-idea-pressure-tester": "01-core",
+  "crew-core-plan-reviewer": "01-core",
+  "crew-core-quality-checker": "01-core",
+  "crew-core-using-crew": "01-core",
+  "crew-sales-audit-deck": "02-sales",
+  "crew-sales-crm-cleanup": "02-sales",
+  "crew-sales-follow-up-sequence": "02-sales",
+  "crew-sales-lead-research": "02-sales",
+  "crew-sales-outreach-draft": "02-sales",
+  "crew-sales-pipeline-review": "02-sales",
+  "crew-sales-proposal-builder": "02-sales",
+  "crew-sales-prospect-brief": "02-sales",
+  "crew-marketing-brand-voice-check": "03-marketing",
+  "crew-marketing-campaign-plan": "03-marketing",
+  "crew-marketing-carousel-campaign": "03-marketing",
+  "crew-marketing-content-repurpose": "03-marketing",
+  "crew-marketing-email-campaign-builder": "03-marketing",
+  "crew-marketing-landing-page-review": "03-marketing",
+  "crew-marketing-seo-page-builder": "03-marketing",
+  "crew-marketing-social-post-pack": "03-marketing",
+  "crew-ops-automation-opportunity-review": "04-ops",
+  "crew-ops-operations-dashboard-plan": "04-ops",
+  "crew-ops-process-map": "04-ops",
+  "crew-ops-recurring-task-automation": "04-ops",
+  "crew-ops-workflow-improvement": "04-ops",
+  "crew-hr-employee-communication-draft": "05-hr",
+  "crew-hr-interview-guide": "05-hr",
+  "crew-hr-performance-conversation-prep": "05-hr",
+  "crew-hr-policy-summary": "05-hr",
+  "crew-hr-role-profile-builder": "05-hr",
+  "crew-finance-admin-automation": "06-finance",
+  "crew-finance-cashflow-brief": "06-finance",
+  "crew-finance-expense-review": "06-finance",
+  "crew-finance-finance-dashboard-plan": "06-finance",
+  "crew-finance-invoice-workflow": "06-finance",
+  "crew-finance-monthly-summary": "06-finance",
+  "crew-support-escalation-review": "07-support",
+  "crew-support-faq-builder": "07-support",
+  "crew-support-feedback-summary": "07-support",
+  "crew-support-help-document-generator": "07-support",
+  "crew-support-reply-builder": "07-support",
+  "crew-support-ticket-triage": "07-support",
+  "crew-docs-client-playbook-builder": "08-docs",
+  "crew-docs-compliance-review-check": "08-docs",
+  "crew-docs-handover-document-writer": "08-docs",
+  "crew-docs-meeting-notes-to-actions": "08-docs",
+  "crew-docs-policy-document-generator": "08-docs",
+  "crew-docs-research-notebooklm": "08-docs",
+  "crew-docs-sop-builder": "08-docs",
+  "crew-docs-training-guide-creator": "08-docs",
+  "crew-training-assessment-designer": "09-training",
+  "crew-training-coaching-conversation-guide": "09-training",
+  "crew-training-facilitator-guide-creator": "09-training",
+  "crew-training-learner-workbook-builder": "09-training",
+  "crew-training-module-outline-builder": "09-training",
+  "crew-training-needs-analyser": "09-training",
+  "crew-training-onboarding-programme-builder": "09-training",
+  "crew-training-skill-gap-mapper": "09-training",
+  "crew-web-app-builder": "10-web-design",
+  "crew-web-booking-site-builder": "10-web-design",
+  "crew-web-cinematic-build": "10-web-design",
+  "crew-web-fly-through-builder": "10-web-design",
+  "crew-web-landing-page-builder": "10-web-design",
+  "crew-web-lead-dashboard-builder": "10-web-design",
+  "crew-web-page-builder": "10-web-design",
+  "crew-web-product-film": "10-web-design",
+  "crew-web-real-estate-immersive": "10-web-design",
+  "crew-web-scrollytelling": "10-web-design",
+  "crew-web-slide-deck-builder": "10-web-design",
+  "crew-web-slide-deck-mobile": "10-web-design",
+  "crew-web-stitch": "10-web-design",
+  "crew-web-website-architect": "10-web-design",
+  "crew-voice-receptionist": "11-infrastructure",
+  "crew-design-documents": "12-design-standards",
+  "crew-design-engineering": "12-design-standards",
+  "crew-design-quality": "12-design-standards",
+  "crew-design-reference": "12-design-standards",
+  "crew-design-styles": "13-design-styles",
+  "crew-animation": "14-animation",
+  "crew-my-second-brain": "15-second-brain",
+  "crew-web-immersive-narrative": "16-showcase",
+  "crew-web-learning-experience": "16-showcase",
+  "crew-web-spotlight-hero": "16-showcase",
+  "crew-web-webcam-website": "16-showcase"
+ }
+}

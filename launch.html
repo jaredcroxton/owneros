@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launch · OwnerOS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' rx='7' fill='%23ff6b4a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%230b0e13'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+  :root {
+    --bg: #0b0e13; --panel: rgba(18,21,28,.66); --card: rgba(23,27,35,.55);
+    --card-solid: #171b23; --line: rgba(255,255,255,.08); --line2: rgba(255,255,255,.05);
+    --hover: rgba(255,255,255,.16);
+    --text: #eceef2; --mut: #9aa2b1; --faint: #8b93a5;
+    --accent: #ff6b4a; --accent-soft: rgba(255,107,74,.16);
+    --accent-edge: rgba(255,107,74,.5); --accent-glow: rgba(255,107,74,.32);
+    --ok: #2dd4a7; --warn: #e8b931; --bad: #ef5350; --info: #4a9eff;
+    --blur: blur(18px) saturate(1.25);
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: Inter, sans-serif; font-size: 14px; min-height: 100vh;
+    display: grid; grid-template-columns: 208px 1fr; overflow-x: hidden;
+  }
+  .stage {
+    position: fixed; inset: 0; z-index: -2; background: var(--bg);
+  }
+  .stage img, .stage video {
+    width: 100%; height: 100%; object-fit: cover; object-position: 70% 40%;
+    display: block;
+  }
+  .stage::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, rgba(11,14,19,.96) 0%, rgba(11,14,19,.78) 30%,
+        rgba(11,14,19,.22) 58%, rgba(11,14,19,.14) 78%, rgba(11,14,19,.45) 100%),
+      linear-gradient(0deg, rgba(11,14,19,.72) 0%, transparent 22%),
+      linear-gradient(180deg, rgba(11,14,19,.58) 0%, transparent 16%);
+  }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  a { color: inherit; text-decoration: none; }
+
+  aside {
+    background: var(--panel); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-right: 1px solid var(--line);
+    padding: 22px 14px; display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 0; height: 100vh; z-index: 5;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px;
+          font-weight: 700; font-size: 17px; letter-spacing: -.3px; }
+  .logo .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent);
+                display: grid; place-items: center; box-shadow: 0 0 18px var(--accent-glow); }
+  .logo .mark span { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); }
+  .logo em { font-style: normal; color: var(--accent); }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px; padding: 10px 12px;
+    border-radius: 10px; color: var(--mut); font-weight: 500; font-size: 13.5px;
+    border: 1px solid transparent; transition: color .15s, background .15s;
+  }
+  .nav-item:hover { color: var(--text); background: var(--card); }
+  .nav-item.here { color: var(--text); background: var(--card);
+                   border-color: var(--accent-edge);
+                   box-shadow: 0 0 14px rgba(255,107,74,.14); }
+  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none;
+                  stroke-width: 1.7; flex-shrink: 0; }
+  .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--line);
+               display: grid; gap: 8px; }
+  .sf-row { display: flex; align-items: center; gap: 8px; font-size: 11px;
+            color: var(--faint); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .dot.bad { background: var(--bad); }
+
+  main { position: relative; min-height: 100vh; padding: 24px 34px 56px; min-width: 0; }
+  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+            flex-wrap: wrap; }
+  .topbar h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+  .datechip { font-size: 11px; color: var(--mut); background: var(--card);
+              backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+              border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px; }
+  .search { margin-left: auto; display: flex; align-items: center; gap: 9px;
+            background: var(--card); backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+            border-radius: 100px; padding: 8px 16px; min-width: 220px; }
+  .search svg { width: 14px; height: 14px; stroke: var(--faint); fill: none;
+                stroke-width: 2; }
+  .search input { background: none; border: 0; outline: 0; color: var(--text);
+                  font-family: Inter, sans-serif; font-size: 13px; width: 100%; }
+  .search input::placeholder { color: var(--faint); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--accent), #b3401f);
+            display: grid; place-items: center; font-weight: 700; font-size: 14px;
+            color: #fff; }
+
+  .sub { color: var(--mut); font-size: 13px; margin-bottom: 26px; }
+  #deck, .sub { max-width: 1180px; }
+  .page-hero { margin: -4px 0 18px; opacity: 0; animation: rise .4s ease forwards; }
+  .page-hero h2 { font-size: clamp(26px, 3.5vw, 34px); font-weight: 700;
+                  letter-spacing: -.6px; }
+  .page-hero .cursor { color: var(--accent); animation: blink 1.2s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .page-hero { animation: none; opacity: 1; }
+    .page-hero .cursor { animation: none; }
+  }
+
+
+  .glass {
+    background: var(--card); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
+  }
+  .pack {
+    background: var(--card); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    padding: 18px 20px 20px; margin-bottom: 22px;
+    opacity: 0; animation: rise .4s ease forwards;
+  }
+  .pack-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .pack-head .plabel { font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
+  .pack-head .pcount {
+    font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft);
+    border: 1px solid var(--accent-edge); border-radius: 100px; padding: 2px 9px;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap: 14px; }
+  .skill {
+    background: rgba(255,255,255,.04); border: 1px solid var(--line);
+    border-radius: 14px; padding: 15px 17px; cursor: pointer;
+    opacity: 0; animation: rise .4s ease forwards;
+    transition: transform .25s cubic-bezier(.2,.9,.3,1.2), border-color .2s,
+                box-shadow .25s;
+  }
+  .skill:hover { transform: translateY(-3px); border-color: var(--accent-edge);
+                 box-shadow: 0 10px 28px rgba(0,0,0,.35),
+                             0 0 16px rgba(255,107,74,.10); }
+  .skill .invoke { font-family: "JetBrains Mono", monospace; font-size: 12px;
+                   color: var(--text); overflow-wrap: anywhere;
+                   margin-bottom: 8px; transition: color .15s; }
+  .skill .invoke::first-letter { color: var(--accent); }
+  .skill:hover .invoke { color: var(--accent); }
+  .skill .desc { font-size: 12.5px; color: var(--mut); line-height: 1.55;
+                 display: -webkit-box; -webkit-line-clamp: 3;
+                 -webkit-box-orient: vertical; overflow: hidden; }
+  .skill .copied { color: var(--ok); font-weight: 600; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); }
+                    to { opacity: 1; transform: none; } }
+  .hidden { display: none !important; }
+  .err { color: var(--bad); font-size: 13px; }
+  .empty { color: var(--faint); font-size: 13px; padding: 8px 0; }
+
+  @media (max-width: 1150px) { main { padding: 22px 22px 48px; } }
+  @media (max-width: 760px) {
+    body { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap;
+            align-items: center; border-right: 0;
+            border-bottom: 1px solid var(--line); }
+    .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
+    main { padding: 20px 18px 44px; }
+    .search { margin-left: 0; min-width: 0; flex: 1 1 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pack, .skill { animation: none; opacity: 1; }
+    .stage video { display: none; }
+    .stage img { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"><img src="/assets/dandelion.webp" alt="" id="stageImg"></div>
+<aside>
+  <div class="logo"><span class="mark"><span></span></span>Owner<em>OS_</em></div>
+  <a class="nav-item" href="/today">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Today</a>
+  <a class="nav-item" href="/projects">
+    <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    Projects</a>
+  <a class="nav-item" href="/brain">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>
+    Brain</a>
+  <a class="nav-item" href="/capture">
+    <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="17" width="16" height="4" rx="1.5"/></svg>
+    Capture</a>
+  <a class="nav-item here" href="/launch">
+    <svg viewBox="0 0 24 24"><path d="M12 3c4 3 5 8 3 13l-3 5-3-5C7 11 8 6 12 3z"/><circle cx="12" cy="10" r="2"/></svg>
+    Launch</a>
+  <a class="nav-item" href="/plays">
+    <svg viewBox="0 0 24 24"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-3-4 3-4-3-2 1.5V6a2 2 0 0 1 2-2z"/><path d="M8 9h6M8 13h4"/></svg>
+    Plays</a>
+  <a class="nav-item" href="/files">
+    <svg viewBox="0 0 24 24"><path d="M13 3H6a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V9z"/><path d="M13 3v6h6.5"/></svg>
+    Files</a>
+  <a class="nav-item" href="/roadmap">
+    <svg viewBox="0 0 24 24"><path d="M4 19V5M4 17c5-3 11 3 16 0M4 9c5-3 11 3 16 0"/></svg>
+    Roadmap</a>
+  <div class="side-foot">
+    <div class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></div>
+    <div class="sf-row"><span class="dot ok"></span>local · cabinet read-only</div>
+  </div>
+</aside>
+<main>
+  <div class="topbar">
+    <h1>Launch</h1>
+    <span class="datechip mono" id="countChip">loading…</span>
+    <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="filter" type="search" placeholder="Filter skills…" aria-label="Filter skills"></label>
+    <span class="avatar">J</span>
+  </div>
+  <div class="page-hero"><h2>Say the word<span class="cursor">_</span></h2></div>
+  <p class="sub" id="subLine">Reading the skill deck…</p>
+  <div id="deck"></div>
+  <div class="empty hidden" id="noMatch">No skill matches that filter.</div>
+</main>
+<script>
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+    (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  const copyText = (t) => {
+    const fallback = () => {
+      const ta = document.createElement("textarea");
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } finally { ta.remove(); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      return navigator.clipboard.writeText(t).catch(fallback);
+    return Promise.resolve(fallback());
+  };
+
+  function render(d) {
+    const deck = document.getElementById("deck");
+    const groups = d.packs.filter((p) => p.skills.length);
+    if (d.unpacked.length)
+      groups.push({ id: "unfiled", label: "Unfiled", skills: d.unpacked });
+    document.getElementById("countChip").textContent =
+      d.total + " skills · " + groups.length + " packs";
+    document.getElementById("subLine").textContent =
+      "Click any card to copy its invoke phrase.";
+    let idx = 0;
+    deck.innerHTML = groups.map((p, gi) =>
+      '<section class="pack" style="animation-delay:' + Math.min(gi * 30, 240) +
+      'ms"><div class="pack-head"><span class="plabel">' + esc(p.label) +
+      '</span><span class="pcount">' + p.skills.length + '</span></div>' +
+      '<div class="grid">' +
+      p.skills.map((s) =>
+        '<div class="skill" style="animation-delay:' + (idx++ % 8) * 45 +
+        'ms" data-invoke="' + esc(s.invoke || "") +
+        '" data-search="' + esc((s.name + " " + s.description).toLowerCase()) +
+        '"><div class="invoke">' + esc(s.invoke || s.name) + '</div>' +
+        '<div class="desc">' + esc(s.description) + "</div></div>").join("") +
+      "</div></section>").join("");
+    deck.querySelectorAll(".skill[data-invoke]").forEach((card) => {
+      const desc = card.querySelector(".desc");
+      const original = desc.textContent;
+      let timer = null;
+      card.addEventListener("click", () => {
+        if (!card.dataset.invoke) return;
+        copyText(card.dataset.invoke).then(() => {
+          desc.innerHTML = '<span class="copied">Copied ' +
+            esc(card.dataset.invoke) + " to clipboard</span>";
+          clearTimeout(timer);
+          timer = setTimeout(() => { desc.textContent = original; }, 1400);
+        });
+      });
+    });
+    document.getElementById("filter").addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      deck.querySelectorAll(".skill").forEach((card) =>
+        card.classList.toggle("hidden", !!q && !card.dataset.search.includes(q)));
+      deck.querySelectorAll(".pack").forEach((pack) =>
+        pack.classList.toggle("hidden",
+          !pack.querySelector(".skill:not(.hidden)")));
+      document.getElementById("noMatch").classList.toggle("hidden",
+        !!deck.querySelector(".pack:not(.hidden)"));
+    });
+  }
+
+  async function load() {
+    try {
+      const h = await (await fetch("/api/health")).json();
+      document.getElementById("brainDot").className = "dot " + (h.brain ? "ok" : "bad");
+      document.getElementById("brainState").textContent =
+        h.brain ? "brain: live on 4880" : "brain: offline";
+    } catch (e) {}
+    try {
+      const d = await (await fetch("/api/skills")).json();
+      render(d);
+    } catch (err) {
+      document.getElementById("countChip").textContent = "offline";
+      document.getElementById("subLine").innerHTML =
+        '<span class="err">Could not read the skill deck. Is the server running?</span>';
+    }
+    window.__ready = true;
+  }
+  load();
+</script>
+<script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
+  document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
+  var g=document.getElementById("ownerName"); if(g) g.textContent=o.name;
+}).catch(function(){});</script>
+</body>
+</html>

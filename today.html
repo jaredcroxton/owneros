@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Today · OwnerOS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' rx='7' fill='%23ff6b4a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%230b0e13'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+  :root {
+    --bg: #0b0e13; --panel: rgba(18,21,28,.66); --card: rgba(23,27,35,.55);
+    --card-solid: #171b23; --line: rgba(255,255,255,.08); --line2: rgba(255,255,255,.05);
+    --hover: rgba(255,255,255,.16);
+    --text: #eceef2; --mut: #9aa2b1; --faint: #8b93a5;
+    --accent: #ff6b4a; --accent-soft: rgba(255,107,74,.16);
+    --accent-edge: rgba(255,107,74,.5); --accent-glow: rgba(255,107,74,.32);
+    --ok: #2dd4a7; --warn: #e8b931; --bad: #ef5350; --info: #4a9eff;
+    --blur: blur(18px) saturate(1.25);
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: Inter, sans-serif; font-size: 14px; min-height: 100vh;
+    display: grid; grid-template-columns: 208px 1fr; overflow-x: hidden;
+  }
+  .stage {
+    position: fixed; inset: 0; z-index: -2; background: var(--bg);
+  }
+  .stage img, .stage video {
+    width: 100%; height: 100%; object-fit: cover; object-position: 70% 40%;
+    display: block;
+  }
+  .stage::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, rgba(11,14,19,.96) 0%, rgba(11,14,19,.72) 30%,
+        rgba(11,14,19,.18) 58%, rgba(11,14,19,.08) 78%, rgba(11,14,19,.42) 100%),
+      linear-gradient(0deg, rgba(11,14,19,.65) 0%, transparent 22%),
+      linear-gradient(180deg, rgba(11,14,19,.5) 0%, transparent 16%);
+  }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  a { color: inherit; text-decoration: none; }
+
+  aside {
+    background: var(--panel); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border-right: 1px solid var(--line);
+    padding: 22px 14px; display: flex; flex-direction: column; gap: 4px;
+    position: sticky; top: 0; height: 100vh; z-index: 5;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px;
+          font-weight: 700; font-size: 17px; letter-spacing: -.3px; }
+  .logo .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent);
+                display: grid; place-items: center; box-shadow: 0 0 18px var(--accent-glow); }
+  .logo .mark span { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); }
+  .logo em { font-style: normal; color: var(--accent); }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px; padding: 10px 12px;
+    border-radius: 10px; color: var(--mut); font-weight: 500; font-size: 13.5px;
+    border: 1px solid transparent; transition: color .15s, background .15s;
+  }
+  .nav-item:hover { color: var(--text); background: var(--card); }
+  .nav-item.here { color: var(--text); background: var(--card);
+                   border-color: var(--accent-edge);
+                   box-shadow: 0 0 14px rgba(255,107,74,.14); }
+  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none;
+                  stroke-width: 1.7; flex-shrink: 0; }
+  .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--line);
+               display: grid; gap: 8px; }
+  .sf-row { display: flex; align-items: center; gap: 8px; font-size: 11px;
+            color: var(--faint); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .dot.bad { background: var(--bad); }
+
+  main { position: relative; min-height: 100vh; padding: 24px 34px 56px; min-width: 0; }
+  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 30px;
+            flex-wrap: wrap; }
+  .datechip { font-size: 11px; color: var(--mut); background: var(--card);
+              backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+              border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px; }
+  .search { margin-left: auto; display: flex; align-items: center; gap: 9px;
+            background: var(--card); backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+            border-radius: 100px; padding: 8px 16px; min-width: 200px; }
+  .search svg { width: 14px; height: 14px; stroke: var(--faint); fill: none;
+                stroke-width: 2; }
+  .search input { background: none; border: 0; outline: 0; color: var(--text);
+                  font-family: Inter, sans-serif; font-size: 13px; width: 100%; }
+  .search input::placeholder { color: var(--faint); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--accent), #b3401f);
+            display: grid; place-items: center; font-weight: 700; font-size: 14px;
+            color: #fff; }
+
+  .col { max-width: 560px; position: relative; z-index: 2; }
+  .greet h2 { font-size: 30px; font-weight: 700; letter-spacing: -.5px; }
+  .greet h2 .cursor { color: var(--accent); animation: blink 1.2s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .greet p { color: var(--mut); font-size: 13px; margin: 5px 0 20px; }
+
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .chip {
+    background: var(--card); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 16px; display: flex; align-items: baseline;
+    gap: 9px; opacity: 0; animation: rise .4s ease forwards;
+    transition: transform .25s cubic-bezier(.2,.9,.3,1.2), border-color .2s;
+  }
+  .chip:hover { transform: translateY(-2px); border-color: var(--hover); }
+  .chip .n { font-family: "JetBrains Mono", monospace; font-weight: 700;
+             font-size: 20px; letter-spacing: -.5px; }
+  .chip .l { font-size: 11px; color: var(--mut); font-weight: 500; }
+  .chip.pulse { animation: pulseGlow .9s ease-out 2; opacity: 1; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); }
+                    to { opacity: 1; transform: none; } }
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(45,212,167,.5); }
+    100% { box-shadow: 0 0 0 22px rgba(45,212,167,0); }
+  }
+
+  .glass {
+    background: var(--card); backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
+    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
+  }
+  .brief { padding: 16px 20px; margin-bottom: 16px; opacity: 0;
+           animation: rise .4s ease .1s forwards; }
+  .brief-head { display: flex; justify-content: space-between; align-items: center;
+                gap: 12px; flex-wrap: wrap; }
+  .brief-title { display: flex; align-items: center; gap: 12px; }
+  .brock { width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
+           background: linear-gradient(135deg, var(--accent), #b3401f);
+           display: grid; place-items: center; font-weight: 700; font-size: 16px;
+           color: #fff; box-shadow: 0 0 16px var(--accent-glow); }
+  .bt { font-weight: 700; font-size: 14px; }
+  .bm { font-size: 10px; color: var(--faint); letter-spacing: .8px;
+        text-transform: uppercase; margin-top: 2px; }
+  .brief-acts { display: flex; gap: 8px; align-items: center; }
+  .brief-body { border-top: 1px solid var(--line2); margin-top: 14px;
+                padding-top: 14px; font-size: 13.5px; line-height: 1.75;
+                white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+  .brief-body.err { color: var(--bad); }
+  .btn { font-size: 11.5px; font-weight: 600; background: var(--accent); color: #fff;
+         border: 0; border-radius: 100px; padding: 8px 16px; cursor: pointer;
+         transition: opacity .15s; }
+  .btn:hover { opacity: .88; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.ghost { background: rgba(255,255,255,.04); border: 1px solid var(--line);
+               color: var(--mut); }
+  .btn.ghost:hover { color: var(--text); border-color: var(--hover); opacity: 1; }
+
+  .recent { padding: 6px 20px 10px; opacity: 0; animation: rise .4s ease .18s forwards; }
+  .panel-title { font-size: 12px; font-weight: 600; color: var(--mut);
+                 padding: 12px 0 6px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 9px 0;
+         border-top: 1px solid var(--line2); font-size: 13px; }
+  .row .pname { font-weight: 600; min-width: 0; overflow: hidden;
+                text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .row .psub { font-size: 11px; color: var(--faint); }
+  .stat { display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px;
+          font-weight: 600; white-space: nowrap; margin-left: auto; }
+  .stat .dot { width: 6px; height: 6px; }
+  .stat.ok { color: var(--ok); } .stat.ok .dot { background: var(--ok); }
+  .stat.warn { color: var(--warn); } .stat.warn .dot { background: var(--warn); }
+  .stat.hot { color: var(--accent); } .stat.hot .dot { background: var(--accent); }
+  .stat.off { color: var(--faint); } .stat.off .dot { background: var(--faint); }
+  .flag { font-family: "JetBrains Mono", monospace; font-size: 9.5px;
+          letter-spacing: .5px; color: var(--faint); white-space: nowrap; }
+
+  .pins { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .pin { position: absolute; pointer-events: auto; width: 264px;
+         padding: 14px 16px; opacity: 0; animation: rise .5s ease forwards; }
+  .pin .pt { display: flex; align-items: center; gap: 8px; font-size: 11px;
+             font-weight: 700; letter-spacing: .8px; text-transform: uppercase;
+             color: var(--mut); margin-bottom: 8px; }
+  .pin .pt .dot { width: 7px; height: 7px; }
+  .pin .name { font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+  .pin .why { font-size: 11.5px; color: var(--mut); margin: 3px 0 10px; }
+  .pin .val { font-family: "JetBrains Mono", monospace; font-weight: 700;
+              font-size: 22px; }
+  .anchor { position: absolute; width: 12px; height: 12px; border-radius: 50%;
+            border: 2px solid var(--anchor-c, var(--accent)); pointer-events: none; }
+  .anchor::after { content: ""; position: absolute; inset: 2.5px; border-radius: 50%;
+                   background: var(--anchor-c, var(--accent)); }
+  .anchor::before { content: ""; position: absolute; inset: -6px; border-radius: 50%;
+                    border: 1px solid var(--anchor-c, var(--accent)); opacity: .5;
+                    animation: ring 2.4s ease-out infinite; }
+  @keyframes ring { 0% { transform: scale(.6); opacity: .7; }
+                    100% { transform: scale(1.6); opacity: 0; } }
+  svg.wires { position: absolute; inset: 0; width: 100%; height: 100%;
+              pointer-events: none; }
+  .wires line { stroke: rgba(255,255,255,.28); stroke-width: 1; }
+  .err { color: var(--bad); font-size: 13px; }
+  .chatveil { position: fixed; inset: 0; z-index: 40;
+              background: rgba(4,6,10,.72); backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px); display: none;
+              align-items: center; justify-content: center; }
+  .chatveil.on { display: flex; }
+  .chatbox { width: min(620px, 94vw); max-height: 86vh; display: flex;
+             flex-direction: column; padding: 26px 28px; }
+  .chat-head { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .orb { width: 64px; height: 64px; border-radius: 20px; flex-shrink: 0;
+         background: linear-gradient(135deg, var(--accent), #b3401f);
+         display: grid; place-items: center; font-weight: 700; font-size: 26px;
+         color: #fff; transition: box-shadow .3s; }
+  .orb.listen { box-shadow: 0 0 0 4px rgba(45,212,167,.25), 0 0 34px rgba(45,212,167,.5);
+                animation: orbPulse 1.6s ease-in-out infinite; }
+  .orb.think { box-shadow: 0 0 0 4px rgba(232,185,49,.22), 0 0 34px rgba(232,185,49,.45);
+               animation: orbPulse 1.1s ease-in-out infinite; }
+  .orb.speak { box-shadow: 0 0 0 4px rgba(255,107,74,.25), 0 0 38px rgba(255,107,74,.55);
+               animation: orbPulse .8s ease-in-out infinite; }
+  @keyframes orbPulse { 50% { transform: scale(1.06); } }
+  .chat-status { font-size: 12px; color: var(--mut); margin-top: 3px; }
+  .chat-log { flex: 1; overflow-y: auto; border-top: 1px solid var(--line2);
+              padding-top: 14px; font-size: 13.5px; line-height: 1.7;
+              min-height: 160px; }
+  .chat-log .turn { margin-bottom: 12px; }
+  .chat-log .you b { color: var(--info); }
+  .chat-log .brock b { color: var(--accent); }
+  .chat-foot { display: flex; gap: 8px; margin-top: 16px; align-items: center;
+               flex-wrap: wrap; }
+  .chat-hint { font-size: 11px; color: var(--faint); margin-left: auto; }
+  @media (prefers-reduced-motion: reduce) {
+    .orb.listen, .orb.think, .orb.speak { animation: none; }
+  }
+  .toast {
+    position: fixed; right: 24px; bottom: 24px; z-index: 50;
+    background: var(--card-solid); border: 1px solid var(--ok); border-radius: 14px;
+    padding: 14px 18px; font-size: 13px; max-width: 320px;
+    box-shadow: 0 0 30px rgba(45,212,167,.25);
+    transform: translateY(20px); opacity: 0;
+    transition: transform .35s cubic-bezier(.2,.9,.3,1.3), opacity .3s;
+  }
+  .toast.on { transform: none; opacity: 1; }
+  .toast b { color: var(--ok); }
+
+  @media (max-width: 1150px) {
+    .pins { display: none; }
+    .col { max-width: 640px; }
+    #pinFallback { display: block !important; }
+  }
+  @media (max-width: 760px) {
+    body { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap;
+            align-items: center; border-right: 0;
+            border-bottom: 1px solid var(--line); }
+    .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
+    main { padding: 20px 18px 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chip, .brief, .recent, .pin { animation: none; opacity: 1; }
+    .greet .cursor, .anchor::before { animation: none; }
+    .stage video { display: none; }
+    .stage img { display: block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"><img src="/assets/mind.webp" alt="" id="stageImg"></div>
+<aside>
+  <div class="logo"><span class="mark"><span></span></span>Owner<em>OS_</em></div>
+  <a class="nav-item here" href="/today">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    Today</a>
+  <a class="nav-item" href="/projects">
+    <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    Projects</a>
+  <a class="nav-item" href="/brain">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>
+    Brain</a>
+  <a class="nav-item" href="/capture">
+    <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="17" width="16" height="4" rx="1.5"/></svg>
+    Capture</a>
+  <a class="nav-item" href="/launch">
+    <svg viewBox="0 0 24 24"><path d="M12 3c4 3 5 8 3 13l-3 5-3-5C7 11 8 6 12 3z"/><circle cx="12" cy="10" r="2"/></svg>
+    Launch</a>
+  <a class="nav-item" href="/plays">
+    <svg viewBox="0 0 24 24"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-3-4 3-4-3-2 1.5V6a2 2 0 0 1 2-2z"/><path d="M8 9h6M8 13h4"/></svg>
+    Plays</a>
+  <a class="nav-item" href="/files">
+    <svg viewBox="0 0 24 24"><path d="M13 3H6a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V9z"/><path d="M13 3v6h6.5"/></svg>
+    Files</a>
+  <a class="nav-item" href="/roadmap">
+    <svg viewBox="0 0 24 24"><path d="M4 19V5M4 17c5-3 11 3 16 0M4 9c5-3 11 3 16 0"/></svg>
+    Roadmap</a>
+  <div class="side-foot">
+    <div class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></div>
+    <div class="sf-row"><span class="dot ok"></span>local · cabinet read-only</div>
+    <button class="btn ghost" id="snapBtn" type="button"
+            style="margin-top:6px;width:100%">Snapshot backup</button>
+  </div>
+</aside>
+<main>
+  <div class="topbar">
+    <span class="datechip mono" id="dateChip"></span>
+    <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="filter" type="search" placeholder="Filter projects…" aria-label="Filter projects"></label>
+    <span class="avatar">J</span>
+  </div>
+  <div class="col">
+    <div class="greet">
+      <h2>Hi, <span id="ownerName">Jared</span><span class="cursor">_</span></h2>
+      <p id="subLine">reading the filing cabinet…</p>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="chips" id="radarRow" style="display:none"></div>
+    <div class="glass brief">
+      <div class="brief-head">
+        <div class="brief-title"><span class="brock">B</span>
+          <div><div class="bt">Brock · Daily briefing</div>
+          <div class="bm mono" id="briefMeta">not run yet today</div></div></div>
+        <div class="brief-acts">
+          <button class="btn ghost" id="askBrock" type="button">Chat to Brock</button>
+          <button class="btn ghost" id="briefPlay" type="button" hidden>Play</button>
+          <button class="btn" id="briefRun" type="button">Run briefing</button>
+        </div>
+      </div>
+      <div class="brief-body" id="briefBody" hidden></div>
+    </div>
+    <div class="glass recent">
+      <div class="panel-title">Recent projects</div>
+      <div id="recentList"></div>
+    </div>
+    <div id="pinFallback" style="display:none"></div>
+  </div>
+</main>
+<div class="chatveil" id="chatVeil">
+  <div class="chatbox glass">
+    <div class="chat-head">
+      <div class="orb" id="chatOrb">B</div>
+      <div><div style="font-weight:700;font-size:16px">Brock</div>
+        <div class="chat-status" id="chatStatus">ready</div></div>
+      <button class="btn ghost" id="chatMicBtn" type="button"
+              style="margin-left:auto">Speak</button>
+    </div>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="chat-foot">
+      <button class="btn ghost" id="chatNew" type="button">New conversation</button>
+      <button class="btn" id="chatEnd" type="button">End chat</button>
+      <span class="chat-hint">say "goodbye" to end · Esc closes</span>
+    </div>
+  </div>
+</div>
+<div class="pins" id="pins">
+  <svg class="wires" id="wires"></svg>
+</div>
+<script>
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+    (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const human = (s) => (s || "no status").replace(/_/g, " ").toLowerCase();
+  const copy = (text, btn) => navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } finally { ta.remove(); }
+  }).then(() => {
+    const old = btn.textContent; btn.textContent = "Copied";
+    setTimeout(() => { btn.textContent = old; }, 1200);
+  });
+
+  fetch("/assets/mind-loop.mp4", { method: "HEAD" }).then((r) => {
+    if (!r.ok) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const v = document.createElement("video");
+    v.src = "/assets/mind-loop.mp4"; v.autoplay = true; v.muted = true;
+    v.loop = true; v.playsInline = true; v.poster = "/assets/mind.webp";
+    const img = document.getElementById("stageImg");
+    v.addEventListener("canplay", () => {
+      document.getElementById("stage").insertBefore(v, img); img.remove();
+      v.play().catch(() => {});
+    }, { once: true });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) v.play().catch(() => {});
+    });
+  }).catch(() => {});
+
+  const statCls = (s) => s === "DONE" ? "ok" : s === "BLOCKED" ||
+    s === "READY FOR REVIEW" ? "hot" : s ? "warn" : "off";
+
+  let recent = [];
+  function renderRecent(q) {
+    const list = recent.filter((p) => !q || p.name.toLowerCase().includes(q));
+    document.getElementById("recentList").innerHTML = list.map((p) => {
+      const cls = statCls(p.status);
+      return '<div class="row"><div style="min-width:0;flex:1"><div class="pname">' +
+        esc(p.name) + '</div><div class="psub">' +
+        (p.kind === "loose" ? "unparsed record" : esc(p.skill || "no handoffs")) +
+        '</div></div>' +
+        (p.stale ? '<span class="flag">quiet ' + p.days + 'd</span>' : "") +
+        '<span class="stat ' + cls + '"><span class="dot"></span>' +
+        esc(human(p.status)) + " · " + p.days + "d</span></div>";
+    }).join("") || '<div class="row" style="color:var(--faint)">No match.</div>';
+  }
+  document.getElementById("filter").addEventListener("input",
+    (e) => renderRecent(e.target.value.trim().toLowerCase()));
+
+  function chip(id, n, label, color, delay) {
+    return '<div class="chip" id="' + id + '" style="animation-delay:' + delay +
+      'ms"><span class="n" data-n="' + n + '" style="color:' + color + '">' +
+      String(n).padStart(2, "0") + '</span><span class="l">' + label + "</span></div>";
+  }
+
+  const PIN_LAYOUT = [
+    { key: "needs", x: .585, y: .12, ax: .72, ay: .37 },
+    { key: "captures", x: .66, y: .60, ax: .725, ay: .505 },
+    { key: "active", x: .82, y: .80, ax: .76, ay: .64 },
+  ];
+
+  function drawPins(d, instant) {
+    const pins = document.getElementById("pins");
+    pins.querySelectorAll(".pin, .anchor").forEach((n) => n.remove());
+    const wires = document.getElementById("wires");
+    wires.innerHTML = "";
+    const W = window.innerWidth, H = window.innerHeight;
+    const defs = {
+      needs: d.needs_me.length ? {
+        color: "var(--accent)",
+        html: '<div class="pt"><span class="dot" style="background:var(--accent)"></span>Needs you</div>' +
+          '<div class="name">' + esc(d.needs_me[0].project) + '</div>' +
+          '<div class="why">' + esc(human(d.needs_me[0].status)) + " · " +
+          d.needs_me[0].days + ' days · ' + esc(d.needs_me[0].skill) + '</div>' +
+          '<button class="btn" type="button" data-resume="' +
+          esc(d.needs_me[0].project) + '">Resume</button>',
+      } : {
+        color: "var(--ok)",
+        html: '<div class="pt"><span class="dot" style="background:var(--ok)"></span>Needs you</div>' +
+          '<div class="name">Clear runway</div>' +
+          '<div class="why">Nothing is waiting on you.</div>',
+      },
+      captures: {
+        color: "var(--ok)",
+        html: '<div class="pt"><span class="dot" style="background:var(--ok)"></span>Captures</div>' +
+          '<div class="val" id="capVal">' + String(d.captures || 0).padStart(2, "0") +
+          '</div><div class="why">thoughts living in the Brain</div>',
+      },
+      active: {
+        color: "var(--info)",
+        html: '<div class="pt"><span class="dot" style="background:var(--info)"></span>Active</div>' +
+          '<div class="name" style="font-size:12.5px">' + esc(d.active_project) +
+          '</div><div class="why">' + esc(d.brand) + '</div>',
+      },
+    };
+    PIN_LAYOUT.forEach((p, i) => {
+      const def = defs[p.key];
+      const el = document.createElement("div");
+      el.className = "pin glass";
+      el.id = "pin-" + p.key;
+      el.style.left = Math.min(p.x * W, W - 290) + "px";
+      el.style.top = p.y * H + "px";
+      if (instant) { el.style.animation = "none"; el.style.opacity = "1"; }
+      else el.style.animationDelay = (250 + i * 140) + "ms";
+      el.innerHTML = def.html;
+      pins.appendChild(el);
+      const a = document.createElement("div");
+      a.className = "anchor";
+      a.style.left = p.ax * W - 6 + "px";
+      a.style.top = p.ay * H - 6 + "px";
+      a.style.setProperty("--anchor-c", def.color);
+      pins.appendChild(a);
+      const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      const rect = { x: el.offsetLeft, y: el.offsetTop, w: 264, h: el.offsetHeight || 90 };
+      const AX = p.ax * W, AY = p.ay * H;
+      const fromX = AX < rect.x ? rect.x : AX > rect.x + rect.w ? rect.x + rect.w :
+        Math.max(rect.x + 16, Math.min(AX, rect.x + rect.w - 16));
+      const fromY = AY < rect.y ? rect.y : AY > rect.y + rect.h ? rect.y + rect.h :
+        Math.max(rect.y + 8, Math.min(AY, rect.y + rect.h - 8));
+      ln.setAttribute("x1", fromX); ln.setAttribute("y1", fromY);
+      ln.setAttribute("x2", AX); ln.setAttribute("y2", AY);
+      wires.appendChild(ln);
+    });
+    document.getElementById("pinFallback").innerHTML =
+      '<div class="glass" style="padding:14px 16px;margin-bottom:14px">' +
+      (d.needs_me.length ?
+        '<b>Needs you:</b> ' + esc(d.needs_me[0].project) + " · " +
+        esc(human(d.needs_me[0].status)) + " " + d.needs_me[0].days + "d" :
+        "Clear runway. Nothing waits on you.") + "</div>";
+    document.querySelectorAll("[data-resume]").forEach((b) =>
+      b.addEventListener("click", () => copy(
+        'claude "restore context for project ' + b.dataset.resume +
+        ' and continue"', b)));
+  }
+
+  let lastData = null;
+  window.addEventListener("resize", () => { if (lastData) drawPins(lastData, true); });
+
+  async function load() {
+    try {
+      const h = await (await fetch("/api/health")).json();
+      document.getElementById("brainDot").className = "dot " + (h.brain ? "ok" : "bad");
+      document.getElementById("brainState").textContent =
+        h.brain ? "brain: live on 4880" : "brain: offline";
+    } catch (e) {}
+    try {
+      const d = await (await fetch("/api/today")).json();
+      lastData = d; recent = d.recent;
+      const stale = d.recent.filter((p) => p.stale).length;
+      document.getElementById("dateChip").textContent = d.date;
+      document.getElementById("subLine").textContent =
+        d.needs_me.length + " thing" + (d.needs_me.length === 1 ? " needs" : "s need") +
+        " you · " + d.project_count + " projects in the cabinet";
+      document.getElementById("chips").innerHTML =
+        chip("chipNeeds", d.needs_me.length, "needs you",
+          d.needs_me.length ? "var(--accent)" : "var(--ok)", 0) +
+        chip("chipProjects", d.project_count, "projects", "var(--text)", 60) +
+        chip("chipQuiet", stale, "quiet 14d+", "var(--mut)", 120) +
+        chip("chipCaptures", d.captures || 0, "captures", "var(--ok)", 180);
+      renderRecent("");
+      drawPins(d);
+      const radar = document.getElementById("radarRow");
+      if (d.deadlines && d.deadlines.length) {
+        radar.style.display = "flex";
+        radar.innerHTML = d.deadlines.map((x, i) => {
+          const c = x.days_left <= 7 ? "var(--accent)" :
+            x.days_left <= 14 ? "var(--warn)" : "var(--mut)";
+          const label = x.days_left < 0 ? "yesterday" :
+            x.days_left === 0 ? "today" : x.days_left + " days";
+          return '<div class="chip" style="animation-delay:' + (240 + i * 60) +
+            'ms" title="' + esc(x.date) + '"><span class="n" style="color:' + c +
+            ';font-size:16px">' + esc(label) + '</span><span class="l">' +
+            esc(x.project) + "</span></div>";
+        }).join("");
+      }
+    } catch (err) {
+      document.getElementById("subLine").innerHTML =
+        '<span class="err">Could not read the filing cabinet. Is the server running?</span>';
+    }
+    window.__ready = true;
+  }
+
+  const briefBody = document.getElementById("briefBody");
+  const briefMeta = document.getElementById("briefMeta");
+  const briefRun = document.getElementById("briefRun");
+  const briefPlay = document.getElementById("briefPlay");
+  let briefText = "", speaking = null, voiceAudio = null, voiceLoading = false;
+
+  async function prefetchVoice() {
+    if (voiceLoading || !briefText) return;
+    voiceLoading = true; voiceAudio = null;
+    briefPlay.disabled = true; briefPlay.textContent = "Voice loading…";
+    try {
+      const resp = await fetch("/api/speak", { method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: briefText }) });
+      if (!resp.ok) throw new Error("no fish");
+      voiceAudio = new Audio(URL.createObjectURL(await resp.blob()));
+      voiceAudio.addEventListener("ended", () => {
+        speaking = null; briefPlay.textContent = "Play"; });
+    } catch (ex) { voiceAudio = null; }
+    voiceLoading = false;
+    briefPlay.disabled = false; briefPlay.textContent = "Play";
+  }
+
+  function showBriefing(d) {
+    briefText = d.text;
+    briefBody.hidden = false; briefBody.classList.remove("err");
+    briefBody.textContent = d.text;
+    briefMeta.textContent = "generated " + d.generated + " · " + d.date;
+    briefPlay.hidden = false;
+    briefRun.textContent = "Refresh";
+    prefetchVoice();
+  }
+
+  fetch("/api/briefing").then((r) => r.json()).then((d) => {
+    if (d.ok) showBriefing(d);
+  }).catch(() => {});
+
+  briefRun.addEventListener("click", async () => {
+    briefRun.disabled = true;
+    briefRun.textContent = "Brock is reading the cabinet…";
+    try {
+      const resp = await fetch("/api/briefing", { method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force: true }) });
+      const d = await resp.json();
+      if (!d.ok) throw new Error(d.error || "generation failed");
+      showBriefing(d);
+    } catch (ex) {
+      briefBody.hidden = false; briefBody.classList.add("err");
+      briefBody.textContent = "Brock could not run: " + ex.message;
+      briefRun.textContent = "Run briefing";
+    }
+    briefRun.disabled = false;
+    if (briefText) briefRun.textContent = "Refresh";
+  });
+
+  briefPlay.addEventListener("click", () => {
+    if (speaking) {
+      if (speaking.pause) speaking.pause(); else speechSynthesis.cancel();
+      if (speaking.currentTime !== undefined) speaking.currentTime = 0;
+      speaking = null; briefPlay.textContent = "Play"; return;
+    }
+    if (!briefText || voiceLoading) return;
+    if (voiceAudio) {
+      speaking = voiceAudio;
+      briefPlay.textContent = "Stop";
+      voiceAudio.play().catch(() => {
+        speaking = null; briefPlay.textContent = "Play";
+      });
+      return;
+    }
+    const u = new SpeechSynthesisUtterance(briefText);
+    u.lang = "en-AU";
+    const voices = speechSynthesis.getVoices();
+    const voice = voices.find((v) => v.name === "Karen") ||
+      voices.find((v) => v.lang === "en-AU");
+    if (voice) u.voice = voice;
+    u.rate = 1.02; u.pitch = 0.92;
+    u.addEventListener("end", () => {
+      speaking = null; briefPlay.textContent = "Play"; });
+    speaking = { pause: () => speechSynthesis.cancel() };
+    briefPlay.textContent = "Stop";
+    speechSynthesis.speak(u);
+  });
+
+  load();
+
+  const askBtn = document.getElementById("askBrock");
+  const chatVeil = document.getElementById("chatVeil");
+  const chatOrb = document.getElementById("chatOrb");
+  const chatStatus = document.getElementById("chatStatus");
+  const chatLog = document.getElementById("chatLog");
+  const chatMicBtn = document.getElementById("chatMicBtn");
+  let fishVoice = false;
+  fetch("/api/health").then((r) => r.json())
+    .then((h) => { fishVoice = !!h.fish; }).catch(() => {});
+
+  const chat = { active: false, listening: false, busy: false,
+                 rec: null, sr: null, stream: null, audio: null, idleMisses: 0 };
+
+  function setOrb(state, status) {
+    chatOrb.className = "orb" + (state ? " " + state : "");
+    chatStatus.textContent = status;
+  }
+
+  function chatTurn(who, text) {
+    const div = document.createElement("div");
+    div.className = "turn " + (who === "You" ? "you" : "brock");
+    const b = document.createElement("b");
+    b.textContent = who + ": ";
+    div.appendChild(b);
+    div.appendChild(document.createTextNode(text));
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    return div;
+  }
+
+  function speakText(text) {
+    return new Promise(async (resolve) => {
+      try {
+        const resp = await fetch("/api/speak", { method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }) });
+        if (!resp.ok) throw new Error("no fish");
+        const audio = new Audio(URL.createObjectURL(await resp.blob()));
+        chat.audio = audio;
+        audio.addEventListener("ended", () => { chat.audio = null; resolve(); });
+        audio.addEventListener("error", () => { chat.audio = null; resolve(); });
+        audio.play().catch(() => { chat.audio = null; resolve(); });
+      } catch (e) {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-AU";
+        const v = speechSynthesis.getVoices().find((x) => x.name === "Karen");
+        if (v) u.voice = v;
+        u.addEventListener("end", resolve);
+        chat.audio = { pause: () => { speechSynthesis.cancel(); resolve(); } };
+        speechSynthesis.speak(u);
+      }
+    });
+  }
+
+  function stopListening(submit) {
+    chat.listening = false;
+    if (chat.rec && chat.rec.state === "recording") {
+      chat.rec.submitOnStop = submit;
+      chat.rec.stop();
+    }
+    if (chat.sr) { try { chat.sr.stop(); } catch (e) {} chat.sr = null; }
+  }
+
+  async function converse(question) {
+    question = (question || "").trim();
+    if (!chat.active) return;
+    if (!question) {
+      chat.idleMisses += 1;
+      if (chat.idleMisses >= 2) {
+        setOrb("", "quiet here · tap Speak when ready");
+        chatMicBtn.textContent = "Speak";
+        return;
+      }
+      startListening();
+      return;
+    }
+    chat.idleMisses = 0;
+    if (/\b(goodbye|good bye|bye brock|end chat|stop chat)\b/i.test(question)) {
+      chatTurn("You", question);
+      chatTurn("Brock", "Talk soon.");
+      setOrb("speak", "Brock speaking…");
+      await speakText("Talk soon.");
+      closeChat();
+      return;
+    }
+    chatTurn("You", question);
+    chat.busy = true;
+    setOrb("think", "Brock is thinking…");
+    chatMicBtn.textContent = "Speak";
+    let answer = "";
+    try {
+      const resp = await fetch("/api/brock-chat", { method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }) });
+      const d = await resp.json();
+      if (!d.ok) throw new Error(d.error || "no answer");
+      answer = d.answer;
+    } catch (ex) {
+      chat.busy = false;
+      chatTurn("Brock", "I hit a snag: " + ex.message);
+      setOrb("", "error · tap Speak to retry");
+      return;
+    }
+    chat.busy = false;
+    if (!chat.active) return;
+    chatTurn("Brock", answer);
+    setOrb("speak", "Brock speaking…");
+    await speakText(answer);
+    if (chat.active) startListening();
+  }
+
+  async function startListening() {
+    if (!chat.active || chat.busy || chat.listening) return;
+    chat.listening = true;
+    setOrb("listen", "listening…");
+    chatMicBtn.textContent = "Done talking";
+    if (fishVoice && navigator.mediaDevices) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chat.stream = stream;
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        await ctx.resume().catch(() => {});
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 512;
+        ctx.createMediaStreamSource(stream).connect(analyser);
+        const buf = new Uint8Array(analyser.fftSize);
+        const chunks = [];
+        const rec = new MediaRecorder(stream, { mimeType: "audio/webm" });
+        chat.rec = rec;
+        rec.addEventListener("dataavailable", (e) => chunks.push(e.data));
+        let spoke = false, silentMs = 0, totalMs = 0;
+        const poll = setInterval(() => {
+          if (rec.state !== "recording") { clearInterval(poll); return; }
+          analyser.getByteTimeDomainData(buf);
+          let sum = 0;
+          for (let i = 0; i < buf.length; i++) {
+            const v = (buf[i] - 128) / 128; sum += v * v;
+          }
+          const rms = Math.sqrt(sum / buf.length);
+          totalMs += 100;
+          if (rms > 0.015) { spoke = true; silentMs = 0; }
+          else if (spoke) silentMs += 100;
+          if ((spoke && silentMs >= 1500) || totalMs >= 20000 ||
+              (!spoke && totalMs >= 8000)) {
+            rec.submitOnStop = spoke;
+            rec.stop();
+          }
+        }, 100);
+        rec.addEventListener("stop", async () => {
+          clearInterval(poll);
+          stream.getTracks().forEach((t) => t.stop());
+          ctx.close().catch(() => {});
+          chat.stream = null; chat.rec = null; chat.listening = false;
+          if (!chat.active) return;
+          if (!rec.submitOnStop) { converse(""); return; }
+          setOrb("think", "hearing you…");
+          try {
+            const resp = await fetch("/api/transcribe", { method: "POST",
+              headers: { "Content-Type": "audio/webm" },
+              body: new Blob(chunks, { type: "audio/webm" }) });
+            const d = await resp.json();
+            converse((d.text || "").trim());
+          } catch (e) { converse(""); }
+        });
+        rec.start();
+        return;
+      } catch (e) { /* mic denied: fall through */ }
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      chat.listening = false;
+      setOrb("", "no microphone access · close and type to Capture instead");
+      return;
+    }
+    const sr = new SR();
+    chat.sr = sr;
+    sr.lang = "en-AU"; sr.continuous = false; sr.interimResults = false;
+    let heard = "";
+    sr.addEventListener("result", (e) => {
+      heard = e.results[0][0].transcript.trim(); });
+    sr.addEventListener("end", () => {
+      chat.sr = null; chat.listening = false; converse(heard); });
+    sr.addEventListener("error", () => {
+      chat.sr = null; chat.listening = false; converse(""); });
+    sr.start();
+  }
+
+  function closeChat() {
+    chat.active = false;
+    stopListening(false);
+    if (chat.audio && chat.audio.pause) chat.audio.pause();
+    chat.audio = null;
+    chatVeil.classList.remove("on");
+  }
+
+  askBtn.addEventListener("click", async () => {
+    chatVeil.classList.add("on");
+    chat.active = true; chat.idleMisses = 0;
+    if (!chatLog.children.length) {
+      const hello = "Brock here. What's on your mind?";
+      chatTurn("Brock", hello);
+      setOrb("speak", "Brock speaking…");
+      await speakText(hello);
+    }
+    if (chat.active) startListening();
+  });
+  chatMicBtn.addEventListener("click", () => {
+    if (chat.listening) stopListening(true);
+    else if (!chat.busy) { chat.idleMisses = 0; startListening(); }
+  });
+  document.getElementById("chatEnd").addEventListener("click", closeChat);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && chat.active) closeChat();
+  });
+  document.getElementById("chatNew").addEventListener("click", async () => {
+    stopListening(false);
+    if (chat.audio && chat.audio.pause) chat.audio.pause();
+    chatLog.innerHTML = "";
+    setOrb("", "fresh start");
+    try {
+      await fetch("/api/brock-chat", { method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reset: true }) });
+    } catch (e) {}
+    const hello = "Clean slate. Where do you want to start?";
+    chatTurn("Brock", hello);
+    setOrb("speak", "Brock speaking…");
+    await speakText(hello);
+    if (chat.active) startListening();
+  });
+
+  document.getElementById("snapBtn").addEventListener("click", async () => {
+    const b = document.getElementById("snapBtn");
+    b.disabled = true; b.textContent = "Zipping…";
+    try {
+      const d = await (await fetch("/api/backup", { method: "POST" })).json();
+      if (!d.ok) throw new Error(d.error || "backup failed");
+      b.textContent = "Saved ✓";
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = "<b>Snapshot saved.</b> ";
+      toast.appendChild(document.createTextNode(
+        (d.bytes / 1048576).toFixed(1) + " MB, revealed in Finder."));
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add("on"), 20);
+      setTimeout(() => { toast.classList.remove("on");
+        setTimeout(() => toast.remove(), 400); }, 4500);
+    } catch (ex) { b.textContent = "Failed, retry"; }
+    setTimeout(() => { b.disabled = false;
+      b.textContent = "Snapshot backup"; }, 2500);
+  });
+
+  let captureCount = null;
+  function countUp(el, target) {
+    const t0 = performance.now(), dur = 600;
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / dur);
+      el.textContent = String(Math.round(target * (1 - Math.pow(1 - k, 3))))
+        .padStart(2, "0");
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    setTimeout(() => { el.textContent = String(target).padStart(2, "0"); },
+      dur + 150);
+  }
+  try {
+    const ev = new EventSource("/api/events");
+    ev.onmessage = (m) => {
+      let d; try { d = JSON.parse(m.data); } catch (e) { return; }
+      if (d.type !== "added" || !d.node) return;
+      const tile = document.getElementById("chipCaptures");
+      if (tile) {
+        const n = tile.querySelector(".n");
+        if (captureCount === null) captureCount = Number(n.dataset.n);
+        captureCount += 1; n.dataset.n = captureCount;
+        countUp(n, captureCount);
+        tile.classList.remove("pulse"); void tile.offsetWidth;
+        tile.classList.add("pulse");
+      }
+      const cap = document.getElementById("capVal");
+      if (cap) cap.textContent =
+        String(Number(cap.textContent) + 1).padStart(2, "0");
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = "<b>Node born.</b> ";
+      toast.appendChild(document.createTextNode(
+        (d.node.label || "new memory") + " just joined the Brain."));
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add("on"), 20);
+      setTimeout(() => { toast.classList.remove("on");
+        setTimeout(() => toast.remove(), 400); }, 4200);
+    };
+  } catch (e) {}
+</script>
+<script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
+  document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
+  var g=document.getElementById("ownerName"); if(g) g.textContent=o.name;
+}).catch(function(){});</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+{
+ "series": "anatomy-of-light",
+ "generated": "2026-08-12",
+ "model": "nano_banana_2 (pro tier)",
+ "assets": [
+  {
+   "name": "mind",
+   "file": "mind.webp",
+   "screen": "today",
+   "bytes": 92796,
+   "sha256": "1c3c8b45a593f88c"
+  },
+  {
+   "name": "galaxy",
+   "file": "galaxy.webp",
+   "screen": "brain",
+   "bytes": 103776,
+   "sha256": "cf8407d5c8ccbdee"
+  },
+  {
+   "name": "droplet",
+   "file": "droplet.webp",
+   "screen": "capture",
+   "bytes": 25450,
+   "sha256": "7c4b116579e65efa"
+  },
+  {
+   "name": "dandelion",
+   "file": "dandelion.webp",
+   "screen": "launch",
+   "bytes": 87972,
+   "sha256": "3e4ade35e0fcf33d"
+  },
+  {
+   "name": "strata",
+   "file": "strata.webp",
+   "screen": "files",
+   "bytes": 126718,
+   "sha256": "9fd95ec42312c0ea"
+  },
+  {
+   "name": "seedpods",
+   "file": "seedpods.webp",
+   "screen": "roadmap",
+   "bytes": 35784,
+   "sha256": "bb6d2734bcbe697e"
+  },
+  {
+   "name": "cabinet",
+   "file": "cabinet.webp",
+   "screen": "projects",
+   "bytes": 31912,
+   "sha256": "ca2f8672d8be81fb"
+  },
+  {
+   "name": "plays",
+   "file": "plays.webp",
+   "screen": "plays",
+   "bytes": 54460,
+   "sha256": "98d913877deef128"
+  }
+ ]
+}
