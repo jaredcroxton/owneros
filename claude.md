@@ -3,6 +3,19 @@
 Local Business OS cockpit. One stdlib Python server, five screens plus roadmap, PerformOS brand,
 ivory default theme with ink stage mode.
 
+## GSAP-standard pilot (2026-08-13, /launch only until Jared approves rollout)
+Jared supplied gsap.com's extracted design system (~/Downloads/DESIGN.md + tokens);
+Workforce is the pilot screen. Its law: canvas #0e100f, cream #fffce1 type (never
+pure white/black), nested #191919, hairlines #42433d, muted #8f8f80 (on-cream muted
+#6b6b5e), green #0ae448 sole actionable color, gradient stroke
+linear-gradient(114.41deg,#0ae448 20.74%,#abff84 65.5%) for the one primary CTA,
+category hues as stable semantic taxonomy only (blue #00bae2 revenue, orange #ff8709
+people, pink #fec5fb creative, lilac #9d95ff knowledge, neutral internals — never by
+index, never for status), ghost pills r100, cards r8, no box-shadows, no backdrop
+blur, 14px sans floor (mono 11px floor), weights 400/600 only, curly-bracket
+eyebrows, Inter Tight (local, fonts/) + JetBrains Mono data voice, cream callout
+cards sparingly. The coral law below still governs every other screen.
+
 ## Design law (locked 2026-08-11 evening, supersedes PerformOS brand for this app)
 Dark only. Tokens: bg #0b0e13, panel #12151c, card #171b23, line #232936, text #eceef2,
 muted #8b93a3, accent coral #ff6b4a (single hot accent), ok teal #2dd4a7, warn amber
