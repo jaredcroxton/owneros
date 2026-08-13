@@ -56,18 +56,18 @@
             background: transparent; }
 
   /* ---- bands ---- */
-  .band { padding: 88px 22px; }
+  .band { padding: 36px 22px; }
   .band.gray { background: var(--band); }
   .band-in { max-width: 980px; margin: 0 auto; }
   .band-in.wide { max-width: 1200px; }
 
   /* ---- hero ---- */
-  .hero { text-align: center; padding-top: 72px; padding-bottom: 72px; }
+  .hero { text-align: center; padding-top: 34px; padding-bottom: 40px; }
   .hero.has-art {
     background:
       linear-gradient(rgba(255,255,255,.93) 0%, rgba(255,255,255,.78) 100%),
       url(/assets/apple/today.png) center / cover no-repeat;
-    padding-bottom: 96px; }
+    padding-bottom: 48px; }
   .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace;
              font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
              color: var(--mid); }
@@ -81,7 +81,7 @@
 
   /* ---- stat row (JS renders .chip/.n/.l) ---- */
   .chips { display: flex; justify-content: center; align-items: flex-start;
-           gap: 56px; flex-wrap: wrap; margin-top: 44px; }
+           gap: 56px; flex-wrap: wrap; margin-top: 26px; }
   .chip { display: flex; flex-direction: column; align-items: center; gap: 6px;
           animation: rise .5s cubic-bezier(.2,.7,.3,1) backwards; }
   .chip .n { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
@@ -89,7 +89,7 @@
              letter-spacing: -.01em;
              font-variant-numeric: tabular-nums; }
   .chip .l { font-size: 14px; color: var(--mid); letter-spacing: -.01em; }
-  #radarRow { margin-top: 28px; gap: 40px; }
+  #radarRow { margin-top: 18px; gap: 40px; }
   #radarRow .chip .n { font-size: 21px; font-weight: 600; }
 
   /* ---- cards ---- */
@@ -239,8 +239,18 @@
     .chip .n { font-size: 36px; }
     .brief-acts { margin-left: 0; }
   }
-  .hero .glass.brief { text-align: left; margin-top: 44px;
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+         align-items: start; margin-top: 30px; text-align: left; }
+  .duo-title { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+               font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+  .duo .recent-head { margin-bottom: 14px; align-items: baseline; }
+  .duo .glass.recent { padding: 0; background: none; box-shadow: none; }
+  .duo .row { background: var(--paper);
+              box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 10px 26px rgba(0,0,0,.04); }
+  .duo .brief-body { max-height: 340px; }
+  .hero .glass.brief { text-align: left; margin-top: 0; max-width: none;
     box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
+  @media (max-width: 900px) { .duo { grid-template-columns: 1fr; } }
   .hero #pinFallback .glass { text-align: left;
     box-shadow: 0 0 0 1px rgba(0,0,0,.05); }
   .foot { display: none !important; }
@@ -275,30 +285,32 @@
       <div class="chips" id="chips"></div>
       <div class="chips" id="radarRow" style="display:none"></div>
       <div id="pinFallback" style="display:none"></div>
-      <div class="glass brief">
-        <div class="brief-head">
-          <div class="brief-title"><span class="brock">B</span>
-            <div><div class="bt">Brock</div>
-            <div class="bm mono" id="briefMeta">not run yet today</div></div></div>
-          <div class="brief-acts">
-            <button class="btn ghost" id="askBrock" type="button">Chat</button>
-            <button class="btn ghost" id="briefPlay" type="button" hidden>Play</button>
-            <button class="btn" id="briefRun" type="button">Run briefing</button>
+    </div>
+    <div class="band-in wide">
+      <div class="duo">
+        <div class="glass brief">
+          <div class="brief-head">
+            <div class="brief-title"><span class="brock">B</span>
+              <div><div class="bt">Brock</div>
+              <div class="bm mono" id="briefMeta">not run yet today</div></div></div>
+            <div class="brief-acts">
+              <button class="btn ghost" id="askBrock" type="button">Chat</button>
+              <button class="btn ghost" id="briefPlay" type="button" hidden>Play</button>
+              <button class="btn" id="briefRun" type="button">Run briefing</button>
+            </div>
+          </div>
+          <div class="brief-body" id="briefBody" hidden></div>
+        </div>
+        <div class="duo-right">
+          <div class="recent-head">
+            <div class="duo-title">Projects</div>
+            <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+              <input id="filter" type="search" placeholder="Filter projects…" aria-label="Filter projects"></label>
+          </div>
+          <div class="glass recent">
+            <div id="recentList"></div>
           </div>
         </div>
-        <div class="brief-body" id="briefBody" hidden></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="band">
-    <div class="band-in">
-      <div class="recent-head">
-        <label class="search" style="margin-left:0"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-          <input id="filter" type="search" placeholder="Filter projects…" aria-label="Filter projects"></label>
-      </div>
-      <div class="glass recent">
-        <div id="recentList"></div>
       </div>
     </div>
   </section>
