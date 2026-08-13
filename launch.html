@@ -4,389 +4,290 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Workforce · OwnerOS</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F6F3EC'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='600' fill='%23B42318' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d1d1f'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   :root {
-    --paper: #F6F3EC; --paper-raised: #FBF9F4; --paper-recessed: #EFEAE0;
-    --ink: #161310; --ink-hover: #2A2620; --ink-soft: #3A3630;
-    --muted: #6B6355; --hairline: #D8D2C4; --leader: #D8D2C4;
-    --leader-hover: #B8B0A0; --dot-ready: #A8A092;
-    --accent: #B42318; --accent-tint: #F3DFDA;
-    --scrim: rgba(22,19,16,0.28);
-    --ease: cubic-bezier(0.2, 0, 0, 1);
-    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --paper: #ffffff; --band: #f5f5f7; --navbg: rgba(250,250,252,.8);
+    --wash: #e8e8ed; --hairline: #d6d6d6;
+    --ink: #1d1d1f; --mid: #707070; --deep: #474747;
+    --blue: #0071e3; --link: #0066cc; --ember: #b64400;
   }
   * { margin: 0; box-sizing: border-box; }
-  html { height: 100%; }
+  html { height: 100%; scroll-behavior: smooth; }
   body {
     background: var(--paper); color: var(--ink);
-    font-family: Fraunces, Georgia, serif; font-optical-sizing: auto;
-    font-size: 15px; line-height: 1.55; min-height: 100%;
+    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui,
+      "Segoe UI", Roboto, sans-serif;
+    font-size: 17px; line-height: 1.47; letter-spacing: -.022em;
+    min-height: 100%;
   }
-  .mono { font-family: "IBM Plex Mono", monospace;
-          font-variant-numeric: tabular-nums; }
+  .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+          font-variant-numeric: tabular-nums; letter-spacing: 0; }
   a { color: inherit; text-decoration: none; }
-  button { font: inherit; color: inherit; background: none; border: 0;
-           cursor: pointer; text-align: left; padding: 0; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-  /* ---- rail ---- */
-  .rail { position: fixed; top: 0; left: 0; bottom: 0; width: 72px;
-          background: var(--paper); border-right: 1px solid var(--hairline);
-          display: flex; flex-direction: column; align-items: center;
-          padding: 14px 0; z-index: 10; }
-  .room { position: relative; width: 44px; height: 44px; flex-shrink: 0;
-          display: grid; place-items: center;
-          font-family: "IBM Plex Mono", monospace; font-size: 14px;
-          font-weight: 500; color: var(--muted); }
-  .room:hover { color: var(--ink); }
-  .room.here { color: var(--accent); }
-  .room.here::before { content: ""; position: absolute; left: -14px; top: 8px;
-                       bottom: 8px; width: 2px; background: var(--accent); }
-  .room .tip { position: absolute; left: 52px; top: 50%;
-               transform: translateY(-50%); background: var(--ink);
-               color: var(--paper); font-size: 14px; padding: 4px 10px;
-               border-radius: 2px; white-space: nowrap; pointer-events: none;
-               opacity: 0; transition: opacity .12s linear; z-index: 20; }
-  .room:hover .tip, .room:focus-visible .tip { opacity: 1; }
-  .rail .health { margin-top: auto; }
-  .health .hdot { width: 8px; height: 8px; border-radius: 50%;
-                  background: var(--ink); display: block; }
-  .health.bad .hdot { background: transparent;
-                      border: 1px solid var(--dot-ready); }
-
-  /* ---- page frame ---- */
-  .page { margin-left: 72px; padding: 56px 48px 120px; }
-  .col { max-width: 1080px; margin: 0 auto; position: relative; }
-
-  /* ---- masthead ---- */
-  .masthead { display: flex; align-items: flex-end; justify-content: space-between;
-              gap: 32px; flex-wrap: wrap; }
-  .mast-name { font-size: clamp(40px, 9vw, 72px); line-height: .95;
-               font-weight: 600; letter-spacing: -.02em; }
-  .mast-count { text-align: right; }
-  .mast-count .n { font-family: "IBM Plex Mono", monospace;
-                   font-variant-numeric: tabular-nums;
-                   font-size: clamp(40px, 9vw, 72px); line-height: .95;
-                   font-weight: 500; }
-  .mast-count .cap { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                     letter-spacing: .08em; color: var(--muted); margin-top: 6px; }
-  .double-rule { margin-top: 22px; border-top: 1.5px solid var(--ink);
-                 padding-top: 3px; border-bottom: 1px solid var(--hairline); }
-  .compiled { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-              color: var(--muted); letter-spacing: .04em; padding: 10px 0 0;
-              text-transform: uppercase; }
-
-  /* ---- Brock, the editor's note ---- */
-  .editor { margin: 44px auto 0; max-width: 560px;
-            border: 1.5px solid var(--ink); border-radius: 2px;
-            background: var(--paper-raised); padding: 24px 28px;
-            display: block; }
-  .editor .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                     font-weight: 500; letter-spacing: .08em;
-                     color: var(--accent); text-transform: uppercase; }
-  .editor .note { margin-top: 10px; color: var(--ink-soft); }
-  .editor .go { display: inline-block; margin-top: 14px; color: var(--accent);
-                border-bottom: 1px solid var(--accent); padding-bottom: 2px;
-                transition: border-width .12s linear; }
-  .editor:hover .go { border-bottom-width: 1.5px; }
-  .stub-v { width: 1px; height: 24px; background: var(--hairline);
-            margin: 0 auto; }
-
-  /* ---- search line ---- */
-  .search-line { display: flex; align-items: center; gap: 16px;
-                 border-bottom: 1px solid var(--hairline); height: 44px;
-                 margin-top: 20px; transition: border-color .12s linear; }
-  .search-line.focused { border-bottom: 1.5px solid var(--ink); }
-  .search-line input { flex: 1; border: 0; background: none; outline: none;
-                       font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                       color: var(--ink); height: 100%; }
-  .search-line input::placeholder { color: var(--muted); letter-spacing: .08em;
-                                    text-transform: uppercase; }
-  .search-line .matches { font-family: "IBM Plex Mono", monospace;
-                          font-size: 14px; color: var(--accent); }
-
-  /* ---- legend ---- */
-  .legend { display: flex; justify-content: flex-end; gap: 24px;
-            flex-wrap: wrap; margin: 28px 0 16px;
-            font-family: "IBM Plex Mono", monospace; font-size: 14px;
-            color: var(--muted); }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .dot.month { background: var(--accent); }
-  .dot.ever { background: var(--ink); }
-  .dot.ready { background: transparent; border: 1px solid var(--dot-ready); }
-
-  /* ---- the register ---- */
-  .register { position: relative; }
-  .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
-           background: var(--hairline); transform-origin: top; }
-  .entry-block { position: relative; }
-  .entry { display: grid; width: 100%;
-           grid-template-columns: 24px 56px 1fr auto 24px;
-           align-items: center; min-height: 72px; padding: 16px 0;
-           border-bottom: 1px solid var(--hairline); position: relative;
-           transition: background .12s linear; border-radius: 2px; }
-  .entry .stub { height: 1px; background: var(--hairline);
-                 transform-origin: left; }
-  .entry .idx { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                color: var(--accent); transition: color .12s linear; }
-  .entry .dname { font-size: 24px; line-height: 1.15; font-weight: 600;
-                  letter-spacing: -.01em; }
-  .entry .counts { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                   color: var(--muted); letter-spacing: .02em;
-                   text-transform: uppercase; padding-right: 8px; }
-  .entry .tog { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                color: var(--ink); text-align: right; }
-  .entry:hover { background: var(--paper-recessed); }
-  .entry:hover .idx { color: var(--ink); }
-
-  .well { display: grid; grid-template-rows: 0fr;
-          transition: grid-template-rows .28s var(--ease); }
-  .well.open { grid-template-rows: 1fr; }
-  .well > div { overflow: hidden; }
-  .well-inner { background: var(--paper-recessed); border-radius: 2px;
-                padding: 24px 24px 32px 80px; }
-  .lines { columns: 2; column-gap: 48px; }
-  .line { display: flex; align-items: baseline; width: 100%;
-          min-height: 44px; padding: 6px 0; break-inside: avoid;
-          --ldr: var(--leader); }
-  .line:hover { --ldr: var(--leader-hover); }
-  .line .rname { font-size: 17px; line-height: 1.3; font-weight: 600; }
-  .line .leader { flex: 1; height: 2px; margin: 0 12px;
-                  align-self: center;
-                  background-image: radial-gradient(circle, var(--ldr) 1px, transparent 1px);
-                  background-size: 8px 2px; background-repeat: repeat-x;
-                  background-position: center; min-width: 24px;
-                  transition: none; }
-  .line .meta { display: inline-flex; align-items: center; gap: 8px;
-                font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                color: var(--muted); white-space: nowrap; }
-  .line .meta .ridx { color: var(--accent); }
-  .line:hover .rname { text-decoration: underline;
-                       text-decoration-thickness: 1px;
-                       text-underline-offset: 3px; }
-
-  /* ---- search results ---- */
-  .results { display: none; margin-top: 24px; background: var(--paper-raised);
-             border: 1px solid var(--hairline); border-radius: 2px;
-             padding: 24px; }
+  button { font: inherit; letter-spacing: inherit; color: inherit;
+           background: none; border: 0; cursor: pointer; padding: 0;
+           text-align: left; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px;
+                   border-radius: 4px; }
+  .gnav { position: sticky; top: 0; z-index: 50; height: 44px;
+          background: var(--navbg);
+          backdrop-filter: blur(20px) saturate(1.8);
+          -webkit-backdrop-filter: blur(20px) saturate(1.8); }
+  .gnav-in { max-width: 1024px; margin: 0 auto; height: 100%;
+             display: flex; align-items: center; gap: 28px; padding: 0 22px; }
+  .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+  .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
+  .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
+                 scrollbar-width: none; }
+  .gnav .links::-webkit-scrollbar { display: none; }
+  .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
+                   letter-spacing: -.01em; white-space: nowrap;
+                   transition: color .15s; }
+  .gnav .links a:hover { color: var(--ink); }
+  .gnav .links a.here { color: var(--ink); font-weight: 600; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+            border: 1px solid var(--ink); display: grid; place-items: center;
+            font-size: 12px; font-weight: 600; }
+  .band { padding: 88px 22px; }
+  .band.gray { background: var(--band); }
+  .band-in { max-width: 980px; margin: 0 auto; }
+  .band-in.wide { max-width: 1200px; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+             font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+             color: var(--mid); }
+  .hero { text-align: center; padding-top: 72px; padding-bottom: 56px; }
+  .hero h1 { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+             font-size: clamp(44px, 7vw, 80px); line-height: 1.05;
+             font-weight: 700; letter-spacing: -.015em; margin-top: 14px; }
+  .hero .sub { font-size: 21px; line-height: 1.38; letter-spacing: .01em;
+               color: var(--mid); margin-top: 16px; }
+  .hero .sub b { color: var(--ink); font-weight: 600; }
+  .search-wrap { margin-top: 34px; display: flex; justify-content: center; }
+  .wf-search { width: min(440px, 100%); border: 0;
+               background: var(--band); border-radius: 980px;
+               padding: 13px 24px; font: inherit; font-size: 15px;
+               color: var(--ink); outline: none; text-align: center;
+               transition: background .15s; }
+  .wf-search:focus { background: var(--wash); }
+  .wf-search::placeholder { color: var(--mid); }
+  .plate { display: block; width: 100%; max-width: 1100px; margin: 0 auto;
+           border-radius: 28px; }
+  .brockline { display: flex; align-items: center; justify-content: center;
+               gap: 12px; margin-top: 30px; font-size: 17px; color: var(--mid); }
+  .brockline a { color: var(--link); }
+  .brockline a::after { content: " ›"; }
+  .sec-head { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+              font-size: 28px; font-weight: 600; letter-spacing: .007em;
+              margin-bottom: 8px; }
+  .sec-sub { font-size: 17px; color: var(--mid); margin-bottom: 30px; }
+  .sec-sub .em { color: var(--ember); font-weight: 500; }
+  .depts { display: grid; gap: 18px;
+           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .dept { background: var(--paper); border-radius: 28px; padding: 26px 28px;
+          cursor: pointer; transition: transform .2s cubic-bezier(.2,.7,.3,1);
+          font: inherit; }
+  .dept:hover { transform: translateY(-3px); }
+  .dept .dname { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+                 font-size: 24px; font-weight: 600; letter-spacing: .003em; }
+  .dept .dmeta { font-size: 14px; color: var(--mid); margin-top: 6px; }
+  .dept .dmeta b { color: var(--ink); font-weight: 600; }
+  .dept .dgo { display: inline-block; font-size: 14px; color: var(--link);
+               margin-top: 14px; }
+  .dept .dgo::after { content: " ›"; }
+  .dept.open .dgo::after { content: " ⌄"; }
+  .roles-panel { grid-column: 1 / -1; background: var(--paper);
+                 border-radius: 28px; padding: 30px;
+                 animation: rise .35s cubic-bezier(.2,.7,.3,1) backwards; }
+  .rp-head { display: flex; align-items: baseline; gap: 14px;
+             margin-bottom: 20px; flex-wrap: wrap; }
+  .rp-head .rpn { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+                  font-size: 24px; font-weight: 600; }
+  .rp-head .rpc { font-size: 14px; color: var(--mid); }
+  .rp-head .xbtn { margin-left: auto; }
+  .xbtn { width: 32px; height: 32px; border-radius: 50%;
+          background: var(--wash); color: var(--deep); display: grid;
+          place-items: center; font-size: 13px; text-align: center;
+          transition: background .15s; }
+  .xbtn:hover { background: var(--hairline); }
+  .roles { display: grid; gap: 12px;
+           grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+  .role { background: var(--band); border-radius: 18px; padding: 18px 20px;
+          cursor: pointer; transition: background .15s; font: inherit; }
+  .role:hover { background: var(--wash); }
+  .role .rname { font-size: 17px; font-weight: 600; letter-spacing: -.01em;
+                 overflow-wrap: anywhere; }
+  .role .rstat { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+                 font-size: 11px; letter-spacing: .05em;
+                 text-transform: uppercase; margin-top: 5px; color: var(--mid); }
+  .role .rstat.active { color: var(--ember); font-weight: 600; }
+  .role .rstat.live { color: var(--ink); font-weight: 600; }
+  .role .rrep { font-size: 14px; color: var(--mid); margin-top: 8px;
+                line-height: 1.4; }
+  .rtag { display: inline-block; font-size: 11px; color: var(--mid);
+          background: var(--wash); border-radius: 980px; padding: 2px 10px;
+          margin-left: 8px; vertical-align: middle; }
+  .results { display: none; }
   .results.on { display: block; }
-  .results .eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                      font-weight: 500; letter-spacing: .08em;
-                      color: var(--muted); text-transform: uppercase;
-                      margin-bottom: 14px; }
-  .results .line .dep { font-family: "IBM Plex Mono", monospace;
-                        font-size: 14px; color: var(--muted);
-                        margin-right: 10px; white-space: nowrap; }
-  .results .nothing { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-                      color: var(--muted); text-transform: uppercase; }
-  .register.off, .legend.off { display: none; }
-
-  /* ---- drawer ---- */
-  .scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 30;
-           opacity: 0; pointer-events: none; transition: opacity .2s linear; }
+  .depts-sec.off { display: none; }
+  .res-count { font-size: 14px; color: var(--mid); margin-bottom: 18px; }
+  .res-grid { display: grid; gap: 12px;
+              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .scrim { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.4);
+           opacity: 0; pointer-events: none; transition: opacity .25s; }
   .scrim.on { opacity: 1; pointer-events: auto; }
-  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 480px;
-            max-width: 100vw; background: var(--paper-raised); z-index: 31;
-            border-left: 1.5px solid var(--ink);
-            box-shadow: -1px 0 0 var(--hairline);
-            transform: translateX(102%);
-            transition: transform .32s var(--ease-drawer);
-            overflow-y: auto; padding: 32px; }
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 61;
+            width: min(520px, 96vw); background: var(--paper);
+            transform: translateX(103%);
+            transition: transform .4s cubic-bezier(.32,.72,0,1);
+            overflow-y: auto; padding: 34px 36px;
+            border-radius: 28px 0 0 28px; }
   .drawer.open { transform: none; }
-  .d-eyebrow-row { display: flex; align-items: flex-start;
-                   justify-content: space-between; gap: 12px; }
-  .d-eyebrow { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-               font-weight: 500; letter-spacing: .08em; color: var(--accent);
-               text-transform: uppercase; }
-  .xbtn { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-          color: var(--ink); width: 44px; height: 44px; margin: -12px -12px 0 0;
-          display: grid; place-items: center; }
-  .xbtn:hover { color: var(--accent); }
-  .d-name { font-size: 28px; line-height: 1.2; font-weight: 600;
-            margin-top: 10px; }
-  .d-dept { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-            color: var(--muted); letter-spacing: .04em;
-            text-transform: uppercase; margin: 8px 0 0; }
-  .d-sec { border-top: 1px solid var(--hairline); margin-top: 28px;
-           padding-top: 28px; }
-  .d-label { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-             font-weight: 500; letter-spacing: .08em; color: var(--muted);
-             text-transform: uppercase; margin-bottom: 12px; }
-  .d-replaces { font-style: italic; color: var(--ink-soft); }
-  .d-note { color: var(--muted); font-size: 15px; margin-top: 8px; }
-  .d-sal { font-family: "IBM Plex Mono", monospace;
-           font-variant-numeric: tabular-nums; font-size: 20px;
-           line-height: 1.2; font-weight: 500; }
-  .d-sal-cap { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-               color: var(--muted); letter-spacing: .04em;
-               text-transform: uppercase; margin-top: 8px; }
-  .rung { display: flex; gap: 12px; padding: 7px 0; color: var(--ink-soft); }
-  .rung .rn { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-              color: var(--accent); flex-shrink: 0; padding-top: 2px; }
-  .d-human { border-left: 2px solid var(--ink); padding-left: 14px;
-             color: var(--ink-soft); }
-  .invoke-wrap { position: relative; }
-  .invoke { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-            background: var(--paper-recessed); border: 1px solid var(--hairline);
-            border-radius: 2px; padding: 16px; overflow-wrap: anywhere; }
-  .copy-btn { margin-top: 14px; background: var(--ink); color: var(--paper);
-              font-family: "IBM Plex Mono", monospace; font-size: 14px;
-              font-weight: 500; letter-spacing: .08em;
-              text-transform: uppercase; padding: 12px 20px;
-              border-radius: 2px; transition: background .12s linear; }
-  .copy-btn:hover { background: var(--ink-hover); }
-  .copy-btn:active { transform: translateY(1px); }
-  .d-foot { font-family: "IBM Plex Mono", monospace; font-size: 14px;
-            color: var(--muted); letter-spacing: .04em;
-            text-transform: uppercase; margin-top: 28px; padding-top: 28px;
-            border-top: 1px solid var(--hairline); }
-  .stamp { position: absolute; left: 50%; top: 50%;
-           font-family: "IBM Plex Mono", monospace; font-size: 14px;
-           font-weight: 500; letter-spacing: .08em; color: var(--accent);
-           border: 1.5px solid var(--accent); border-radius: 2px;
-           padding: 6px 14px; background: var(--paper-raised);
-           pointer-events: none; z-index: 2;
-           transform: translate(-50%, -50%) rotate(-4deg); }
-  @keyframes stamp-in {
-    0% { transform: translate(-50%, -50%) rotate(-4deg) scale(1.15); opacity: 0; }
-    100% { transform: translate(-50%, -50%) rotate(-4deg) scale(1); opacity: 1; }
-  }
-  .stamp.out { opacity: 0; transition: opacity .15s linear; }
-
-  /* ---- entrance: base state is the final state, animations fill
-     backwards from the keyframe so content is never invisible ---- */
-  .ent { animation: appear .24s var(--ease) backwards; }
-  @keyframes appear { from { opacity: 0; transform: translateY(8px); } }
-  .spine.draw { animation: spine-draw .4s var(--ease) backwards; }
-  @keyframes spine-draw { from { transform: scaleY(0); } }
-  .entry .stub.draw { animation: stub-draw .12s var(--ease) backwards; }
-  @keyframes stub-draw { from { transform: scaleX(0); } }
-  .entry-block.veil .entry { animation: fade-in .2s linear backwards; }
-  @keyframes fade-in { from { opacity: 0; } }
-
+  .d-eyebrow-row { display: flex; align-items: center; gap: 12px; }
+  .d-eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+               font-size: 12px; letter-spacing: .06em;
+               text-transform: uppercase; color: var(--mid); }
+  .d-eyebrow-row .xbtn { margin-left: auto; }
+  .d-name { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+            font-size: 34px; line-height: 1.14; font-weight: 700;
+            letter-spacing: -.005em; margin-top: 12px; }
+  .d-status { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
+              color: var(--mid); margin-top: 8px; }
+  .d-status.active { color: var(--ember); }
+  .d-status.live { color: var(--ink); }
+  .d-desc { font-size: 17px; line-height: 1.55; color: var(--deep);
+            margin-top: 18px; }
+  .d-sec { margin-top: 28px; padding-top: 28px;
+           border-top: 1px solid var(--wash); }
+  .d-label { font-size: 12px; font-weight: 600; letter-spacing: .05em;
+             text-transform: uppercase; color: var(--mid);
+             margin-bottom: 10px; }
+  .d-rep { background: var(--band); border-radius: 18px; padding: 20px 22px; }
+  .d-rep .role-line { font-size: 17px; font-weight: 600; }
+  .d-rep .sal { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+                font-size: 21px; font-weight: 600; margin-top: 6px; }
+  .d-rep .note { font-size: 14px; color: var(--mid); margin-top: 8px;
+                 line-height: 1.45; }
+  .rung { display: flex; gap: 12px; padding: 9px 0; font-size: 15px;
+          line-height: 1.45; color: var(--deep); }
+  .rung .rn { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 13px; color: var(--mid); flex-shrink: 0;
+              padding-top: 2px; }
+  .d-human { font-size: 15px; color: var(--deep); line-height: 1.5;
+             border-left: 2px solid var(--ink); padding-left: 14px; }
+  .invoke { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            font-size: 13px; background: var(--band); border-radius: 12px;
+            padding: 14px 16px; overflow-wrap: anywhere; }
+  .btn { display: inline-block; background: var(--blue); color: #fff;
+         border-radius: 980px; padding: 11px 24px; font-size: 15px;
+         letter-spacing: -.01em; margin-top: 14px;
+         transition: background .15s; text-align: center; }
+  .btn:hover { background: #0077ed; }
+  .copied { font-size: 13px; color: var(--link); margin-left: 12px; }
+  .foot { display: flex; align-items: center; justify-content: center;
+          gap: 20px; padding: 26px 22px 40px; font-size: 12px;
+          color: var(--mid); flex-wrap: wrap; }
+  .sf-row { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.ok { background: var(--ink); }
+  .dot.bad { background: var(--ember); }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .rise { animation: rise .5s cubic-bezier(.2,.7,.3,1) backwards; }
   @media (prefers-reduced-motion: reduce) {
-    .ent, .entry-block.veil .entry { animation: none; opacity: 1; }
-    .spine.draw, .entry .stub.draw { animation: none; transform: none; }
-    .well, .drawer, .scrim, .editor .go, .entry, .entry .idx { transition: none; }
-    .stamp { animation: none !important; }
+    .rise, .roles-panel { animation: none; }
+    .dept, .drawer, .scrim { transition: none; }
+    html { scroll-behavior: auto; }
   }
-
-  /* ---- responsive ---- */
-  @media (max-width: 1024px) { .lines { columns: 1; } }
   @media (max-width: 720px) {
-    .entry { grid-template-columns: 24px 56px 1fr 24px; row-gap: 4px; }
-    .entry .counts { grid-column: 3 / 4; grid-row: 2; padding: 0; }
-    .entry .dname { grid-column: 3 / 4; }
-    .entry .tog { grid-column: 4; grid-row: 1; }
-    .legend { justify-content: flex-start; }
-    .masthead { align-items: flex-start; }
-    .mast-count { text-align: left; }
-    .well-inner { padding-left: 24px; }
-  }
-  @media (max-width: 560px) {
-    .drawer { top: auto; left: 0; right: 0; bottom: 0; width: 100%;
-              height: 92vh; border-left: 0; border-top: 1.5px solid var(--ink);
-              border-radius: 2px 2px 0 0; box-shadow: 0 -1px 0 var(--hairline);
-              transform: translateY(102%); }
-    .drawer.open { transform: none; }
-  }
-  @media (max-width: 390px) {
-    .rail { top: auto; bottom: 0; right: 0; width: 100%; height: 56px;
-            flex-direction: row; justify-content: center; gap: 2px;
-            border-right: 0; border-top: 1px solid var(--hairline);
-            padding: 0 8px; }
-    .room.here::before { left: 8px; right: 8px; top: -1px; bottom: auto;
-                         width: auto; height: 2px; }
-    .room .tip { display: none; }
-    .rail .health { margin: 0 0 0 auto; align-self: center; }
-    .page { margin-left: 0; padding: 32px 20px 100px; }
+    .band { padding: 56px 18px; }
+    .drawer { width: 100vw; border-radius: 0; }
   }
 </style>
 </head>
 <body>
-<nav class="rail" aria-label="Rooms">
-  <a class="room" href="/today">TD<span class="tip mono">Today</span></a>
-  <a class="room" href="/projects">PR<span class="tip mono">Projects</span></a>
-  <a class="room" href="/brain">BR<span class="tip mono">Brain</span></a>
-  <a class="room" href="/capture">CA<span class="tip mono">Capture</span></a>
-  <a class="room here" href="/launch" aria-current="page">WF<span class="tip mono">Workforce</span></a>
-  <a class="room" href="/plays">PL<span class="tip mono">Plays</span></a>
-  <a class="room" href="/files">FI<span class="tip mono">Files</span></a>
-  <a class="room" href="/roadmap">RM<span class="tip mono">Roadmap</span></a>
-  <span class="room health" id="health"><span class="hdot"></span><span class="tip mono" id="healthTip">Brain: checking</span></span>
-</nav>
-
-<main class="page">
-  <div class="col">
-    <header class="masthead ent" id="mast">
-      <h1 class="mast-name" id="bizName">PerformOS</h1>
-      <div class="mast-count">
-        <div class="n" id="rolesN">0</div>
-        <div class="cap">ROLES ON REGISTER</div>
-      </div>
-    </header>
-    <div class="double-rule ent" id="rule"></div>
-    <div class="compiled mono ent" id="compiled">COMPILING REGISTER&hellip;</div>
-
-    <a class="editor ent" id="editor" href="/today" style="animation-delay:60ms">
-      <div class="eyebrow">Chief Executive &middot; Brock</div>
-      <div class="note">Reads the whole cabinet before you wake and briefs you
-        on what moved, what stalled, and what needs you.</div>
-      <span class="go">Read today's briefing &rarr;</span>
-    </a>
-    <div class="stub-v" aria-hidden="true"></div>
-
-    <div class="search-line ent" id="searchLine" style="animation-delay:120ms">
-      <input id="q" type="search" placeholder="Find a role&hellip;"
-             aria-label="Find a role" autocomplete="off">
-      <span class="matches" id="matches" hidden></span>
+<nav class="gnav">
+  <div class="gnav-in">
+    <span class="word">OwnerOS<em>_</em></span>
+    <div class="links">
+      <a href="/today">Today</a>
+      <a href="/projects">Projects</a>
+      <a href="/brain">Brain</a>
+      <a href="/capture">Capture</a>
+      <a class="here" href="/launch" aria-current="page">Workforce</a>
+      <a href="/plays">Plays</a>
+      <a href="/files">Files</a>
+      <a href="/roadmap">Roadmap</a>
     </div>
-
-    <div class="legend" id="legend" aria-hidden="false">
-      <span><span class="dot month" aria-hidden="true"></span>WORKED THIS MONTH</span>
-      <span><span class="dot ever" aria-hidden="true"></span>HAS WORKED</span>
-      <span><span class="dot ready" aria-hidden="true"></span>READY</span>
-    </div>
-
-    <section class="register" id="register" aria-label="The register">
-      <div class="spine" id="spine" aria-hidden="true"></div>
-      <div id="entries"></div>
-    </section>
-
-    <section class="results" id="results" aria-label="Search results">
-      <div class="eyebrow">Found in register</div>
-      <div id="resBody"></div>
-    </section>
+    <span class="avatar">J</span>
   </div>
+</nav>
+<main>
+  <section class="band hero">
+    <div class="band-in">
+      <div class="eyebrow mono" id="countLine">Workforce</div>
+      <h1 id="bizName">Your workforce.</h1>
+      <p class="sub" id="subLine">Every role on staff, in one place.</p>
+      <div class="search-wrap">
+        <input class="wf-search" id="wfSearch" type="search"
+               placeholder="Search roles — invoice, proposal, onboarding…"
+               aria-label="Search roles" autocomplete="off">
+      </div>
+      <div class="brockline">Brock runs the floor.
+        <a href="/today">Today's briefing</a></div>
+    </div>
+  </section>
+
+  <section class="band" id="plateBand" style="padding-top:0;padding-bottom:40px">
+    <div class="band-in wide">
+      <img class="plate" src="/assets/apple/workforce.png" alt=""
+           onerror="document.getElementById('plateBand').style.display='none'">
+    </div>
+  </section>
+
+  <section class="band gray">
+    <div class="band-in wide">
+      <div class="depts-sec" id="deptsSec">
+        <div class="sec-head">Departments.</div>
+        <div class="sec-sub" id="secSub">Click one to meet its roles.</div>
+        <div class="depts" id="depts"></div>
+      </div>
+      <div class="results" id="results">
+        <div class="sec-head">Results.</div>
+        <div class="res-count" id="resCount"></div>
+        <div class="res-grid" id="resGrid"></div>
+      </div>
+    </div>
+  </section>
 </main>
+
+<div class="foot">
+  <span class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></span>
+  <span class="sf-row"><span class="dot ok"></span>your AI staff, mapped</span>
+</div>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true"
        aria-labelledby="dName" inert>
   <div class="d-eyebrow-row">
-    <div class="d-eyebrow" id="dNo">Personnel file</div>
-    <button class="xbtn" id="dClose" type="button" aria-label="Close">&#10005;</button>
+    <div class="d-eyebrow" id="dNo">Role</div>
+    <button class="xbtn" id="dClose" type="button" aria-label="Close">✕</button>
   </div>
   <h2 class="d-name" id="dName"></h2>
-  <div class="d-dept mono" id="dDept"></div>
+  <div class="d-status mono" id="dStatus"></div>
+  <div class="d-desc" id="dDesc"></div>
   <div class="d-sec" id="sReplaces" hidden>
-    <div class="d-label">Replaces</div>
-    <div class="d-replaces" id="dReplaces"></div>
-    <div class="d-note" id="dNote"></div>
-  </div>
-  <div class="d-sec" id="sSalary" hidden>
-    <div class="d-label">Salary band (AUD)</div>
-    <div class="d-sal" id="dSal"></div>
-    <div class="d-sal-cap">What this role would cost to employ</div>
+    <div class="d-label">What this replaces</div>
+    <div class="d-rep">
+      <div class="role-line" id="dRole"></div>
+      <div class="sal mono" id="dSal"></div>
+      <div class="note" id="dNote"></div>
+    </div>
   </div>
   <div class="d-sec" id="sLadder" hidden>
-    <div class="d-label">Trust ladder</div>
-    <div class="rung"><span class="rn">1.</span><span id="dL1"></span></div>
-    <div class="rung"><span class="rn">2.</span><span id="dL2"></span></div>
-    <div class="rung"><span class="rn">3.</span><span id="dL3"></span></div>
+    <div class="d-label">The trust ladder</div>
+    <div class="rung"><span class="rn mono">1.</span><span id="dL1"></span></div>
+    <div class="rung"><span class="rn mono">2.</span><span id="dL2"></span></div>
+    <div class="rung"><span class="rn mono">3.</span><span id="dL3"></span></div>
   </div>
   <div class="d-sec" id="sHuman" hidden>
     <div class="d-label">What stays yours</div>
@@ -394,160 +295,144 @@
   </div>
   <div class="d-sec">
     <div class="d-label">Invoke phrase</div>
-    <div class="invoke-wrap">
-      <div class="invoke" id="dInvoke"></div>
-    </div>
-    <button class="copy-btn" id="dCopy" type="button">Copy invoke phrase</button>
+    <div class="invoke mono" id="dInvoke"></div>
+    <button class="btn" id="dCopy" type="button">Copy invoke phrase</button>
+    <span class="copied" id="copied" hidden>Copied.</span>
   </div>
-  <div class="d-foot" id="dFoot"></div>
 </aside>
 
 <script>
   const $ = (id) => document.getElementById(id);
-  const esc = (t) => String(t).replace(/[&<>"]/g, (c) =>
+  const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const noMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const pad2 = (n) => String(n).padStart(2, "0");
-  const pad3 = (n) => String(n).padStart(3, "0");
   const shortName = (n) => n.replace(
     /^crew-(core|sales|marketing|ops|hr|finance|support|docs|training|web|design|voice|my|real)?-?/,
     "").replace(/-/g, " ");
   const title = (n) => { const s = shortName(n);
     return s.charAt(0).toUpperCase() + s.slice(1); };
-  const workedWord = (n) => n === 1 ? "1 HAS WORKED" : n + " HAVE WORKED";
-  const statusWord = (s) => s === "active" ? "WORKED THIS MONTH" :
-    s === "live" ? "HAS WORKED" : "READY";
-  const dotClass = (s) => s === "active" ? "month" :
-    s === "live" ? "ever" : "ready";
+  const statusWord = (s) => s === "active" ? "Worked this month" :
+    s === "live" ? "Has worked for you" : "Ready to work";
+  const workedWord = (n) => n === 1 ? "1 has worked" : n + " have worked";
 
   fetch("/api/health").then(r => r.json()).then(h => {
-    $("healthTip").textContent = h.brain ? "Brain: connected" : "Brain: offline";
-    if (!h.brain) $("health").classList.add("bad");
-  }).catch(() => { $("healthTip").textContent = "Brain: offline";
-    $("health").classList.add("bad"); });
+    $("brainDot").className = "dot " + (h.brain ? "ok" : "bad");
+    $("brainState").textContent = h.brain ? "brain: connected" : "brain: offline";
+  }).catch(() => { $("brainState").textContent = "brain: offline"; });
 
-  let data = null, openDept = null, current = null, lastFocus = null;
-  const roleIndex = {};   // name -> {skill, pack, no}
+  let data = null, current = null, openDept = null, lastFocus = null;
+  const index = {};
 
-  function countUp(el, target) {
-    if (noMotion || !window.requestAnimationFrame) {
-      el.textContent = target; return;
-    }
-    const t0 = performance.now(), dur = 500;
-    const step = (t) => {
-      const f = Math.min(1, (t - t0) / dur);
-      el.textContent = Math.round(target * (1 - Math.pow(1 - f, 3)));
-      if (f < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-    setTimeout(() => { el.textContent = target; }, dur + 100);
-  }
-
-  function roleLine(s, no, depPrefix) {
+  function roleCard(s, deptLabel) {
     const b = document.createElement("button");
-    b.className = "line";
     b.type = "button";
-    b.innerHTML =
-      (depPrefix ? '<span class="dep">' + esc(depPrefix) + "</span>" : "") +
-      '<span class="rname">' + esc(title(s.name)) + "</span>" +
-      '<span class="leader" aria-hidden="true"></span>' +
-      '<span class="meta"><span class="dot ' + dotClass(s.status) +
-      '" aria-hidden="true"></span>' + statusWord(s.status) +
-      '<span class="ridx">' + pad3(no) + "</span></span>";
-    b.addEventListener("click", () => openFile(s.name, b));
+    b.className = "role";
+    b.innerHTML = '<div class="rname">' + esc(title(s.name)) +
+      (deptLabel ? '<span class="rtag">' + esc(deptLabel) + "</span>" : "") +
+      '</div><div class="rstat mono ' + esc(s.status) + '">' +
+      statusWord(s.status) + "</div>" +
+      (s.dossier && s.dossier.replaces_role
+        ? '<div class="rrep">Replaces ' + esc(s.dossier.replaces_role) + "</div>"
+        : "");
+    b.addEventListener("click", () => openRole(s.name, b));
     return b;
   }
 
-  function toggleWell(block, entry, well, force) {
-    const isOpen = well.classList.contains("open");
-    const next = force !== undefined ? force : !isOpen;
-    document.querySelectorAll(".well.open").forEach(w => {
-      if (w !== well) {
-        w.classList.remove("open");
-        const e = w.parentElement.querySelector(".entry");
-        e.setAttribute("aria-expanded", "false");
-        e.querySelector(".tog").textContent = "+";
-      }
+  function closePanel() {
+    const p = $("rolesPanel");
+    if (p) p.remove();
+    document.querySelectorAll(".dept.open").forEach(d => {
+      d.classList.remove("open");
+      d.setAttribute("aria-expanded", "false");
     });
-    well.classList.toggle("open", next);
-    entry.setAttribute("aria-expanded", String(next));
-    entry.querySelector(".tog").textContent = next ? "−" : "+";
-    openDept = next ? entry.dataset.dept : null;
+    openDept = null;
   }
 
-  function buildRegister() {
-    const host = $("entries");
+  function openPanel(pack, tile) {
+    closePanel();
+    openDept = pack.label;
+    tile.classList.add("open");
+    tile.setAttribute("aria-expanded", "true");
+    const worked = pack.skills.filter(s => s.status !== "ready").length;
+    const panel = document.createElement("div");
+    panel.className = "roles-panel";
+    panel.id = "rolesPanel";
+    panel.innerHTML = '<div class="rp-head"><span class="rpn">' +
+      esc(pack.label) + '</span><span class="rpc">' + pack.skills.length +
+      " role" + (pack.skills.length === 1 ? "" : "s") +
+      (worked ? " · " + workedWord(worked) + " for you" : "") +
+      '</span><button class="xbtn" type="button" aria-label="Close">✕</button></div>';
+    const grid = document.createElement("div");
+    grid.className = "roles";
+    pack.skills.forEach(s => grid.appendChild(roleCard(s)));
+    panel.appendChild(grid);
+    panel.querySelector(".xbtn").addEventListener("click", (e) => {
+      e.stopPropagation(); closePanel();
+    });
+    const tiles = [...document.querySelectorAll(".dept")];
+    const row = tiles.filter(t => t.offsetTop === tile.offsetTop);
+    row[row.length - 1].after(panel);
+    panel.scrollIntoView({ block: "nearest",
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto" : "smooth" });
+  }
+
+  function buildDepts() {
+    const host = $("depts");
     host.innerHTML = "";
-    let roleNo = 0;
-    data.packs.forEach((p, i) => {
-      p.skills.forEach(s => { roleNo += 1;
-        roleIndex[s.name] = { skill: s, pack: p.label, no: roleNo }; });
+    const packs = [...data.packs].sort((a, b) => {
+      const wa = a.skills.filter(s => s.status !== "ready").length;
+      const wb = b.skills.filter(s => s.status !== "ready").length;
+      return wb - wa || b.skills.length - a.skills.length ||
+        a.label.localeCompare(b.label);
     });
-    let cursor = 0;
-    data.packs.forEach((p, i) => {
+    packs.forEach((p, i) => {
       const worked = p.skills.filter(s => s.status !== "ready").length;
-      const block = document.createElement("div");
-      block.className = "entry-block";
-      const entry = document.createElement("button");
-      entry.className = "entry";
-      entry.type = "button";
-      entry.dataset.dept = p.label;
-      entry.setAttribute("aria-expanded", "false");
-      entry.innerHTML =
-        '<span class="stub" aria-hidden="true"></span>' +
-        '<span class="idx">' + pad2(i + 1) + "</span>" +
-        '<span class="dname">' + esc(p.label) + "</span>" +
-        '<span class="counts">' + p.skills.length + " ROLE" +
-        (p.skills.length === 1 ? "" : "S") +
-        (worked ? " &middot; " + workedWord(worked) : "") + "</span>" +
-        '<span class="tog" aria-hidden="true">+</span>';
-      const well = document.createElement("div");
-      well.className = "well";
-      const clip = document.createElement("div");
-      const inner = document.createElement("div");
-      inner.className = "well-inner";
-      const lines = document.createElement("div");
-      lines.className = "lines";
-      p.skills.forEach(s => lines.appendChild(
-        roleLine(s, roleIndex[s.name].no)));
-      inner.appendChild(lines);
-      clip.appendChild(inner);
-      well.appendChild(clip);
-      entry.addEventListener("click", () => toggleWell(block, entry, well));
-      block.appendChild(entry);
-      block.appendChild(well);
-      host.appendChild(block);
-      if (!noMotion) {
-        block.classList.add("veil");
-        const stub = entry.querySelector(".stub");
-        const d = 300 + cursor * 20;
-        stub.classList.add("draw");
-        stub.style.animationDelay = d + "ms";
-        entry.style.animationDelay = (d + 20) + "ms";
-      }
-      cursor += 1;
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "dept rise";
+      el.style.animationDelay = Math.min(i * 35, 400) + "ms";
+      el.setAttribute("aria-expanded", "false");
+      el.innerHTML = '<div class="dname">' + esc(p.label) + "</div>" +
+        '<div class="dmeta">' + p.skills.length + " role" +
+        (p.skills.length === 1 ? "" : "s") +
+        (worked ? " · <b>" + workedWord(worked) + "</b>" : "") + "</div>" +
+        '<span class="dgo">' + (worked ? "Meet the team" : "See the roles") +
+        "</span>";
+      el.addEventListener("click", () =>
+        openDept === p.label ? closePanel() : openPanel(p, el));
+      host.appendChild(el);
     });
-    if (!noMotion) {
-      const spine = $("spine");
-      spine.classList.add("draw");
-      spine.style.animationDelay = "240ms";
-    }
     const wanted = (new URLSearchParams(location.search).get("open") || "")
       .toLowerCase().replace(/[^a-z0-9]+/g, "");
     if (wanted) {
-      const blocks = [...host.querySelectorAll(".entry-block")];
-      for (const b of blocks) {
-        const e = b.querySelector(".entry");
-        if (e.dataset.dept.toLowerCase().replace(/[^a-z0-9]+/g, "") === wanted) {
-          const w = b.querySelector(".well");
-          w.style.transition = "none";
-          toggleWell(b, e, w, true);
-          requestAnimationFrame(() => { w.style.transition = ""; });
-          b.scrollIntoView({ block: "center" });
-          break;
-        }
-      }
+      const p = packs.find(x =>
+        x.label.toLowerCase().replace(/[^a-z0-9]+/g, "") === wanted);
+      const tile = p && [...host.children].find(t =>
+        t.querySelector(".dname").textContent === p.label);
+      if (tile) openPanel(p, tile);
     }
+  }
+
+  function runSearch(term) {
+    const on = term.length >= 2;
+    $("deptsSec").classList.toggle("off", on);
+    $("results").classList.toggle("on", on);
+    if (!on) return;
+    const grid = $("resGrid");
+    grid.innerHTML = "";
+    let hits = 0;
+    data.packs.forEach(p => p.skills.forEach(s => {
+      const hay = (s.name + " " + (s.invoke || "") + " " + s.description +
+        " " + p.label + " " +
+        (s.dossier ? s.dossier.replaces_role || "" : "")).toLowerCase();
+      if (term.split(/\s+/).every(w => hay.includes(w))) {
+        hits += 1;
+        grid.appendChild(roleCard(s, p.label));
+      }
+    }));
+    $("resCount").textContent = hits
+      ? hits + " role" + (hits === 1 ? "" : "s") + " match."
+      : "No roles match that yet — try another word.";
   }
 
   async function load() {
@@ -555,96 +440,64 @@
       data = await (await fetch("/api/workforce")).json();
       data.packs.forEach(p => {
         if (p.label.toLowerCase() === "hr") p.label = "HR";
+        p.skills.forEach(s => index[s.name] = { skill: s, pack: p.label });
       });
       const owner = await fetch("/api/owner").then(r => r.json())
         .catch(() => ({}));
-      if (owner.business) $("bizName").textContent = owner.business;
       const worked = data.packs.reduce((a, p) =>
         a + p.skills.filter(s => s.status !== "ready").length, 0);
-      const today = new Date();
-      const iso = today.getFullYear() + "-" +
-        pad2(today.getMonth() + 1) + "-" + pad2(today.getDate());
-      $("compiled").textContent =
-        (owner.business || "PerformOS").toUpperCase() +
-        " · COMPILED " + iso + " · " + data.packs.length +
-        " DEPARTMENTS · " + data.total + " ROLES · " + workedWord(worked);
-      countUp($("rolesN"), data.total);
-      buildRegister();
+      $("countLine").textContent = "Workforce · " + data.total + " roles";
+      $("bizName").textContent =
+        (owner.business || "Your business") + " works here.";
+      $("subLine").innerHTML = data.total +
+        " AI staff across " + data.packs.length + " departments. <b>" +
+        workedWord(worked) + " for you.</b>";
+      buildDepts();
     } catch (e) {
-      $("compiled").textContent = "REGISTER UNAVAILABLE · IS THE SERVER UP?";
+      $("subLine").textContent = "Could not reach the workforce. Is the server running?";
     }
     window.__ready = true;
   }
   load();
 
-  /* ---- search ---- */
-  const q = $("q");
-  q.addEventListener("focus", () => $("searchLine").classList.add("focused"));
-  q.addEventListener("blur", () => $("searchLine").classList.remove("focused"));
-  q.addEventListener("input", () => {
-    const term = q.value.trim().toLowerCase();
-    const on = term.length >= 2;
-    $("register").classList.toggle("off", on);
-    $("legend").classList.toggle("off", on);
-    $("results").classList.toggle("on", on);
-    if (!on) { $("matches").hidden = true; return; }
-    const body = $("resBody");
-    body.innerHTML = "";
-    let hits = 0;
-    data.packs.forEach((p, i) => p.skills.forEach(s => {
-      const hay = (s.name + " " + (s.invoke || "") + " " + s.description +
-        " " + p.label + " " +
-        (s.dossier ? s.dossier.replaces_role || "" : "")).toLowerCase();
-      if (term.split(/\s+/).every(w => hay.includes(w))) {
-        hits += 1;
-        body.appendChild(roleLine(s, roleIndex[s.name].no,
-          pad2(i + 1) + " " + p.label.toUpperCase()));
-      }
-    }));
-    if (!hits) body.innerHTML = '<div class="nothing">Nothing on register for "' +
-      esc(q.value.trim().toUpperCase()) + '"</div>';
-    $("matches").hidden = false;
-    $("matches").textContent = hits + (hits === 1 ? " MATCH" : " MATCHES");
-  });
+  const searchEl = $("wfSearch");
+  searchEl.addEventListener("input", () =>
+    runSearch(searchEl.value.trim().toLowerCase()));
 
-  /* ---- drawer ---- */
-  function openFile(name, invoker) {
-    const rec = roleIndex[name];
+  function openRole(name, invoker) {
+    const rec = index[name];
     if (!rec) return;
     const s = rec.skill;
     current = s; lastFocus = invoker || document.activeElement;
-    $("dNo").textContent = "Personnel file · No. " + pad3(rec.no);
+    $("dNo").textContent = rec.pack;
     $("dName").textContent = title(s.name);
-    $("dDept").textContent = rec.pack + " · " + statusWord(s.status);
+    const st = $("dStatus");
+    st.className = "d-status mono " + s.status;
+    st.textContent = statusWord(s.status) +
+      (s.runs ? " · " + s.runs + " job" + (s.runs === 1 ? "" : "s") + " filed" : "");
+    $("dDesc").textContent = s.description || "";
     const d = s.dossier;
     $("sReplaces").hidden = !d || !d.replaces_role;
-    $("sSalary").hidden = !d || !d.replaces_salary;
     $("sLadder").hidden = !d;
     $("sHuman").hidden = !d || !d.human;
     if (d) {
-      $("dReplaces").textContent = d.replaces_role || "";
+      $("dRole").textContent = d.replaces_role || "";
+      $("dSal").textContent = (d.replaces_salary || "").replace(/\$/g, "").trim();
       $("dNote").textContent = d.replaces_note || "";
-      $("dSal").textContent = (d.replaces_salary || "").replace(/\$/g, "")
-        .replace(/aud/i, "").trim();
       $("dL1").textContent = d.ladder_human_led || "";
       $("dL2").textContent = d.ladder_assisted || "";
       $("dL3").textContent = d.ladder_autonomous || "";
       $("dHuman").textContent = d.human || "";
     }
     $("dInvoke").textContent = s.invoke || "/" + s.name;
-    $("dFoot").textContent = s.status === "ready"
-      ? "READY · NEVER INVOKED"
-      : (s.last_days === 0 ? "LAST WORKED TODAY" :
-         "LAST WORKED " + s.last_days + " DAY" +
-         (s.last_days === 1 ? "" : "S") + " AGO") +
-        (s.runs ? " · " + s.runs + " RUN" + (s.runs === 1 ? "" : "S") : "");
+    $("copied").hidden = true;
     const dr = $("drawer");
     dr.inert = false;
     dr.classList.add("open");
     $("scrim").classList.add("on");
     $("dClose").focus();
   }
-  function closeFile() {
+  function closeRole() {
     const dr = $("drawer");
     if (dr.contains(document.activeElement)) document.activeElement.blur();
     dr.classList.remove("open");
@@ -652,33 +505,19 @@
     $("scrim").classList.remove("on");
     if (lastFocus && document.contains(lastFocus)) lastFocus.focus();
   }
-  $("dClose").addEventListener("click", closeFile);
-  $("scrim").addEventListener("click", closeFile);
+  $("dClose").addEventListener("click", closeRole);
+  $("scrim").addEventListener("click", closeRole);
   document.addEventListener("keydown", (e) => {
-    if (e.key !== "Escape" || e.target === q) return;
-    if ($("drawer").classList.contains("open")) { closeFile(); return; }
-    const open = document.querySelector(".well.open");
-    if (open) {
-      const block = open.parentElement;
-      toggleWell(block, block.querySelector(".entry"), open, false);
-    }
+    if (e.key !== "Escape" || e.target === searchEl) return;
+    if ($("drawer").classList.contains("open")) { closeRole(); return; }
+    closePanel();
   });
-
-  /* ---- copy + stamp ---- */
   $("dCopy").addEventListener("click", () => {
     if (!current) return;
     const text = current.invoke || "/" + current.name;
     const done = () => {
-      const wrap = document.querySelector(".invoke-wrap");
-      const old = wrap.querySelector(".stamp");
-      if (old) old.remove();
-      const st = document.createElement("span");
-      st.className = "stamp";
-      st.textContent = "COPIED";
-      if (!noMotion) st.style.animation = "stamp-in .18s var(--ease) both";
-      wrap.appendChild(st);
-      setTimeout(() => st.classList.add("out"), 1380);
-      setTimeout(() => st.remove(), 1600);
+      $("copied").hidden = false;
+      setTimeout(() => { $("copied").hidden = true; }, 1600);
     };
     navigator.clipboard.writeText(text).then(done).catch(() => {
       const ta = document.createElement("textarea");
@@ -687,6 +526,21 @@
       done();
     });
   });
+  let rsTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(rsTimer);
+    rsTimer = setTimeout(() => {
+      if (!openDept || !data) return;
+      if ($("deptsSec").classList.contains("off")) return;
+      const p = data.packs.find(x => x.label === openDept);
+      const tile = [...document.querySelectorAll(".dept")].find(t =>
+        t.querySelector(".dname").textContent === openDept);
+      if (p && tile) openPanel(p, tile);
+    }, 180);
+  });
 </script>
+<script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
+  document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
+}).catch(function(){});</script>
 </body>
 </html>

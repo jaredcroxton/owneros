@@ -4,217 +4,112 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Brain · OwnerOS</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' rx='7' fill='%23ff6b4a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%230b0e13'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d1d1f'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   :root {
-    --bg: #0b0e13; --panel: rgba(18,21,28,.66); --card: rgba(23,27,35,.55);
-    --card-solid: #171b23; --line: rgba(255,255,255,.08); --line2: rgba(255,255,255,.05);
-    --hover: rgba(255,255,255,.16);
-    --text: #eceef2; --mut: #9aa2b1; --faint: #8b93a5;
-    --accent: #ff6b4a; --accent-soft: rgba(255,107,74,.16);
-    --accent-edge: rgba(255,107,74,.5); --accent-glow: rgba(255,107,74,.32);
-    --ok: #2dd4a7; --warn: #e8b931; --bad: #ef5350; --info: #4a9eff;
-    --blur: blur(18px) saturate(1.25);
+    --paper: #ffffff; --band: #f5f5f7; --navbg: rgba(250,250,252,.8);
+    --wash: #e8e8ed; --hairline: #d6d6d6;
+    --ink: #1d1d1f; --mid: #707070; --deep: #474747;
+    --blue: #0071e3; --link: #0066cc; --ember: #b64400;
+    --text: #1d1d1f; --mut: #707070; --faint: #707070;
+    --accent: #b64400; --ok: #1d1d1f; --line: #d6d6d6;
   }
   * { margin: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    background: var(--bg); color: var(--text);
-    font-family: Inter, sans-serif; font-size: 14px;
-    height: 100vh; overflow: hidden;
-    display: grid; grid-template-columns: 208px 1fr;
+    background: var(--paper); color: var(--ink);
+    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui,
+      "Segoe UI", Roboto, sans-serif;
+    font-size: 17px; line-height: 1.47; letter-spacing: -.022em;
+    display: flex; flex-direction: column;
   }
-  .stage {
-    position: fixed; inset: 0; z-index: -2; background: var(--bg);
-  }
-  .stage img, .stage video {
-    width: 100%; height: 100%; object-fit: cover; object-position: 70% 40%;
-    display: block;
-  }
-  .stage::after {
-    content: ""; position: absolute; inset: 0;
-    background:
-      linear-gradient(0deg, rgba(11,14,19,.30), rgba(11,14,19,.30)),
-      linear-gradient(90deg, rgba(11,14,19,.96) 0%, rgba(11,14,19,.72) 30%,
-        rgba(11,14,19,.18) 58%, rgba(11,14,19,.08) 78%, rgba(11,14,19,.42) 100%),
-      linear-gradient(0deg, rgba(11,14,19,.65) 0%, transparent 22%),
-      linear-gradient(180deg, rgba(11,14,19,.5) 0%, transparent 16%);
-  }
-  .mono { font-family: "JetBrains Mono", monospace; }
+  .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+          font-variant-numeric: tabular-nums; letter-spacing: 0; }
   a { color: inherit; text-decoration: none; }
-
-  aside {
-    background: var(--panel); backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
-    border-right: 1px solid var(--line);
-    padding: 22px 14px; display: flex; flex-direction: column; gap: 4px;
-    position: sticky; top: 0; height: 100vh; z-index: 5;
-  }
-  .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px;
-          font-weight: 700; font-size: 17px; letter-spacing: -.3px; }
-  .logo .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent);
-                display: grid; place-items: center; box-shadow: 0 0 18px var(--accent-glow); }
-  .logo .mark span { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); }
-  .logo em { font-style: normal; color: var(--accent); }
-  .nav-item {
-    display: flex; align-items: center; gap: 11px; padding: 10px 12px;
-    border-radius: 10px; color: var(--mut); font-weight: 500; font-size: 13.5px;
-    border: 1px solid transparent; transition: color .15s, background .15s;
-  }
-  .nav-item:hover { color: var(--text); background: var(--card); }
-  .nav-item.here { color: var(--text); background: var(--card);
-                   border-color: var(--accent-edge);
-                   box-shadow: 0 0 14px rgba(255,107,74,.14); }
-  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none;
-                  stroke-width: 1.7; flex-shrink: 0; }
-  .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--line);
-               display: grid; gap: 8px; }
-  .sf-row { display: flex; align-items: center; gap: 8px; font-size: 11px;
-            color: var(--faint); }
-  .dot { width: 7px; height: 7px; border-radius: 50%; }
-  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
-  .dot.bad { background: var(--bad); }
-
-  main { display: flex; flex-direction: column; min-width: 0; height: 100vh;
-         position: relative; z-index: 1; }
-  .topbar { display: flex; align-items: center; gap: 14px;
-            padding: 12px 24px; flex-shrink: 0;
-            background: var(--panel); backdrop-filter: var(--blur);
-            -webkit-backdrop-filter: var(--blur);
-            border-bottom: 1px solid var(--line); z-index: 4; }
-  .topbar h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
-  .datechip { font-size: 11px; color: var(--mut); background: var(--card);
-              backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-              border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px; }
-  .livechip { display: inline-flex; align-items: center; gap: 7px;
-              font-size: 11px; font-weight: 600; border-radius: 100px;
-              padding: 5px 12px; border: 1px solid var(--line);
-              background: var(--card); backdrop-filter: var(--blur);
-              -webkit-backdrop-filter: var(--blur); color: var(--faint); }
-  .livechip.ok { color: var(--ok); border-color: rgba(45,212,167,.35);
-                 background: rgba(45,212,167,.13); }
-  .livechip.bad { color: var(--bad); border-color: rgba(239,83,80,.35);
-                  background: rgba(239,83,80,.10); }
-  .avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-            margin-left: auto;
-            background: linear-gradient(135deg, var(--accent), #b3401f);
-            display: grid; place-items: center; font-weight: 700; font-size: 14px;
-            color: #fff; }
-
-  .glass {
-    background: var(--card); backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
-    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
-  }
-
-  .viewport { flex: 1; display: flex; flex-direction: column; min-height: 0;
-              position: relative; }
+  button { font: inherit; color: inherit; background: none; border: 0;
+           cursor: pointer; padding: 0; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px;
+                   border-radius: 4px; }
+  .gnav { position: sticky; top: 0; z-index: 50; height: 44px; flex-shrink: 0;
+          background: var(--navbg);
+          backdrop-filter: blur(20px) saturate(1.8);
+          -webkit-backdrop-filter: blur(20px) saturate(1.8); }
+  .gnav-in { max-width: 1024px; margin: 0 auto; height: 100%;
+             display: flex; align-items: center; gap: 28px; padding: 0 22px; }
+  .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+  .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
+  .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
+                 scrollbar-width: none; }
+  .gnav .links::-webkit-scrollbar { display: none; }
+  .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
+                   white-space: nowrap; transition: color .15s; }
+  .gnav .links a:hover { color: var(--ink); }
+  .gnav .links a.here { color: var(--ink); font-weight: 600; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+            border: 1px solid var(--ink); display: grid; place-items: center;
+            font-size: 12px; font-weight: 600; }
+  .statusbar { display: flex; align-items: center; justify-content: center;
+               gap: 18px; padding: 10px 22px; font-size: 12px;
+               color: var(--mid); flex-shrink: 0; }
+  .livechip { display: inline-flex; align-items: center; gap: 7px; }
+  .datechip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 12px; letter-spacing: .06em;
+              text-transform: uppercase; color: var(--mid); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.ok { background: var(--ink); }
+  .dot.bad { background: var(--ember); }
+  .sf-row { display: inline-flex; align-items: center; gap: 7px; }
+  .viewport { flex: 1; min-height: 0; display: flex; flex-direction: column;
+              padding: 0 22px 22px; }
   .viewport iframe { flex: 1; border: 0; width: 100%; min-height: 0;
-                     background: transparent;
-                     opacity: 0; transition: opacity .5s ease; }
+                     border-radius: 28px; background: var(--band);
+                     opacity: 0; transition: opacity .4s; }
   .viewport iframe.on { opacity: 1; }
-
-  .down-wrap { flex: 1; display: grid; place-items: center; padding: 28px; }
-  .down {
-    background: var(--card); backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
-    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
-    padding: 34px 38px; max-width: 480px; text-align: center;
-    opacity: 0; animation: rise .4s ease forwards;
-    transition: transform .25s cubic-bezier(.2,.9,.3,1.2), border-color .2s,
-                box-shadow .25s;
-  }
-  .down:hover { transform: translateY(-3px); border-color: var(--hover);
-                box-shadow: 0 18px 48px rgba(0,0,0,.45); }
-  .down .glyph { width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 18px;
-                 background: var(--accent-soft); border: 1px solid var(--accent-edge);
-                 display: grid; place-items: center;
-                 box-shadow: 0 0 22px rgba(255,107,74,.12); }
-  .down .glyph svg { width: 24px; height: 24px; stroke: var(--accent); fill: none;
-                     stroke-width: 1.7; }
-  .down h2 { font-size: 21px; font-weight: 700; letter-spacing: -.4px;
-             margin-bottom: 8px; }
-  .down p { color: var(--mut); font-size: 13px; line-height: 1.6;
-            margin-bottom: 18px; }
-  .down .pill { display: inline-flex; align-items: center; gap: 6px;
-                font-size: 11px; font-weight: 600; padding: 5px 12px;
-                border-radius: 100px; background: rgba(239,83,80,.10);
-                color: var(--bad); border: 1px solid rgba(239,83,80,.35);
-                margin-bottom: 16px; }
-  .codechip { display: flex; align-items: center; gap: 10px;
-              background: var(--card-solid); border: 1px solid var(--line);
-              border-radius: 10px; padding: 11px 14px; text-align: left; }
-  .codechip code { font-family: "JetBrains Mono", monospace; font-size: 11.5px;
-                   color: var(--text); word-break: break-all; flex: 1;
-                   line-height: 1.55; }
-  .btn { font-size: 11.5px; font-weight: 600; background: var(--accent); color: #fff;
-         border: 0; border-radius: 100px; padding: 8px 16px; cursor: pointer;
-         transition: opacity .15s; flex-shrink: 0; }
-  .btn:hover { opacity: .88; }
-  .down .foot { font-size: 11px; color: var(--faint); margin-top: 16px; }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px); }
-                    to { opacity: 1; transform: none; } }
-
-  @media (max-width: 760px) {
-    body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-    aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap;
-            align-items: center; border-right: 0;
-            border-bottom: 1px solid var(--line); }
-    .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
-    main { height: auto; min-height: 0; }
-    .topbar { padding: 10px 16px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .down { animation: none; opacity: 1; }
-    .stage video { display: none; }
-    .stage img { display: block !important; }
-    .viewport iframe { transition: none; }
-  }
+  .down-wrap { flex: 1; display: flex; align-items: center;
+               justify-content: center; }
+  .down { text-align: center; max-width: 480px; padding: 40px; }
+  .down .glyph { font-size: 44px; margin-bottom: 14px; }
+  .down h2 { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+             font-size: 28px; font-weight: 700; letter-spacing: -.005em; }
+  .down p { font-size: 15px; color: var(--mid); margin-top: 10px;
+            line-height: 1.5; }
+  .codechip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 12px; background: var(--band); border-radius: 10px;
+              padding: 10px 14px; display: inline-block; margin-top: 14px; }
+  .btn { display: inline-block; background: var(--blue); color: #fff;
+         border-radius: 980px; padding: 10px 22px; font-size: 15px;
+         margin-top: 16px; transition: background .15s; }
+  .btn:hover { background: #0077ed; }
+  .pill { font-size: 12px; color: var(--mid); }
+  .foot { font-size: 12px; color: var(--mid); margin-top: 14px; }
+  .stage-bg { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .viewport iframe { transition: none; } }
 </style>
 </head>
 <body>
-<div class="stage" id="bgStage"><img src="/assets/galaxy.webp" alt="" id="stageImg"></div>
-<aside>
-  <div class="logo"><span class="mark"><span></span></span>Owner<em>OS_</em></div>
-  <a class="nav-item" href="/today">
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-    Today</a>
-  <a class="nav-item" href="/projects">
-    <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-    Projects</a>
-  <a class="nav-item here" href="/brain">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>
-    Brain</a>
-  <a class="nav-item" href="/capture">
-    <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="17" width="16" height="4" rx="1.5"/></svg>
-    Capture</a>
-  <a class="nav-item" href="/launch">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><circle cx="5" cy="17" r="2.5"/><circle cx="19" cy="17" r="2.5"/><path d="M12 8.5V12m0 0-5 3m5-3 5 3"/></svg>
-    Workforce</a>
-  <a class="nav-item" href="/plays">
-    <svg viewBox="0 0 24 24"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-3-4 3-4-3-2 1.5V6a2 2 0 0 1 2-2z"/><path d="M8 9h6M8 13h4"/></svg>
-    Plays</a>
-  <a class="nav-item" href="/files">
-    <svg viewBox="0 0 24 24"><path d="M13 3H6a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V9z"/><path d="M13 3v6h6.5"/></svg>
-    Files</a>
-  <a class="nav-item" href="/roadmap">
-    <svg viewBox="0 0 24 24"><path d="M4 19V5M4 17c5-3 11 3 16 0M4 9c5-3 11 3 16 0"/></svg>
-    Roadmap</a>
-  <div class="side-foot">
-    <div class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></div>
-    <div class="sf-row"><span class="dot ok"></span>local · cabinet read-only</div>
-  </div>
-</aside>
-<main>
-  <div class="topbar">
-    <h1>Brain</h1>
-    <span class="datechip mono" id="dateChip"></span>
-    <span class="livechip" id="liveChip"><span class="dot" id="liveDot"></span><span id="liveText">checking</span></span>
+<div class="stage-bg" id="bgStage" hidden><img src="/assets/galaxy.webp" alt="" id="stageImg"></div>
+<nav class="gnav">
+  <div class="gnav-in">
+    <span class="word">OwnerOS<em>_</em></span>
+    <div class="links">
+      <a href="/today">Today</a>
+      <a href="/projects">Projects</a>
+      <a class="here" href="/brain" aria-current="page">Brain</a>
+      <a href="/capture">Capture</a>
+      <a href="/launch">Workforce</a>
+      <a href="/plays">Plays</a>
+      <a href="/files">Files</a>
+      <a href="/roadmap">Roadmap</a>
+    </div>
     <span class="avatar">J</span>
   </div>
-  <div class="viewport" id="stage"></div>
-</main>
+</nav>
+<div class="statusbar">
+  <span class="datechip mono" id="dateChip"></span>
+  <span class="livechip" id="liveChip"><span class="dot" id="liveDot"></span><span id="liveText">checking</span></span>
+  <span class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></span>
+</div>
+<main class="viewport" id="stage"></main>
 <script>
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
     (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -273,7 +168,7 @@
       setStatus(!!health.brain);
       if (health.brain) {
         const frame = document.createElement("iframe");
-        frame.src = (health.brain_url || "http://localhost:4880") + "?nointro&theme=dark";
+        frame.src = (health.brain_url || "http://localhost:4880") + "?nointro&theme=light";
         frame.title = "Second Brain map";
         frame.addEventListener("load", () => {
           frame.classList.add("on");

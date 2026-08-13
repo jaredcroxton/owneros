@@ -4,215 +4,145 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Roadmap · OwnerOS</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='24' rx='7' fill='%23ff6b4a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%230b0e13'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="/fonts/fonts.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d1d1f'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
 <style>
   :root {
-    --bg: #0b0e13; --panel: rgba(18,21,28,.66); --card: rgba(23,27,35,.55);
-    --card-solid: #171b23; --line: rgba(255,255,255,.08); --line2: rgba(255,255,255,.05);
-    --hover: rgba(255,255,255,.16);
-    --text: #eceef2; --mut: #9aa2b1; --faint: #8b93a5;
-    --accent: #ff6b4a; --accent-soft: rgba(255,107,74,.16);
-    --accent-edge: rgba(255,107,74,.5); --accent-glow: rgba(255,107,74,.32);
-    --ok: #2dd4a7; --warn: #e8b931; --bad: #ef5350; --info: #4a9eff;
-    --blur: blur(18px) saturate(1.25);
+    --paper: #ffffff; --band: #f5f5f7; --navbg: rgba(250,250,252,.8);
+    --wash: #e8e8ed; --hairline: #d6d6d6;
+    --ink: #1d1d1f; --mid: #707070; --deep: #474747;
+    --blue: #0071e3; --link: #0066cc; --ember: #b64400;
+    --text: #1d1d1f; --mut: #707070; --faint: #707070;
+    --accent: #b64400; --ok: #1d1d1f; --line: #d6d6d6;
   }
   * { margin: 0; box-sizing: border-box; }
-  html, body { height: 100%; }
+  html { height: 100%; }
   body {
-    background: var(--bg); color: var(--text);
-    font-family: Inter, sans-serif; font-size: 14px; min-height: 100vh;
-    display: grid; grid-template-columns: 208px 1fr; overflow-x: hidden;
+    background: var(--paper); color: var(--ink);
+    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui,
+      "Segoe UI", Roboto, sans-serif;
+    font-size: 17px; line-height: 1.47; letter-spacing: -.022em;
+    min-height: 100%;
   }
-  .stage {
-    position: fixed; inset: 0; z-index: -2; background: var(--bg);
-  }
-  .stage img, .stage video {
-    width: 100%; height: 100%; object-fit: cover; object-position: 70% 40%;
-    display: block;
-  }
-  .stage::after {
-    content: ""; position: absolute; inset: 0;
-    background:
-      linear-gradient(90deg, rgba(11,14,19,.96) 0%, rgba(11,14,19,.72) 30%,
-        rgba(11,14,19,.18) 58%, rgba(11,14,19,.08) 78%, rgba(11,14,19,.42) 100%),
-      linear-gradient(0deg, rgba(11,14,19,.65) 0%, transparent 22%),
-      linear-gradient(180deg, rgba(11,14,19,.5) 0%, transparent 16%);
-  }
-  .mono { font-family: "JetBrains Mono", monospace; }
+  .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+          font-variant-numeric: tabular-nums; letter-spacing: 0; }
   a { color: inherit; text-decoration: none; }
-
-  aside {
-    background: var(--panel); backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur);
-    border-right: 1px solid var(--line);
-    padding: 22px 14px; display: flex; flex-direction: column; gap: 4px;
-    position: sticky; top: 0; height: 100vh; z-index: 5;
-  }
-  .logo { display: flex; align-items: center; gap: 10px; padding: 0 10px 22px;
-          font-weight: 700; font-size: 17px; letter-spacing: -.3px; }
-  .logo .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent);
-                display: grid; place-items: center; box-shadow: 0 0 18px var(--accent-glow); }
-  .logo .mark span { width: 12px; height: 12px; border-radius: 50%; background: var(--bg); }
-  .logo em { font-style: normal; color: var(--accent); }
-  .nav-item {
-    display: flex; align-items: center; gap: 11px; padding: 10px 12px;
-    border-radius: 10px; color: var(--mut); font-weight: 500; font-size: 13.5px;
-    border: 1px solid transparent; transition: color .15s, background .15s;
-  }
-  .nav-item:hover { color: var(--text); background: var(--card); }
-  .nav-item.here { color: var(--text); background: var(--card);
-                   border-color: var(--accent-edge);
-                   box-shadow: 0 0 14px rgba(255,107,74,.14); }
-  .nav-item svg { width: 16px; height: 16px; stroke: currentColor; fill: none;
-                  stroke-width: 1.7; flex-shrink: 0; }
-  .side-foot { margin-top: auto; padding: 12px 10px 0; border-top: 1px solid var(--line);
-               display: grid; gap: 8px; }
-  .sf-row { display: flex; align-items: center; gap: 8px; font-size: 11px;
-            color: var(--faint); }
-  .dot { width: 7px; height: 7px; border-radius: 50%; }
-  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
-  .dot.bad { background: var(--bad); }
-
-  main { position: relative; min-height: 100vh; padding: 24px 34px 56px; min-width: 0; }
-  .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 30px;
-            flex-wrap: wrap; }
-  .topbar h1 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
-  .datechip { font-size: 11px; color: var(--mut); background: var(--card);
-              backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-              border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px; }
-  .avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-            margin-left: auto;
-            background: linear-gradient(135deg, var(--accent), #b3401f);
-            display: grid; place-items: center; font-weight: 700; font-size: 14px;
-            color: #fff; }
-
-  .col { max-width: 640px; position: relative; z-index: 2; }
-  .greet { margin-bottom: 26px; }
-  .greet h2 { font-size: 28px; font-weight: 700; letter-spacing: -.5px; }
-  .greet h2 .cursor { color: var(--accent); animation: blink 1.2s steps(1) infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  .greet p { color: var(--mut); font-size: 13px; margin-top: 4px; }
-
-  .glass {
-    background: var(--card); backdrop-filter: var(--blur);
-    -webkit-backdrop-filter: var(--blur); border: 1px solid var(--line);
-    border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,.35);
-  }
-  .goals { display: grid; gap: 12px; }
-  .goal {
-    padding: 18px 20px; display: flex; align-items: center; gap: 16px;
-    opacity: 0; animation: rise .4s ease forwards;
-    transition: transform .25s cubic-bezier(.2,.9,.3,1.2), border-color .2s,
-                box-shadow .25s;
-  }
-  .goal:hover { transform: translateY(-3px); border-color: var(--hover);
-                box-shadow: 0 18px 44px rgba(0,0,0,.45); }
-  .goal:first-child { border-color: var(--accent-edge);
-                      box-shadow: 0 14px 40px rgba(0,0,0,.35),
-                                  0 0 18px rgba(255,107,74,.14); }
-  .goal:first-child:hover { border-color: var(--accent-edge);
-                            box-shadow: 0 18px 44px rgba(0,0,0,.45),
-                                        0 0 22px rgba(255,107,74,.2); }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px); }
-                    to { opacity: 1; transform: none; } }
-  .goal .tick {
-    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-    border: 1.5px solid var(--faint);
-    transition: border-color .2s, box-shadow .2s;
-  }
-  .goal:hover .tick { border-color: var(--accent);
-                      box-shadow: 0 0 10px var(--accent-glow); }
-  .goal:first-child .tick { border-color: var(--accent);
-                            box-shadow: 0 0 10px var(--accent-glow); }
-  .goal .num { font-family: "JetBrains Mono", monospace; font-size: 12px;
-               color: var(--faint); flex-shrink: 0; width: 24px; }
-  .goal .who { min-width: 0; flex: 1; }
-  .goal .gname { font-weight: 600; font-size: 14.5px; }
-  .goal .gdesc { font-size: 12.5px; color: var(--mut); margin-top: 3px;
-                 line-height: 1.5; }
-  .btn { font-size: 11.5px; font-weight: 600; background: var(--accent); color: #fff;
-         border: 0; border-radius: 100px; padding: 8px 16px; cursor: pointer;
-         white-space: nowrap; flex-shrink: 0; font-family: Inter, sans-serif;
-         transition: opacity .15s, color .15s, border-color .15s; }
-  .btn:hover { opacity: .88; }
-  .btn.ghost { background: rgba(255,255,255,.04); border: 1px solid var(--line);
-               color: var(--mut); }
-  .btn.ghost:hover { color: var(--text); border-color: var(--hover); opacity: 1; }
-  .btn.ghost.copied { color: var(--ok); border-color: var(--ok); }
-
-  .foot { margin-top: 22px; font-size: 12.5px;
-          color: var(--faint); opacity: 0; animation: rise .4s ease forwards; }
-  .err { color: var(--bad); font-size: 13px; }
-
-  @media (max-width: 760px) {
-    body { grid-template-columns: 1fr; }
-    aside { position: static; height: auto; flex-direction: row; flex-wrap: wrap;
-            align-items: center; border-right: 0;
-            border-bottom: 1px solid var(--line); }
-    .logo { padding: 0 8px 0 0; } .side-foot { display: none; }
-    main { padding: 20px 18px 44px; }
-    .goal { flex-wrap: wrap; }
-    .goal .who { flex-basis: 100%; order: 4; }
-    .goal .btn { margin-left: auto; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .goal, .foot { animation: none; opacity: 1; }
-    .greet .cursor { animation: none; }
-    .stage video { display: none; }
-    .stage img { display: block !important; }
-  }
+  button { font: inherit; letter-spacing: inherit; color: inherit;
+           background: none; border: 0; cursor: pointer; padding: 0; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px;
+                   border-radius: 4px; }
+  .gnav { position: sticky; top: 0; z-index: 50; height: 44px;
+          background: var(--navbg);
+          backdrop-filter: blur(20px) saturate(1.8);
+          -webkit-backdrop-filter: blur(20px) saturate(1.8); }
+  .gnav-in { max-width: 1024px; margin: 0 auto; height: 100%;
+             display: flex; align-items: center; gap: 28px; padding: 0 22px; }
+  .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+  .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
+  .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
+                 scrollbar-width: none; }
+  .gnav .links::-webkit-scrollbar { display: none; }
+  .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
+                   white-space: nowrap; transition: color .15s; }
+  .gnav .links a:hover { color: var(--ink); }
+  .gnav .links a.here { color: var(--ink); font-weight: 600; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+            border: 1px solid var(--ink); display: grid; place-items: center;
+            font-size: 12px; font-weight: 600; }
+  .band { padding: 88px 22px; }
+  .band.gray { background: var(--band); }
+  .band-in { max-width: 860px; margin: 0 auto; }
+  .hero { text-align: center; padding-top: 72px; padding-bottom: 40px; }
+  .datechip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 12px; letter-spacing: .06em;
+              text-transform: uppercase; color: var(--mid); }
+  .greet h2 { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+              font-size: clamp(44px, 7vw, 80px); line-height: 1.05;
+              font-weight: 700; letter-spacing: -.015em; margin-top: 14px; }
+  .greet .cursor { color: var(--mid); font-weight: 400; }
+  .greet p { font-size: 21px; color: var(--mid); margin-top: 16px;
+             letter-spacing: .01em; }
+  .plate { display: block; width: 100%; max-width: 980px; margin: 0 auto;
+           border-radius: 28px; }
+  .goals { display: grid; gap: 14px; }
+  .goal { display: flex; gap: 20px; align-items: flex-start;
+          background: var(--paper); border-radius: 28px; padding: 26px 30px; }
+  .num { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+         font-size: 34px; font-weight: 700; color: var(--wash);
+         -webkit-text-stroke: 1px var(--hairline); line-height: 1;
+         flex-shrink: 0; min-width: 52px; }
+  .who { flex: 1; min-width: 0; }
+  .gname { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+           font-size: 21px; font-weight: 600; letter-spacing: -.005em; }
+  .gdesc { font-size: 15px; color: var(--mid); margin-top: 6px;
+           line-height: 1.5; }
+  .tick { font-size: 13px; color: var(--link); white-space: nowrap; }
+  .btn { background: var(--blue); color: #fff; border-radius: 980px;
+         padding: 10px 22px; font-size: 15px; transition: background .15s; }
+  .btn:hover { background: #0077ed; }
+  .btn.ghost { background: transparent; color: var(--ink);
+               border: 1px solid rgba(29,29,31,.8); }
+  .btn.ghost:hover { background: var(--wash); }
+  .err { color: var(--ember); }
+  .foot-note { text-align: center; font-size: 14px; color: var(--mid);
+               margin-top: 30px; }
+  .foot { display: flex; align-items: center; justify-content: center;
+          gap: 20px; padding: 26px 22px 40px; font-size: 12px;
+          color: var(--mid); flex-wrap: wrap; }
+  .sf-row { display: inline-flex; align-items: center; gap: 7px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.ok { background: var(--ink); }
+  .dot.bad { background: var(--ember); }
+  .stage { display: none !important; }
+  @media (max-width: 720px) { .band { padding: 56px 18px; }
+    .goal { flex-direction: column; gap: 10px; } }
 </style>
 </head>
 <body>
-<div class="stage" id="stage"><img src="/assets/seedpods.webp" alt="" id="stageImg"></div>
-<aside>
-  <div class="logo"><span class="mark"><span></span></span>Owner<em>OS_</em></div>
-  <a class="nav-item" href="/today">
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-    Today</a>
-  <a class="nav-item" href="/projects">
-    <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-    Projects</a>
-  <a class="nav-item" href="/brain">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg>
-    Brain</a>
-  <a class="nav-item" href="/capture">
-    <svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><rect x="4" y="17" width="16" height="4" rx="1.5"/></svg>
-    Capture</a>
-  <a class="nav-item" href="/launch">
-    <svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><circle cx="5" cy="17" r="2.5"/><circle cx="19" cy="17" r="2.5"/><path d="M12 8.5V12m0 0-5 3m5-3 5 3"/></svg>
-    Workforce</a>
-  <a class="nav-item" href="/plays">
-    <svg viewBox="0 0 24 24"><path d="M4 4h12a2 2 0 0 1 2 2v14l-4-3-4 3-4-3-2 1.5V6a2 2 0 0 1 2-2z"/><path d="M8 9h6M8 13h4"/></svg>
-    Plays</a>
-  <a class="nav-item" href="/files">
-    <svg viewBox="0 0 24 24"><path d="M13 3H6a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V9z"/><path d="M13 3v6h6.5"/></svg>
-    Files</a>
-  <a class="nav-item here" href="/roadmap">
-    <svg viewBox="0 0 24 24"><path d="M4 19V5M4 17c5-3 11 3 16 0M4 9c5-3 11 3 16 0"/></svg>
-    Roadmap</a>
-  <div class="side-foot">
-    <div class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></div>
-    <div class="sf-row"><span class="dot ok"></span>local · cabinet read-only</div>
-  </div>
-</aside>
-<main>
-  <div class="topbar">
-    <h1>Roadmap</h1>
-    <span class="datechip mono" id="dateChip"></span>
+<div class="stage" id="stage" hidden><img src="/assets/seedpods.webp" alt="" id="stageImg"></div>
+<nav class="gnav">
+  <div class="gnav-in">
+    <span class="word">OwnerOS<em>_</em></span>
+    <div class="links">
+      <a href="/today">Today</a>
+      <a href="/projects">Projects</a>
+      <a href="/brain">Brain</a>
+      <a href="/capture">Capture</a>
+      <a href="/launch">Workforce</a>
+      <a href="/plays">Plays</a>
+      <a href="/files">Files</a>
+      <a class="here" href="/roadmap" aria-current="page">Roadmap</a>
+    </div>
     <span class="avatar">J</span>
   </div>
-  <div class="col">
-    <div class="greet">
-      <h2>Parked, on purpose<span class="cursor">_</span></h2>
-      <p>Listed so they stop occupying your head. Nothing here is built.</p>
+</nav>
+<main>
+  <section class="band hero">
+    <div class="band-in">
+      <div class="datechip mono" id="dateChip"></div>
+      <div class="greet">
+        <h2>Parked, on purpose<span class="cursor">_</span></h2>
+        <p>Listed so they stop occupying your head. Nothing here is built.</p>
+      </div>
     </div>
-    <div class="goals" id="goals"></div>
-    <p class="foot" id="foot">Promote one when you are ready to build it.
-      Your next build session knows where to look.</p>
-  </div>
+  </section>
+  <section class="band" id="plateBand" style="padding-top:0;padding-bottom:40px">
+    <div class="band-in">
+      <img class="plate" src="/assets/apple/roadmap.png" alt=""
+           onerror="document.getElementById('plateBand').style.display='none'">
+    </div>
+  </section>
+  <section class="band gray">
+    <div class="band-in">
+      <div class="goals" id="goals"></div>
+      <p class="foot-note" id="foot">Promote one when you are ready to build it.
+        Your next build session knows where to look.</p>
+    </div>
+  </section>
 </main>
+<div class="foot">
+  <span class="sf-row"><span class="dot" id="brainDot"></span><span id="brainState">brain: checking</span></span>
+  <span class="sf-row"><span class="dot ok"></span>local · cabinet read-only</span>
+</div>
 <script>
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
     (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

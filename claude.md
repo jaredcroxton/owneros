@@ -3,15 +3,40 @@
 Local Business OS cockpit. One stdlib Python server, five screens plus roadmap, PerformOS brand,
 ivory default theme with ink stage mode.
 
-## Design law (locked 2026-08-11 evening, supersedes PerformOS brand for this app)
-Dark only. Tokens: bg #0b0e13, panel #12151c, card #171b23, line #232936, text #eceef2,
-muted #8b93a3, accent coral #ff6b4a (single hot accent), ok teal #2dd4a7, warn amber
-#e8b931, bad red #ef5350, info blue #4a9eff (sparingly). Inter UI, JetBrains Mono for
-data/ids/dates. Icon sidebar + topbar search + avatar J. Glassy cards radius 14px.
-Ambient drifting glow field on body::before. Motion: rise entrances, count-ups, growing
-bars, hover lifts, SSE birth toasts; every animation has a non-rAF fallback and a
+## Design law v4 — the Apple language (locked 2026-08-13 night, OS-wide)
+Distilled from Jared's five references (GSAP, Superr, Portrait, dope.security, Apple
+MacBook Neo) after he rejected every "AI-feel" build. The five laws: one ink; one
+rationed accent; whisper elevation; two type voices with strict size ownership;
+color lives in content, never chrome.
+
+Tokens: paper #ffffff, band #f5f5f7, nav #fafafc (blur 20px), hover wash #e8e8ed,
+ink #1d1d1f, mid #707070 (secondary text), deep #474747 (nav), hairline #d6d6d6
+(rare), blue #0071e3 (filled pill CTAs ONLY, never text/decoration), link #0066cc
+(inline text links only), ember #b64400 (tiny status labels, at most once per
+screen, e.g. needs-me counts). Status language: ink = done/positive, mid = quiet,
+ember = needs attention. NO other colors in chrome; teal/coral/amber retired.
+
+Type: system font stack ("SF Pro Display"/-apple-system/system-ui — real SF on the
+Mac this runs on). Display 56-96px weight 600/700 tracking -0.015em, section heads
+28-40px weight 600, body 17px 400 lh 1.47 tracking -.022em, captions 12-14px.
+Data/ids/dates in ui-monospace (SF Mono) 12-14px. Nothing under 12px.
+
+Structure: NO sidebar — 44px sticky global nav bar (blurred #fafafc, wordmark left,
+8 room links center at 12px, avatar right). Full-bleed sections alternating
+#ffffff / #f5f5f7 with 80-120px vertical padding; inner column max 980-1200px.
+Section separation by band alternation, never dividers. Cards 28px radius,
+borderless, no shadow (1px oklab hairline at ≤8% only when floating on same-color
+surface). Buttons: pill 980px radius — filled blue for the one primary action,
+ghost 1px ink outline for secondary, text+arrow links (#0066cc ›) for tertiary.
+Headlines can center; body copy always left-aligned. No gradients, no glass except
+the nav blur, no glow, no decorative color, no icons where a word works.
+
+Motion: few, fast, purposeful — 200-400ms ease-out fades/rises on band entry,
+count-ups on stats, smooth sheet slides. Base state = final state; animations fill
+backwards from keyframes (never base-hidden + forwards). Full
 prefers-reduced-motion path. today.html is the canonical reference implementation.
-No Instrument Serif, no ivory, no theme toggle, no external resources at runtime.
+No theme toggle, no dark mode, no external resources at runtime. Old dark builds
+live in git history (coral canon ≤ a2e22cf, GSAP 30fe05e, Register 6b42127).
 
 ## Architectural invariants
 1. READ-ONLY over `~/.claude/crew-state`. The server's only write path is `~/.owneros/inbox`
