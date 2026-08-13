@@ -52,6 +52,12 @@
   .band.gray { background: var(--band); }
   .band-in { max-width: 860px; margin: 0 auto; }
   .hero { text-align: center; padding-top: 72px; padding-bottom: 40px; }
+  .hero.has-art {
+    background:
+      linear-gradient(rgba(255,255,255,1) 0%, rgba(255,255,255,.88) 34%,
+        rgba(255,255,255,.35) 62%, rgba(255,255,255,0) 100%),
+      url(/assets/apple/roadmap.png) center bottom / cover no-repeat;
+    min-height: 72vh; padding-bottom: 40vh; }
   .datechip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
               font-size: 12px; letter-spacing: .06em;
               text-transform: uppercase; color: var(--mid); }
@@ -116,19 +122,13 @@
   </div>
 </nav>
 <main>
-  <section class="band hero">
+  <section class="band hero has-art">
     <div class="band-in">
       <div class="datechip mono" id="dateChip"></div>
       <div class="greet">
         <h2>Parked, on purpose<span class="cursor">_</span></h2>
         <p>Listed so they stop occupying your head. Nothing here is built.</p>
       </div>
-    </div>
-  </section>
-  <section class="band" id="plateBand" style="padding-top:0;padding-bottom:40px">
-    <div class="band-in">
-      <img class="plate" src="/assets/apple/roadmap.png" alt=""
-           onerror="document.getElementById('plateBand').style.display='none'">
     </div>
   </section>
   <section class="band gray">

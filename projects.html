@@ -56,6 +56,12 @@
   .band-in { max-width: 980px; margin: 0 auto; }
   .band-in.wide { max-width: 1200px; }
   .hero { text-align: center; padding-top: 72px; padding-bottom: 40px; }
+  .hero.has-art {
+    background:
+      linear-gradient(rgba(255,255,255,1) 0%, rgba(255,255,255,.88) 34%,
+        rgba(255,255,255,.35) 62%, rgba(255,255,255,0) 100%),
+      url(/assets/apple/projects.png) center bottom / cover no-repeat;
+    min-height: 72vh; padding-bottom: 40vh; }
   .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace;
              font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
              color: var(--mid); }
@@ -247,17 +253,11 @@
   </div>
 </nav>
 <main>
-  <section class="band hero">
+  <section class="band hero has-art">
     <div class="band-in">
       <div class="eyebrow mono datechip" id="dateChip"></div>
       <div class="page-hero"><h2>The cabinet<span class="cursor">_</span></h2></div>
       <p class="hero-sub">Every project, every handoff, read straight from disk.</p>
-    </div>
-  </section>
-  <section class="band" id="plateBand" style="padding-top:0;padding-bottom:40px">
-    <div class="band-in wide">
-      <img class="plate" src="/assets/apple/projects.png" alt=""
-           onerror="document.getElementById('plateBand').style.display='none'">
     </div>
   </section>
   <section class="band gray">
