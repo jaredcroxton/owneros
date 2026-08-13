@@ -138,6 +138,9 @@
     .band { padding: 48px 16px; }
     .acts { opacity: 1; }
   }
+  .glass.composer, .goal, .row, .dept, .roles-panel, .cat, .chain, .frow {
+    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
+
 </style>
 </head>
 <body>
@@ -177,10 +180,7 @@
         <span class="tag">FILES ASSISTANT</span><span id="answerText"></span></div>
       <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
         <input id="filter" type="search" placeholder="Filter this folder…" aria-label="Filter files"></label>
-    </div>
-  </section>
-  <section class="band gray">
-    <div class="band-in">
+
       <div class="glass vault">
         <div class="protect-note" id="protectNote">This folder is write-protected
           (build-critical). Browsing only.</div>

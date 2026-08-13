@@ -61,7 +61,7 @@
       linear-gradient(rgba(255,255,255,1) 0%, rgba(255,255,255,.88) 34%,
         rgba(255,255,255,.35) 62%, rgba(255,255,255,0) 100%),
       url(/assets/apple/workforce.png) center bottom / cover no-repeat;
-    min-height: 76vh; padding-bottom: 42vh; }
+    padding-bottom: 96px; }
   .hero h1 { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
              font-size: clamp(44px, 7vw, 80px); line-height: 1.05;
              font-weight: 700; letter-spacing: -.015em; margin-top: 14px; }
@@ -208,6 +208,8 @@
     .band { padding: 56px 18px; }
     .drawer { width: 100vw; border-radius: 0; }
   }
+  .glass.composer, .goal, .row, .dept, .roles-panel, .cat, .chain, .frow {
+    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
 </style>
 </head>
 <body>
@@ -240,11 +242,7 @@
       </div>
       <div class="brockline">Brock runs the floor.
         <a href="/today">Today's briefing</a></div>
-    </div>
-  </section>
 
-  <section class="band gray">
-    <div class="band-in wide">
       <div class="depts-sec" id="deptsSec">
         <div class="sec-sub" id="secSub">Click a department to meet its roles.</div>
         <div class="depts" id="depts"></div>

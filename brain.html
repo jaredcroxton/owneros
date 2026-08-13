@@ -168,7 +168,7 @@
       setStatus(!!health.brain);
       if (health.brain) {
         const frame = document.createElement("iframe");
-        frame.src = (health.brain_url || "http://localhost:4880") + "?nointro&theme=light";
+        frame.src = (health.brain_url || "http://localhost:4880") + "?theme=light";
         frame.title = "Second Brain map";
         frame.addEventListener("load", () => {
           frame.classList.add("on");

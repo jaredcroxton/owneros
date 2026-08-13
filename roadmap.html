@@ -101,6 +101,9 @@
   .stage { display: none !important; }
   @media (max-width: 720px) { .band { padding: 56px 18px; }
     .goal { flex-direction: column; gap: 10px; } }
+  .glass.composer, .goal, .row, .dept, .roles-panel, .cat, .chain, .frow {
+    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
+
 </style>
 </head>
 <body>
@@ -129,10 +132,7 @@
         <h2>Parked, on purpose<span class="cursor">_</span></h2>
         <p>Listed so they stop occupying your head. Nothing here is built.</p>
       </div>
-    </div>
-  </section>
-  <section class="band gray">
-    <div class="band-in">
+
       <div class="goals" id="goals"></div>
       <p class="foot-note" id="foot">Promote one when you are ready to build it.
         Your next build session knows where to look.</p>
