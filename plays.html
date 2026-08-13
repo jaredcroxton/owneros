@@ -107,6 +107,7 @@
           font-size: 12px; background: var(--band); border-radius: 980px;
           padding: 5px 12px; }
   .step-arrow { color: var(--hairline); font-size: 13px; }
+  .chain-copy { margin-top: 16px; }
   .empty { color: var(--mid); padding: 24px 0; text-align: center; }
   .datechip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
               font-size: 12px; letter-spacing: .06em;
@@ -293,7 +294,9 @@
           '</div><div class="steps">' +
           ch.steps.map((s) => '<span class="step">' + esc(s) + "</span>")
             .join('<span class="step-arrow">→</span>') +
-          '</div><div class="cnote">' + esc(ch.note) + "</div></div>").join("");
+          '</div><div class="cnote">' + esc(ch.note) + "</div>" +
+          '<button class="btn chain-copy" data-ci="' + i +
+          '" type="button">Copy chain prompt</button></div>').join("");
     }
     deck.innerHTML = (chainsHtml + html) ||
       '<div class="empty">No play matches. Try fewer words, or ask Brock.</div>';
@@ -303,6 +306,29 @@
     deck.querySelectorAll(".play").forEach((el) =>
       el.addEventListener("click", () =>
         openPlay(el.dataset.cat, el.dataset.title)));
+    deck.querySelectorAll(".chain-copy").forEach((btn) =>
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const ch = chains[Number(btn.dataset.ci)];
+        if (!ch) return;
+        const text = 'Use the crew. Run the chain "' + ch.title +
+          '" through ONE project, in this exact order:\n' +
+          ch.steps.map((s, n) => (n + 1) + ". Run the " + s + " play.")
+            .join("\n") +
+          "\nKeep every step in the same project so each step reads the " +
+          "previous step's handoff. Pause after each step and show me the " +
+          "result before starting the next." +
+          (ch.note ? "\nContext: " + ch.note : "");
+        navigator.clipboard.writeText(text).catch(() => {
+          const ta = document.createElement("textarea");
+          ta.value = text; document.body.appendChild(ta); ta.select();
+          try { document.execCommand("copy"); } finally { ta.remove(); }
+        }).then(() => {
+          const old = btn.textContent;
+          btn.textContent = "Copied — paste into Claude";
+          setTimeout(() => { btn.textContent = old; }, 1600);
+        });
+      }));
   }
 
   function openPlay(cat, title) {
