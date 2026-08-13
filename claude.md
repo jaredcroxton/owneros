@@ -54,14 +54,21 @@ regenerate by rerunning the build snippet in progress.md when packs change).
   to be logged in (interactive `claude` then /login if it ever expires again).
 - Capture inbox is watched by the Brain (listed in both scan_config.json copies). If captures
   stop birthing nodes, reload `com.jared.secondbrain` the sanctioned way (launchctl unload/load).
-- Workforce (route /launch, all in launch.html): org-chart tiles, not a map. Business
-  tile at top (from /api/owner), Brock tile under it (links to /today), department
-  tiles cascading below with connector rail + stems (first row only, laid out by JS).
-  Click a department to expand its roles in place (single-open, Esc closes), click a
-  role for the dossier drawer, search shows a flat role-finder. Deep link:
-  `/launch?open=<dept>` (case/punctuation insensitive). Status wording is past-tense
-  everywhere ("N have worked"), never "working". The old map build lives unused in
-  `workforce-map/` (regen: `cd workforce-map && python3 gen_nodes.py`); do not
-  re-embed it without Jared's ask, he rejected the map look as confusing 2026-08-13.
+- Workforce (route /launch, all in launch.html): "The Company Register" design,
+  built 2026-08-13 from scratch after Jared reverted a GSAP-look reskin. Its own law
+  (this screen only; coral law governs the rest): warm paper #F6F3EC, ink #161310,
+  single rubric red #B42318 (index numerals, links, worked-this-month dot, stamp —
+  nothing else), Fraunces (variable, local) + IBM Plex Mono 400/500 data voice,
+  14px floor, radius 2px, no shadows/gradients/glass, light only. Structure:
+  masthead nameplate + double rule + compiled line, Brock editor's-note card,
+  underline search with red match counter, status legend, 17 numbered department
+  entries (01-17) on a 1px spine, single-open wells with dotted-leader role lines
+  numbered 001-089 (stable by API order), personnel-file drawer (salary AUD
+  units-only, $ stripped; COPIED stamp on copy), 72px two-letter rail (bottom bar
+  ≤390px), bottom-sheet drawer ≤560px. Deep link `/launch?open=<dept>` preserved.
+  Entrance rule learned hard: base state = final state, animations fill backwards;
+  never base-hidden + forwards. The old map build lives unused in `workforce-map/`;
+  do not re-embed without Jared's ask (map rejected 2026-08-13, GSAP skin reverted
+  same day — its tokens live in git history at 30fe05e if ever wanted).
 - Fonts are local (`fonts/`). No CDN at runtime.
 - Debug: `tail -20 ~/.owneros/os.log`; `curl localhost:4890/api/health`.
