@@ -163,6 +163,21 @@
           place-items: center; font-size: 13px; flex-shrink: 0;
           text-align: center; }
   .xbtn:hover { background: var(--hairline); }
+  .dtabs { display: flex; gap: 8px; margin-bottom: 18px; }
+  .dtab { font-size: 13px; padding: 7px 18px; border-radius: 980px;
+          background: var(--band); color: var(--deep);
+          transition: background .15s, color .15s; }
+  .dtab:hover { background: var(--wash); }
+  .dtab.on { background: var(--ink); color: #fff; }
+  .lrun { background: var(--band); border-radius: 18px; padding: 18px 20px;
+          margin-bottom: 12px; }
+  .lrun-head { display: flex; align-items: baseline; gap: 10px;
+               flex-wrap: wrap; margin-bottom: 8px; }
+  .lrun-skill { font-size: 15px; font-weight: 600; }
+  .lrun-meta { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+               font-size: 11px; color: var(--mid); }
+  .lrun ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+  .lrun li { font-size: 14px; line-height: 1.5; color: var(--deep); }
   .rec { background: var(--band); border-radius: 18px; padding: 18px 20px;
          margin-bottom: 12px; }
   .rec-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -317,7 +332,12 @@
     <button class="btn ghost" id="dCopy" type="button">Copy resume</button>
     <button class="xbtn" id="dClose" type="button" aria-label="Close">✕</button>
   </div>
+  <div class="dtabs">
+    <button class="dtab on" id="tabRecords" type="button">Records</button>
+    <button class="dtab" id="tabLearned" type="button">Learned</button>
+  </div>
   <div class="drawer-body" id="dBody"></div>
+  <div class="drawer-body" id="dLearned" hidden></div>
 </aside>
 <script>
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
@@ -519,6 +539,7 @@
     document.getElementById("dName").textContent = name;
     document.getElementById("dMeta").textContent = "loading…";
     dBody.innerHTML = "";
+    setTab(false);
     drawer.classList.add("open");
     scrim.classList.add("on");
     drawer.setAttribute("aria-hidden", "false");
@@ -558,8 +579,47 @@
       dBody.innerHTML += '<div class="extras">Also in this folder (not handoffs): ' +
         d.other_files.map(esc).join(", ") + '</div>';
     }
+    loadLearned(name);
+    if (new URLSearchParams(location.search).get("tab") === "learned")
+      setTab(true);
     window.__ready = true;
   }
+
+  const dLearned = document.getElementById("dLearned");
+  async function loadLearned(name) {
+    dLearned.innerHTML = '<div class="empty">Reading the runs…</div>';
+    try {
+      const resp = await fetch("/api/learned?project=" +
+        encodeURIComponent(name));
+      if (!resp.ok) throw new Error("nope");
+      const d = await resp.json();
+      if (drawerName !== name) return;
+      const runs = d.runs || [];
+      dLearned.innerHTML = runs.map((r, i) =>
+        '<div class="lrun" style="animation-delay:' + i * 60 + 'ms">' +
+        '<div class="lrun-head"><span class="lrun-skill">' +
+        esc(r.skill || "run") + '</span><span class="lrun-meta mono">' +
+        (r.date ? esc(r.date) : "") +
+        (r.days != null ? " · " + r.days + "d ago" : "") + '</span></div>' +
+        '<ul>' + r.points.map((p) => "<li>" + esc(p) + "</li>").join("") +
+        "</ul></div>").join("") ||
+        '<div class="empty">No lessons recorded yet — run something and the ' +
+        'crew writes what it learned into this drawer.</div>';
+    } catch (err) {
+      dLearned.innerHTML = '<div class="err">Could not read the lessons.</div>';
+    }
+  }
+
+  function setTab(learned) {
+    document.getElementById("tabRecords").classList.toggle("on", !learned);
+    document.getElementById("tabLearned").classList.toggle("on", learned);
+    dBody.hidden = learned;
+    dLearned.hidden = !learned;
+  }
+  document.getElementById("tabRecords").addEventListener("click",
+    () => setTab(false));
+  document.getElementById("tabLearned").addEventListener("click",
+    () => setTab(true));
 
   document.getElementById("dCopy").addEventListener("click", (e) =>
     copy(resumeCmd(drawerName), e.currentTarget));

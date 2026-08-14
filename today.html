@@ -248,6 +248,15 @@
   .duo .row { background: var(--paper);
               box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 10px 26px rgba(0,0,0,.04); }
   .duo .brief-body { max-height: 340px; }
+  .glass.learned { margin-top: 14px; padding: 20px 24px;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 10px 26px rgba(0,0,0,.04); }
+  .learned-head { display: flex; align-items: baseline; gap: 12px;
+                  flex-wrap: wrap; }
+  .learned-title { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+                   font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .learned-meta { font-size: 11px; color: var(--mid); }
+  .learned-list { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+  .learned-list li { font-size: 14px; line-height: 1.45; color: var(--deep); }
   .hero .glass.brief { text-align: left; margin-top: 0; max-width: none;
     box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
   @media (max-width: 900px) { .duo { grid-template-columns: 1fr; } }
@@ -309,6 +318,13 @@
           </div>
           <div class="glass recent">
             <div id="recentList"></div>
+          </div>
+          <div class="glass learned" id="learnedCard" hidden>
+            <div class="learned-head">
+              <span class="learned-title">Learned last run</span>
+              <span class="learned-meta mono" id="learnedMeta"></span>
+            </div>
+            <ul class="learned-list" id="learnedList"></ul>
           </div>
         </div>
       </div>
@@ -904,6 +920,22 @@
         setTimeout(() => toast.remove(), 400); }, 4200);
     };
   } catch (e) {}
+</script>
+<script>
+fetch("/api/learned").then(function(r){return r.json()}).then(function(d){
+  var L = d && d.learned;
+  if (!L || !L.points || !L.points.length) return;
+  document.getElementById("learnedMeta").textContent =
+    L.project + (L.skill ? " · " + L.skill : "") +
+    (L.days === 0 ? " · today" : " · " + L.days + "d ago");
+  var ul = document.getElementById("learnedList");
+  L.points.forEach(function(p){
+    var li = document.createElement("li");
+    li.textContent = p;
+    ul.appendChild(li);
+  });
+  document.getElementById("learnedCard").hidden = false;
+}).catch(function(){});
 </script>
 <script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
   document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});

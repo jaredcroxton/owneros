@@ -286,6 +286,81 @@ def api_today():
     }
 
 
+LEARN_HEADS = re.compile(
+    r"learn|lesson|decision|risk|watch|gotcha|avoid|next time|remaining", re.I)
+BULLET = re.compile(r"^([-*]|\d+\.)\s+")
+
+
+def strip_md(s):
+    s = re.sub(r"\*\*(.*?)\*\*", r"\1", s)
+    s = re.sub(r"`([^`]*)`", r"\1", s)
+    return s.strip()
+
+
+def api_learned():
+    """The self-learning loop, surfaced: lesson bullets from the newest
+    handoff in the cabinet. Read-only, fresh per request."""
+    best = None
+    if PROJECTS.is_dir():
+        for d in PROJECTS.iterdir():
+            if d.is_dir():
+                for f in d.glob("*-handoff.md"):
+                    try:
+                        m = f.stat().st_mtime
+                    except OSError:
+                        continue
+                    if best is None or m > best[0]:
+                        best = (m, d.name, f)
+    if not best:
+        return {"learned": None}
+    mtime, proj, f = best
+    rec, text = parse_handoff(f)
+    points = extract_points(text)
+    return {"learned": {"project": proj, "skill": rec.get("skill"),
+                        "date": rec.get("date"),
+                        "days": days_since(mtime), "points": points}}
+
+
+def extract_points(text, cap=4):
+    points, capture = [], False
+    for line in (text or "").splitlines():
+        s = line.strip()
+        if s.startswith("#") or (s.startswith("**") and s.rstrip(":").endswith("**")):
+            capture = bool(LEARN_HEADS.search(s))
+            continue
+        if capture and BULLET.match(s):
+            pt = strip_md(BULLET.sub("", s))
+            if pt:
+                points.append(pt[:220])
+        if len(points) >= cap:
+            break
+    if not points:
+        for line in (text or "").splitlines():
+            s = line.strip()
+            if BULLET.match(s):
+                pt = strip_md(BULLET.sub("", s))
+                if pt:
+                    points.append(pt[:220])
+            if len(points) >= 3:
+                break
+    return points
+
+
+def api_project_learned(name):
+    """Every run's lessons for one project, newest first — the loop over time."""
+    detail = api_project(name)
+    if not detail:
+        return None
+    runs = []
+    for rec in detail["records"]:
+        points = extract_points(rec.get("body") or "")
+        if points:
+            runs.append({"date": rec.get("date"), "skill": rec.get("skill"),
+                         "days": rec.get("days"), "status": rec.get("status"),
+                         "points": points})
+    return {"project": name, "runs": runs}
+
+
 def api_project(name):
     if not re.fullmatch(r"[A-Za-z0-9._ -]+", name or "") or name in {".", ".."}:
         return None
@@ -938,6 +1013,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(parse_playbook())
         if url.path == "/api/owner":
             return self.send_json(owner())
+        if url.path == "/api/learned":
+            proj = (q.get("project") or [""])[0]
+            if proj:
+                data = api_project_learned(proj)
+                return self.send_json(data if data else {"error": "unknown"},
+                                      200 if data else 404)
+            return self.send_json(api_learned())
         if url.path == "/api/workforce":
             return self.send_json(api_workforce())
         if url.path == "/api/files":
