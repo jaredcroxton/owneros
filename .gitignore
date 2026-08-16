@@ -18,3 +18,4 @@ assets/*.png
 
 # Pre-existing files in this folder that are not part of the OS
 Poppins-*.ttf
+__pycache__/
