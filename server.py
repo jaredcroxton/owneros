@@ -1337,8 +1337,14 @@ def agent_runtime(agent_id, aliases):
                 "crew_skills": 0}
     sk = d / "skills"
     names = [x.name for x in sk.iterdir() if x.is_dir()] if sk.is_dir() else []
+    # Hermes runs a profile as `hermes -p <slug>`; `profile alias` can also lay
+    # down a wrapper script named for the agent. Report the wrapper only when it
+    # is really on disk, so the copied command always works.
+    wrapper = HOME / ".local" / "bin" / agent_id
+    alias = agent_id if wrapper.is_file() and os.access(wrapper, os.X_OK) else ""
     return {"kind": "hermes-profile", "profile": slug, "path": str(d),
-            "skills": len(names),
+            "skills": len(names), "alias": alias,
+            "command": alias or ("hermes -p " + slug),
             "crew_skills": sum(1 for n in names if n.startswith("crew-"))}
 
 
@@ -1518,12 +1524,16 @@ def api_connections():
          "where": BRAIN_URL},
         {"what": "Crew skills installed in the Hermes tree",
          "on": b["crew_in_hermes_tree"] > 0,
-         "detail": str(b["crew_in_hermes_tree"]) + " skills present",
+         "detail": str(b["crew_in_hermes_tree"]) + " skills present. Hermes "
+                   "lists them under a crew category, so the default profile "
+                   "can reach them (verified with hermes skills list).",
          "where": str(HERMES_SKILLS)},
         {"what": "Crew skills wired into named Hermes profiles",
          "on": bool(b["profiles_with_crew"]),
          "detail": str(len(b["profiles_with_crew"])) + " of " +
-                   str(b["hermes_profiles"]) + " profiles carry them",
+                   str(b["hermes_profiles"]) + " profiles carry them. Each "
+                   "profile keeps its own skills folder, so run the demo in "
+                   "the default profile until they are wired.",
          "where": str(HERMES_PROFILES)},
         {"what": "Agent skills[] resolve to an installed skill",
          "on": bool(b["declared_resolved"]),

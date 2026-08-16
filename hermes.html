@@ -70,12 +70,44 @@
         text-transform: uppercase; color: var(--mid); margin: 0 0 16px; }
   .sec { margin-top: 40px; text-align: left; }
 
-  /* The org is a tree with one convergence point, so it is drawn as tiers on a
-     hairline spine. Pure CSS, no measured geometry, so it reflows. */
-  .tier0 { display: flex; justify-content: center; }
-  .spine { position: relative; margin-top: 26px; padding-top: 26px; }
-  .spine::before { content: ""; position: absolute; top: 0; left: 50%;
-                   width: 1px; height: 26px; background: var(--hairline); }
+  /* The handover chart. Tiles are laid out by grid; the lines are drawn into an
+     SVG layer from measured tile centres, so the chart reflows at any width.
+     Solid hairline = reports to. Dashed = hands work to. */
+  .chart { position: relative; }
+  .chart svg { position: absolute; inset: 0; width: 100%; height: 100%;
+               pointer-events: none; z-index: 0; overflow: visible; }
+  .chart .reports { stroke: var(--hairline); stroke-width: 1; fill: none; }
+  .chart .hands { stroke: var(--mid); stroke-width: 1; fill: none;
+                  stroke-dasharray: 4 5; opacity: .55; }
+  .tier0 { display: flex; justify-content: center; position: relative; z-index: 1; }
+  .tiles { display: grid; gap: 20px 14px; margin-top: 64px; position: relative;
+           z-index: 1;
+           grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); }
+  .tile { display: flex; flex-direction: column; align-items: center;
+          gap: 10px; padding: 4px; }
+  .tile .shot { width: 96px; height: 96px; border-radius: 20px;
+                object-fit: cover; background: var(--band);
+                box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 10px 24px rgba(0,0,0,.06);
+                transition: transform .2s cubic-bezier(.2,.7,.3,1); }
+  .tile:hover .shot { transform: translateY(-3px); }
+  .tile .tn { font-size: 15px; font-weight: 600; letter-spacing: -.01em;
+              text-align: center; }
+  .tile .tr { font-size: 12px; color: var(--mid); text-align: center;
+              margin-top: -6px; }
+  .tile.boss .shot { width: 116px; height: 116px; }
+  .tile.boss .tn { font-size: 19px; }
+  .crown { position: absolute; top: -10px; right: -10px; width: 28px;
+           height: 28px; border-radius: 50%; background: var(--ink); color: #fff;
+           display: grid; place-items: center; font-size: 15px; line-height: 1;
+           box-shadow: 0 0 0 3px var(--paper); }
+  .shotwrap { position: relative; }
+  .legend { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap;
+            margin-top: 30px; font-size: 13px; color: var(--mid); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { display: inline-block; width: 26px; height: 1px;
+              background: var(--hairline); }
+  .legend i.dash { background: none;
+                   border-top: 1px dashed var(--mid); opacity: .6; }
   .grid { display: grid; gap: 14px;
           grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
   /* A stretched <button> centres its content vertically, which floats short
@@ -237,8 +269,15 @@
 
       <div class="sec" id="orgSec">
         <div class="sl">The network</div>
-        <div class="tier0" id="tier0"></div>
-        <div class="spine"><div class="grid" id="tier1"></div></div>
+        <div class="chart" id="chart">
+          <svg id="wires" aria-hidden="true"></svg>
+          <div class="tier0" id="tier0"></div>
+          <div class="tiles" id="tiles"></div>
+        </div>
+        <div class="legend">
+          <span><i></i>reports to</span>
+          <span><i class="dash"></i>hands work to</span>
+        </div>
       </div>
 
       <div class="sec" id="ladderSec">
@@ -310,6 +349,77 @@
       : '<div class="mono-disc">' + esc(initials(a.name)) + "</div>";
   }
 
+  const tileEls = {};
+
+  function tile(a, boss) {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "tile rise" + (boss ? " boss" : "");
+    el.innerHTML =
+      '<div class="shotwrap">' +
+      (a.cover
+        ? '<img class="shot" src="' + esc(a.cover) + '" alt="">'
+        : '<div class="shot mono-disc" style="width:96px;height:96px;' +
+          'border-radius:20px">' + esc(initials(a.name)) + "</div>") +
+      (boss ? '<span class="crown" title="Runs the floor">&#9812;</span>' : "") +
+      "</div>" +
+      '<div class="tn">' + esc(a.name.replace(/_/g, " ")) + "</div>" +
+      '<div class="tr">' + esc(a.role) + "</div>";
+    el.addEventListener("click", () => openAgent(a.id));
+    tileEls[a.id] = el;
+    return el;
+  }
+
+  // Lines are measured, not hand-placed, so the chart survives any reflow.
+  // Brock's handsOffTo list is every direct report, so drawing it as well as the
+  // reporting lines would just double every edge: peer handoffs only.
+  function drawWires() {
+    const svg = $("wires");
+    const host = $("chart");
+    if (!svg || !host || !data.agents.length) return;
+    const box = host.getBoundingClientRect();
+    svg.setAttribute("viewBox", "0 0 " + box.width + " " + box.height);
+    // Anchor on the shot's top edge, but leave from the bottom of the whole
+    // tile: a line that starts at the photo runs straight through the name.
+    const centre = (id, which) => {
+      const el = tileEls[id];
+      if (!el) return null;
+      const shot = el.querySelector(".shot").getBoundingClientRect();
+      const full = el.getBoundingClientRect();
+      return { x: shot.left - box.left + shot.width / 2,
+               y: (which === "top" ? shot.top : full.bottom + 4) - box.top };
+    };
+    const boss = data.agents.find(a => !a.reportsTo);
+    const parts = [];
+    if (boss) {
+      const from = centre(boss.id, "bottom");
+      data.agents.forEach(a => {
+        if (a.reportsTo !== boss.id) return;
+        const to = centre(a.id, "top");
+        if (from && to) {
+          parts.push('<path class="reports" d="M' + from.x + " " + from.y +
+                     "L" + to.x + " " + to.y + '"/>');
+        }
+      });
+    }
+    data.agents.forEach(a => {
+      if (boss && a.id === boss.id) return;
+      a.handsOffTo.forEach(t => {
+        const from = centre(a.id, "bottom");
+        const to = centre(t, "bottom");
+        if (!from || !to) return;
+        // Peers sit on the same rows, so a straight line would run through the
+        // tiles between them. Bow the path under the row instead.
+        const dip = Math.min(46, 18 + Math.abs(to.x - from.x) * 0.06);
+        parts.push('<path class="hands" d="M' + from.x + " " + from.y +
+                   "Q" + (from.x + to.x) / 2 + " " +
+                   (Math.max(from.y, to.y) + dip) + " " +
+                   to.x + " " + to.y + '"/>');
+      });
+    });
+    svg.innerHTML = parts.join("");
+  }
+
   function card(a, boss) {
     const el = document.createElement("button");
     el.type = "button";
@@ -352,10 +462,12 @@
     const r = a.runtime;
     if (r.kind === "hermes-profile") {
       $("dRunK").textContent = "Hermes profile · " + r.profile;
-      $("dRunD").textContent = r.skills + " skills in that profile, " +
+      $("dRunD").textContent = r.skills + " skills in its own folder, " +
         (r.crew_skills ? r.crew_skills + " of them crew skills."
-                       : "none of them crew skills yet.");
-      $("dCmd").textContent = "hermes --profile " + r.profile;
+                       : "none of them crew skills. The crew is installed in " +
+                         "the shared tree, which the default profile reads and " +
+                         "this one does not.");
+      $("dCmd").textContent = r.command || ("hermes -p " + r.profile);
       $("dCmd").hidden = false;
       $("dCopy").hidden = false;
     } else if (a.telegram) {
@@ -497,8 +609,17 @@
       d.bridge.crew_in_hermes_tree + " skills are installed in the Hermes " +
       "tree; <b>" + d.bridge.profiles_with_crew.length + " of " +
       d.bridge.hermes_profiles + "</b> named profiles carry them.";
-    if (boss) $("tier0").appendChild(card(boss, true));
-    rest.forEach(a => $("tier1").appendChild(card(a, false)));
+    if (boss) $("tier0").appendChild(tile(boss, true));
+    rest.forEach(a => $("tiles").appendChild(tile(a, false)));
+    // Portraits decide the geometry, so wait for them before measuring.
+    const shots = [...document.querySelectorAll(".tile img.shot")];
+    let left = shots.filter(i => !i.complete).length;
+    if (!left) requestAnimationFrame(drawWires);
+    shots.forEach(i => i.complete || i.addEventListener("load", () => {
+      if (--left <= 0) drawWires();
+    }, { once: true }));
+    addEventListener("resize", drawWires);
+    if (window.ResizeObserver) new ResizeObserver(drawWires).observe($("chart"));
 
     const ladder = {};
     d.agents.forEach(a => a.receivesFrom.length && (ladder[a.id] = a.receivesFrom));
