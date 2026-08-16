@@ -13,6 +13,7 @@ import os
 import re
 import shutil
 import socket
+import sqlite3
 import subprocess
 import sys
 import time
@@ -44,6 +45,12 @@ HERMES_SKILLS = HERMES / "skills" / "crew"
 # If this path ever exists the cabinet has been forked and the one-brain claim
 # is false. Checked on every request; never created, never removed by this app.
 HERMES_STATE = HERMES / "crew-state"
+# The Hermes session log. Opened read-only, always; the gateways hold WAL locks.
+HERMES_DB = HERMES / "state.db"
+# How many recent handoff records to test against the Hermes session log, and
+# how much clock slack to allow either side of a session window.
+PROOF_SCAN = 25
+PROOF_SLACK = 180
 
 SANCTIONED = ["NOT STARTED", "IN PROGRESS", "BLOCKED", "READY FOR REVIEW",
               "DONE", "DONE_WITH_GAPS", "NO OUTPUT"]
@@ -1486,6 +1493,106 @@ def api_hermes():
     }
 
 
+def hermes_db_rows(path, sql, args=(), limit_note=""):
+    """Read-only query against a Hermes state.db. The gateways keep these in WAL
+    mode with live writers attached, so this opens with mode=ro and a short
+    busy_timeout and treats any failure as 'no data' rather than an error."""
+    if not Path(path).is_file():
+        return []
+    try:
+        con = sqlite3.connect("file:" + str(path) + "?mode=ro", uri=True,
+                              timeout=1.5)
+        try:
+            con.execute("PRAGMA busy_timeout=1500")
+            return con.execute(sql, args).fetchall()
+        finally:
+            con.close()
+    except Exception:
+        return []
+
+
+def hermes_ran_a_crew_skill():
+    """Cross-source proof that a crew skill finished a job inside Hermes.
+
+    A handoff record does not name the runtime that wrote it, and it never will:
+    the cabinet is runtime-agnostic, which is the entire portability argument.
+    So the proof correlates two independent sources, the record's mtime in the
+    cabinet and a session window in the Hermes log.
+
+    Scans the newest PROOF_SCAN records rather than only the newest one. A later
+    Claude Code handoff must not push the evidence out of view and flip a proven
+    claim back to unproven. A session with no ended_at is still running, so its
+    window is open-ended.
+    """
+    records = []
+    if PROJECTS.is_dir():
+        for p in PROJECTS.glob("*/*-handoff.md"):
+            try:
+                records.append((p.stat().st_mtime, p))
+            except OSError:
+                continue
+    if not records:
+        return None
+    records.sort(key=lambda r: r[0], reverse=True)
+    records = records[:PROOF_SCAN]
+
+    oldest = min(r[0] for r in records) - PROOF_SLACK
+    rows = hermes_db_rows(
+        HERMES_DB,
+        "SELECT id, source, started_at, ended_at, title FROM sessions "
+        "WHERE started_at >= ? ORDER BY started_at DESC LIMIT 500", (oldest,))
+    if not rows:
+        return None
+
+    # An unfinished session must not become an unbounded window: with ended_at
+    # NULL, "open until now" would match any later record, including one a
+    # Claude Code run wrote. Bound it by the session's own last message instead,
+    # which is what "still open" actually means on disk.
+    last_seen = {}
+
+    def finish_of(sid, started, ended):
+        if ended is not None:
+            return ended
+        if sid not in last_seen:
+            got = hermes_db_rows(
+                HERMES_DB,
+                "SELECT MAX(timestamp) FROM messages WHERE session_id = ?",
+                (sid,))
+            last_seen[sid] = (got[0][0] if got and got[0][0] else started)
+        return last_seen[sid]
+
+    # Time overlap alone is weak: a Claude Code record written while some Hermes
+    # session happened to be open would match. So the session must also NAME the
+    # skill in its own messages. That is checked with a COUNT, never read out --
+    # no message body is returned from this function or rendered anywhere.
+    def names_skill(sid, skill):
+        got = hermes_db_rows(
+            HERMES_DB,
+            "SELECT COUNT(*) FROM messages WHERE session_id = ? "
+            "AND content LIKE ?", (sid, "%" + skill + "%"))
+        return bool(got and got[0][0])
+
+    weak = None
+    for mtime, path in records:
+        skill = path.name.replace("-handoff.md", "")
+        for sid, source, started, ended, title in rows:
+            if started is None:
+                continue
+            finish = finish_of(sid, started, ended)
+            if not (started - PROOF_SLACK <= mtime <= finish + PROOF_SLACK):
+                continue
+            hit = {"project": path.parent.name, "skill": skill,
+                   "session": sid, "source": source or "unknown",
+                   "open": ended is None,
+                   "named": names_skill(sid, skill),
+                   "when": datetime.fromtimestamp(mtime).strftime(
+                       "%Y-%m-%d %H:%M")}
+            if hit["named"]:
+                return hit
+            weak = weak or hit
+    return weak
+
+
 def api_connections():
     """Every claim this app makes about being connected, checked against disk
     on each request. A row is either connected or it is not; there is no
@@ -1493,6 +1600,7 @@ def api_connections():
     the Hermes runtime claim stays unproven until the handoff demo is run."""
     h = api_hermes()
     b = h["bridge"]
+    proof = hermes_ran_a_crew_skill()
     plays = parse_playbook()
     projects = [d for d in PROJECTS.iterdir() if d.is_dir()] \
         if PROJECTS.is_dir() else []
@@ -1548,10 +1656,22 @@ def api_connections():
                    "it is merged and removed.",
          "where": b["split_brain_path"]},
         {"what": "A crew skill has finished a job inside Hermes",
-         "on": False,
-         "detail": "Not run yet. Until it is, the shared cabinet is an "
-                   "argument from the file paths, not a demonstration.",
-         "where": "Run any crew skill in a hermes session, then look in Projects"},
+         "on": bool(proof and proof["named"]),
+         "detail": (proof["skill"] + " finished inside a Hermes " +
+                    proof["source"] + " session and filed its record to " +
+                    proof["project"] + " on " + proof["when"] +
+                    ". The session names the skill itself; matched to Hermes "
+                    "session " + proof["session"] +
+                    ". Neither side was told about the other."
+                    if proof and proof["named"] else
+                    "A Hermes session was open when " + proof["project"] +
+                    " was written on " + proof["when"] + ", but that session "
+                    "does not name the skill, so this is timing only, not proof."
+                    if proof else
+                    "Not run yet. Until it is, the shared cabinet is an "
+                    "argument from the file paths, not a demonstration."),
+         "where": (str(PROJECTS / proof["project"]) if proof else
+                   "Run any crew skill in a hermes session, then look in Projects")},
         {"what": "Play library reads the live crew source",
          "on": not plays.get("fallback"),
          "detail": (str(plays.get("total_plays", 0)) + " plays · " +
