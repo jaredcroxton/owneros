@@ -188,7 +188,43 @@
          letter-spacing: -.01em; margin-top: 14px;
          transition: background .15s; text-align: center; }
   .btn:hover { background: #0077ed; }
+  /* Design law: one filled blue pill per drawer. Everything else is a ghost
+     outline, so the eye lands on the download and nowhere else. */
+  .btn.ghost { background: transparent; color: var(--ink);
+               box-shadow: inset 0 0 0 1px var(--ink); }
+  .btn.ghost:hover { background: var(--wash); box-shadow: inset 0 0 0 1px var(--ink); }
   .copied { font-size: 13px; color: var(--link); margin-left: 12px; }
+  .dtabs { display: flex; gap: 8px; margin: 18px 0 4px; }
+  .dtab { font-size: 13px; padding: 7px 16px; border-radius: 980px;
+          background: var(--band); color: var(--deep);
+          transition: background .15s, color .15s; }
+  .dtab:hover { background: var(--wash); }
+  .dtab.on { background: var(--ink); color: #fff; }
+  .acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .d-rep .note { font-size: 12px; color: var(--mid); margin-top: 4px; }
+  .sopstep { border-top: 1px solid var(--wash); padding: 10px 0; }
+  .sopstep summary { display: flex; gap: 12px; align-items: baseline;
+                     cursor: pointer; list-style: none; }
+  .sopstep summary::-webkit-details-marker { display: none; }
+  .sopstep .rn { font-size: 12px; color: var(--mid); flex-shrink: 0; }
+  .sopstep .stitle { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+  .sopstep[open] .stitle { color: var(--ink); }
+  .sbody { font-size: 14px; line-height: 1.55; color: var(--deep);
+           margin: 8px 0 0 30px; }
+  .checks { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 5px; }
+  .checks li { font-size: 13px; line-height: 1.45; color: var(--deep); }
+  .d-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .rtag.link { color: var(--link); cursor: pointer; }
+  .rtag.link:hover { background: var(--wash); }
+  .lrun { background: var(--band); border-radius: 18px; padding: 16px 18px;
+          margin-top: 10px; }
+  .lrun-head { display: flex; align-items: baseline; gap: 10px;
+               flex-wrap: wrap; margin-bottom: 6px; }
+  .lrun-skill { font-size: 15px; font-weight: 600; }
+  .lrun-meta { font-size: 11px; color: var(--mid); }
+  .lrun ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+  .lrun li { font-size: 14px; line-height: 1.5; color: var(--deep); }
+  .note { font-size: 14px; color: var(--mid); line-height: 1.5; }
   .foot { display: flex; align-items: center; justify-content: center;
           gap: 20px; padding: 26px 22px 40px; font-size: 12px;
           color: var(--mid); flex-wrap: wrap; }
@@ -269,7 +305,24 @@
   </div>
   <h2 class="d-name" id="dName"></h2>
   <div class="d-status mono" id="dStatus"></div>
+  <div class="dtabs">
+    <button class="dtab on" id="tabRole" type="button">The role</button>
+    <button class="dtab" id="tabSop" type="button">The SOP</button>
+    <button class="dtab" id="tabLearned" type="button">Learned</button>
+  </div>
+  <div id="paneRole">
   <div class="d-desc" id="dDesc"></div>
+  <div class="d-sec">
+    <div class="d-label">The skill file</div>
+    <div class="d-rep">
+      <div class="role-line">One runnable skill file. Yours to keep.</div>
+      <div class="note mono" id="dFileMeta"></div>
+      <div class="acts">
+        <a class="btn" id="dDl" href="#">Download the skill file</a>
+        <a class="btn ghost" id="dZip" href="#" hidden>The folder (.zip)</a>
+      </div>
+    </div>
+  </div>
   <div class="d-sec" id="sReplaces" hidden>
     <div class="d-label">What this replaces</div>
     <div class="d-rep">
@@ -291,9 +344,12 @@
   <div class="d-sec">
     <div class="d-label">Invoke phrase</div>
     <div class="invoke mono" id="dInvoke"></div>
-    <button class="btn" id="dCopy" type="button">Copy invoke phrase</button>
+    <button class="btn ghost" id="dCopy" type="button">Copy invoke phrase</button>
     <span class="copied" id="copied" hidden>Copied.</span>
   </div>
+  </div>
+  <div id="paneSop" hidden></div>
+  <div id="paneLearned" hidden></div>
 </aside>
 
 <script>
@@ -382,6 +438,7 @@
     });
     packs.forEach((p, i) => {
       const worked = p.skills.filter(s => s.status !== "ready").length;
+      const legacy = p.skills.reduce((a, s) => a + (s.legacy_records || 0), 0);
       const el = document.createElement("button");
       el.type = "button";
       el.className = "dept rise";
@@ -390,14 +447,23 @@
       el.innerHTML = '<div class="dname">' + esc(p.label) + "</div>" +
         '<div class="dmeta">' + p.skills.length + " role" +
         (p.skills.length === 1 ? "" : "s") +
-        (worked ? " · <b>" + workedWord(worked) + "</b>" : "") + "</div>" +
+        (worked ? " · <b>" + workedWord(worked) + "</b>" : "") +
+        (!worked && legacy ? " · " + legacy + " legacy record" +
+          (legacy === 1 ? "" : "s") : "") + "</div>" +
         '<span class="dgo">' + (worked ? "Meet the team" : "See the roles") +
         "</span>";
       el.addEventListener("click", () =>
         openDept === p.label ? closePanel() : openPanel(p, el));
       host.appendChild(el);
     });
-    const wanted = (new URLSearchParams(location.search).get("open") || "")
+    const qp = new URLSearchParams(location.search);
+    const wantRole = qp.get("role");
+    if (wantRole && index[wantRole]) {
+      openRole(wantRole);
+      const t = qp.get("tab");
+      if (t === "sop" || t === "learned") setTimeout(() => setTab(t), 60);
+    }
+    const wanted = (qp.get("open") || "")
       .toLowerCase().replace(/[^a-z0-9]+/g, "");
     if (wanted) {
       const p = packs.find(x =>
@@ -445,7 +511,8 @@
       $("bizName").textContent =
         (owner.business || "Your business") + " works here.";
       $("subLine").innerHTML = data.total +
-        " AI staff across " + data.packs.length + " departments. <b>" +
+        " roles · " + (data.capabilities || data.total) +
+        " capabilities — three roles carry bundled specs. <b>" +
         workedWord(worked) + " for you.</b>";
       buildDepts();
     } catch (e) {
@@ -486,11 +553,151 @@
     }
     $("dInvoke").textContent = s.invoke || "/" + s.name;
     $("copied").hidden = true;
+    $("dDl").href = "/api/skill-file?name=" + encodeURIComponent(s.name);
+    $("dZip").href = "/api/skill-file?format=zip&name=" +
+      encodeURIComponent(s.name);
+    $("dFileMeta").textContent = s.name + ".md";
+    $("dZip").hidden = true;
+    setTab("role");
+    loadRole(s.name);
     const dr = $("drawer");
+    const wasOpen = dr.classList.contains("open");
+    if (!wasOpen) lastFocus = invoker || document.activeElement;
     dr.inert = false;
     dr.classList.add("open");
     $("scrim").classList.add("on");
-    $("dClose").focus();
+    if (!wasOpen) $("dClose").focus();
+  }
+
+  function setTab(which) {
+    const map = { role: "paneRole", sop: "paneSop", learned: "paneLearned" };
+    Object.keys(map).forEach((k) => {
+      $("tab" + k[0].toUpperCase() + k.slice(1)).classList.toggle("on", k === which);
+      $(map[k]).hidden = k !== which;
+    });
+  }
+  ["role", "sop", "learned"].forEach((k) =>
+    $("tab" + k[0].toUpperCase() + k.slice(1))
+      .addEventListener("click", () => setTab(k)));
+
+  let roleName = null, roleData = null;
+  async function loadRole(name) {
+    roleName = name; roleData = null;
+    $("paneSop").innerHTML = '<div class="d-sec"><div class="note">Reading the skill file…</div></div>';
+    $("paneLearned").innerHTML = "";
+    let d;
+    try {
+      const r = await fetch("/api/role?name=" + encodeURIComponent(name));
+      if (!r.ok) throw new Error("no role");
+      d = await r.json();
+    } catch (e) {
+      if (roleName === name)
+        $("paneSop").innerHTML = '<div class="d-sec"><div class="note">Could not read this role\'s skill file.</div></div>';
+      return;
+    }
+    if (roleName !== name) return;          // the drawer moved on
+    roleData = d;
+    $("dFileMeta").textContent = "SKILL.md · " + Math.round(d.file.bytes / 1024) +
+      " KB" + (d.file.has_folder ? " · " + d.file.folder_files + " files" : "");
+    $("dZip").hidden = !d.file.has_folder;
+    $("tabSop").textContent = "The SOP" + (d.sop.steps.length ? " · " + d.sop.steps.length : "");
+    const lr = d.learned;
+    $("tabLearned").textContent = "Learned" +
+      (lr.project_runs ? " · " + lr.project_runs : "");
+    renderSop(d);
+    renderLearned(d);
+  }
+
+  const sec = (label, inner) => '<div class="d-sec"><div class="d-label">' +
+    label + "</div>" + inner + "</div>";
+  const chips = (arr) => '<div class="d-tags">' + arr.map((t) =>
+    '<span class="rtag">' + esc(t) + "</span>").join("") + "</div>";
+
+  function renderSop(d) {
+    let h = "";
+    if (d.sop.steps.length) {
+      h += sec("The SOP, written out",
+        '<div class="note">The exact procedure this role runs, every time.</div>' +
+        d.sop.steps.map((s) => '<details class="sopstep"><summary><span class="rn mono">' +
+          String(s.n).padStart(2, "0") + '</span><span class="stitle">' +
+          esc(s.title) + "</span></summary><div class=\"sbody\">" +
+          esc(s.text) + "</div></details>").join(""));
+    } else {
+      h += sec("The SOP, written out",
+        '<div class="note">' + (d.gaps.indexOf("file") >= 0
+          ? "This role has no skill file yet. It is a placeholder in the roster."
+          : "This role does not publish a step-by-step SOP. It is a build protocol, not a procedure.") +
+        "</div>");
+    }
+    if (d.reads.length || d.writes.length) {
+      h += sec("Before it starts, and when it finishes",
+        (d.sop.step0 ? '<div class="note">' + esc(d.sop.step0) + "</div>" : "") +
+        (d.reads.length ? '<div class="d-label" style="margin-top:12px">Reads</div>' + chips(d.reads) : "") +
+        (d.writes.length ? '<div class="d-label" style="margin-top:12px">Writes</div>' + chips(d.writes) : ""));
+    }
+    if (d.verification.length) {
+      h += sec("It checks its own work",
+        '<div class="note">Before it calls a job done, it confirms:</div><ul class="checks">' +
+        d.verification.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>");
+    }
+    if (d.guardrails.length) {
+      h += sec("What it refuses to do",
+        '<div class="d-human">' + d.guardrails.map(esc).join("<br>") + "</div>");
+    }
+    const ww = d.works_with;
+    if (ww.downstream.length || ww.upstream.length) {
+      h += sec("Works with",
+        (ww.upstream.length ? '<div class="note">Takes work from</div>' +
+          '<div class="d-tags">' + ww.upstream.map((x) =>
+            '<button class="rtag link" data-role="' + esc(x.name) + '">' +
+            esc(title(x.name)) + "</button>").join("") + "</div>" : "") +
+        (ww.downstream.length ? '<div class="note" style="margin-top:10px">Hands work to</div>' +
+          '<div class="d-tags">' + ww.downstream.map((x) => x.known
+            ? '<button class="rtag link" data-role="' + esc(x.name) + '">' +
+              esc(title(x.name)) + "</button>"
+            : '<span class="rtag">' + esc(title(x.name)) + "</span>").join("") + "</div>" : ""));
+    }
+    const u = d.used_by;
+    if (u.plays.length || u.chains.length) {
+      h += sec("Where it gets called",
+        (u.plays.length ? '<div class="note">Plays</div>' +
+          chips(u.plays.map((p) => p.title)) : "") +
+        (u.chains.length ? '<div class="note" style="margin-top:10px">Chains</div>' +
+          chips(u.chains.map((c) => c.title + " · step " + c.position + " of " + c.of)) : ""));
+    }
+    $("paneSop").innerHTML = h;
+    $("paneSop").querySelectorAll(".rtag.link").forEach((b) =>
+      b.addEventListener("click", () => {
+        if (index[b.dataset.role]) openRole(b.dataset.role, b);
+      }));
+  }
+
+  function renderLearned(d) {
+    const lr = d.learned;
+    let h = "";
+    if (lr.runs.length) {
+      h += sec("What it has learned",
+        '<div class="note">Every job this role finished, and what it took away.</div>' +
+        lr.runs.map((r) => '<div class="lrun"><div class="lrun-head"><span class="lrun-skill">' +
+          esc(r.project) + '</span><span class="lrun-meta mono">' +
+          esc(r.date || "") + (r.days != null ? " · " + r.days + "d ago" : "") +
+          "</span></div>" + (r.points.length ? "<ul>" +
+            r.points.map((p) => "<li>" + esc(p) + "</li>").join("") + "</ul>" : "") +
+          "</div>").join(""));
+    } else {
+      h += sec("What it has learned",
+        '<div class="note">No project runs recorded yet. The first time this role ' +
+        'finishes work it writes a handoff into your cabinet, and reads it back at ' +
+        'the start of the next run. A downloadable skill file cannot do that.</div>');
+    }
+    if (lr.legacy_records) {
+      h += sec("Legacy history",
+        '<div class="note">' + lr.legacy_records + " legacy record" +
+        (lr.legacy_records === 1 ? "" : "s") + " in " +
+        esc(lr.legacy_folders.join(", ")) + ", filed before the Projects model. " +
+        "Counted here, left exactly where they are.</div>");
+    }
+    $("paneLearned").innerHTML = h;
   }
   function closeRole() {
     const dr = $("drawer");

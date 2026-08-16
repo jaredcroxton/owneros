@@ -6,6 +6,7 @@ server has is the capture inbox at ~/.owneros/inbox. No cloud calls at
 runtime; the single exception is Fish Audio transcription, which activates
 only when ~/.owneros/fish.key exists (explicitly approved opt-in).
 """
+import io
 import json
 import mimetypes
 import os
@@ -16,6 +17,7 @@ import subprocess
 import sys
 import time
 import urllib.request
+import zipfile
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -416,8 +418,8 @@ def api_skills():
             continue
         fm = parse_frontmatter(d / "SKILL.md")
         if not fm.get("name"):
-            unpacked.append({"name": d.name, "description":
-                             "unparsed skill: no SKILL.md frontmatter", "invoke": None})
+            # Validity rule: a crew-* folder with no parseable SKILL.md is not a
+            # skill. Skipped from the roster entirely, never deleted from disk.
             continue
         desc = fm.get("description", "")
         first = desc.split(". ")[0].strip()
@@ -431,6 +433,302 @@ def api_skills():
             unpacked.append(skill)
     return {"packs": [packs[k] for k in sorted(packs)], "unpacked": unpacked,
             "total": sum(len(p["skills"]) for p in packs.values()) + len(unpacked)}
+
+
+# ---- the SOP layer: read a skill's own procedure out of its SKILL.md --------
+# Every extractor is a findall, so a malformed or missing file yields empty
+# lists plus a `gaps` entry. Nothing here raises. Measured: 0.35 ms per file.
+SKILL_NAME = re.compile(r"\Acrew-[a-z0-9-]+\Z")
+SEC_SPLIT = re.compile(r"^##[ \t]+(.+?)[ \t]*$", re.M)
+# A step runs until a blank line, the next number, or the closing boilerplate.
+# Anchored on the PREFIX because the corpus has two variants of the last line:
+# "Final Step: Handoff Save" (74) and "Final Step: Record Save" (13).
+STEP_RE = re.compile(
+    r"^(\d+)\.[ \t]+(.*(?:\n(?!\s*\n|\d+\.[ \t]|\*\*Final Step)[^\n]*)*)", re.M)
+LEAD_RE = re.compile(r"\A\*\*(.+?)\.?\*\*[ \t]*")
+CHECK_RE = re.compile(r"^[ \t]*(?:[-*][ \t]+)?\[[ xX]?\][ \t]+(.+?)[ \t]*$", re.M)
+BULLET_RE = re.compile(r"^[ \t]*[-*][ \t]+(.+?)[ \t]*$", re.M)
+CREW_TICK = re.compile(r"`(crew-[a-z0-9-]+)`")
+CREW_BARE = re.compile(r"crew-[a-z0-9-]+")
+CREW_PATH = re.compile(r"`(~?/?\.?[^`\s]*crew-state[^`\s]*)`")
+STEP0_RE = re.compile(r"\*\*Step 0:.*?\*\*(.*?)(?=\n\d+\.[ \t]|\Z)", re.S)
+FINAL_RE = re.compile(r"\*\*Final Step:.*?\*\*(.*)", re.S)
+STEP_CHARS = 900
+LINE_CHARS = 120
+
+
+def shorten(s, cap=LINE_CHARS):
+    s = re.sub(r"\s+", " ", (s or "")).strip()
+    dot = s.find(". ")
+    if 0 < dot < cap:
+        return s[:dot + 1]
+    if len(s) <= cap:
+        return s
+    cut = s[:cap].rsplit(" ", 1)[0]
+    return cut + "…"
+
+
+def skill_sections(text):
+    """-> ({heading: body}, [heading order]). First of a duplicate wins."""
+    parts = SEC_SPLIT.split(text or "")
+    out, order = {}, []
+    for i in range(1, len(parts), 2):
+        head = parts[i].strip()
+        if head not in out:
+            out[head] = parts[i + 1]
+            order.append(head)
+    return out, order
+
+
+def parse_skill_doc(name):
+    """Deterministic deep read of one SKILL.md. Never raises."""
+    empty = {"steps": [], "step0": "", "final_step": "", "verification": [],
+             "guardrails": [], "handoffs": [], "reads": [], "writes": [],
+             "output": "", "sections": [], "gaps": ["file"], "bytes": 0}
+    if not SKILL_NAME.match(name or ""):
+        return empty
+    f = SKILLS_DIR / name / "SKILL.md"
+    text = read_text(f)
+    if not text:
+        return empty
+    secs, order = skill_sections(text)
+    gaps = []
+    wf = secs.get("Workflow", "")
+    if not wf:
+        gaps.append("sop")
+    steps = []
+    for m in STEP_RE.finditer(wf):
+        raw = m.group(2)
+        lead = LEAD_RE.match(raw)
+        if lead:
+            title, body = lead.group(1).strip(), LEAD_RE.sub("", raw)
+        else:
+            title, body = shorten(raw), raw
+        body = re.sub(r"\s+", " ", body).strip()
+        clipped = len(body) > STEP_CHARS
+        if clipped:
+            body = body[:STEP_CHARS].rsplit(" ", 1)[0] + "…"
+        steps.append({"n": int(m.group(1)), "title": title, "text": body,
+                      "clipped": clipped})
+    if wf and not steps:
+        gaps.append("sop-unparsed")
+    s0 = STEP0_RE.search(wf)
+    fin = FINAL_RE.search(wf)
+    reads = sorted(set(CREW_PATH.findall(s0.group(1)))) if s0 else []
+    writes = sorted(set(CREW_PATH.findall(fin.group(1)))) if fin else []
+    checks = CHECK_RE.findall(secs.get("Verification", ""))
+    if not checks:
+        gaps.append("verification")
+    rails = BULLET_RE.findall(secs.get("Guardrails", ""))
+    if not rails and secs.get("Guardrails"):
+        rails = [p.strip() for p in re.split(r"\n\s*\n", secs["Guardrails"])
+                 if 20 <= len(p.strip()) <= 600]
+    if not rails:
+        gaps.append("guardrails")
+    hand = sorted(set(CREW_TICK.findall(secs.get("Handoffs", ""))) - {name})
+    if not hand:
+        gaps.append("handoffs")
+    out_fence = re.search(r"```[a-z]*\n([^\n]+)", secs.get("Output format", ""))
+    artefact = ""
+    if out_fence:
+        artefact = re.split(r":|  ", out_fence.group(1).strip())[0].strip()[:40]
+    return {"steps": steps,
+            "step0": shorten(s0.group(1)) if s0 else "",
+            "final_step": shorten(fin.group(1)) if fin else "",
+            "verification": [shorten(c, 200) for c in checks],
+            "guardrails": [shorten(g, 240) for g in rails],
+            "handoffs": hand, "reads": reads, "writes": writes,
+            "output": artefact, "sections": order, "gaps": gaps,
+            "bytes": len(text.encode("utf-8"))}
+
+
+def corpus_sig():
+    """(name, mtime_ns, size) per SKILL.md. 1.03 ms. Changes on any edit."""
+    try:
+        return tuple(sorted(
+            (p.parent.name, p.stat().st_mtime_ns, p.stat().st_size)
+            for p in SKILLS_DIR.glob("crew-*/SKILL.md")))
+    except OSError:
+        return ()
+
+
+_LINKS = {"sig": None, "index": None}
+
+
+def handoff_index():
+    """{skill: [skills that hand work TO it]}. The only cached thing in the
+    app: 29 ms to build, memoised against the corpus signature, so a
+    hand-edited SKILL.md is live on the next request."""
+    sig = corpus_sig()
+    if _LINKS["sig"] != sig:
+        idx = {}
+        for d in sorted(SKILLS_DIR.glob("crew-*")):
+            if not d.is_dir():
+                continue
+            fm = parse_frontmatter(d / "SKILL.md")
+            if not fm.get("name"):
+                continue
+            for target in parse_skill_doc(fm["name"])["handoffs"]:
+                idx.setdefault(target, []).append(fm["name"])
+        _LINKS["index"] = idx
+        _LINKS["sig"] = sig
+    return _LINKS["index"] or {}
+
+
+def legacy_records():
+    """Handoff records in the cabinet's pre-Projects pack folders. Counted,
+    never migrated, never rewritten. Keyed by skill name."""
+    out = {}
+    if not PROJECTS.parent.is_dir():
+        return out
+    for d in sorted(PROJECTS.parent.iterdir()):
+        if not d.is_dir() or d.name in {"projects", "projects-archive",
+                                        "brands", "lessons"}:
+            continue
+        for f in d.glob("*-handoff.md"):
+            skill = f.name[:-len("-handoff.md")]
+            rec = out.setdefault(skill, {"count": 0, "folders": []})
+            rec["count"] += 1
+            if d.name not in rec["folders"]:
+                rec["folders"].append(d.name)
+    return out
+
+
+def play_links():
+    """{skill: {plays:[...], chains:[...]}} derived from the play library."""
+    data = parse_playbook()
+    known = {d.name for d in SKILLS_DIR.glob("crew-*") if d.is_dir()}
+    out = {}
+    for cat in data.get("categories", []):
+        for play in cat.get("plays", []):
+            for s in set(CREW_BARE.findall(play.get("prompt", ""))):
+                if s in known:
+                    out.setdefault(s, {"plays": [], "chains": []})["plays"].append(
+                        {"title": play["title"], "category": cat["category"]})
+    for ch in data.get("chains", []):
+        steps = ch.get("steps", [])
+        for i, step in enumerate(steps):
+            for piece in re.split(r"\s+/\s+", step):
+                s = resolve_step(piece, known)
+                if s:
+                    out.setdefault(s, {"plays": [], "chains": []})["chains"].append(
+                        {"title": ch["title"], "position": i + 1,
+                         "of": len(steps)})
+    return out
+
+
+def resolve_step(step, known):
+    """Chain steps drop the crew- prefix and sometimes carry a parenthetical."""
+    s = re.sub(r"\s*\(.*?\)", "", step or "").strip().lower()
+    if not s:
+        return None
+    if s in known:
+        return s
+    if "crew-" + s in known:
+        return "crew-" + s
+    hits = [k for k in known if k.endswith("-" + s)]
+    return hits[0] if len(hits) == 1 else None
+
+
+def api_role(name):
+    """Everything one role knows about itself. Fresh read, ~3 ms."""
+    if not SKILL_NAME.match(name or ""):
+        return None
+    d = SKILLS_DIR / name
+    if not (d / "SKILL.md").is_file():
+        return None
+    fm = parse_frontmatter(d / "SKILL.md")
+    if not fm.get("name"):
+        return None
+    doc = parse_skill_doc(name)
+    known = {x.name for x in SKILLS_DIR.glob("crew-*") if x.is_dir()}
+    label = {}
+    try:
+        pack_data = json.loads(read_text(APP_DIR / "pack-map.json") or "{}")
+        packs = {p["id"]: p["label"] for p in pack_data.get("packs", [])}
+        label = {"pack": packs.get(pack_data.get("skills", {}).get(name), "")}
+    except ValueError:
+        label = {"pack": ""}
+    runs, last = [], None
+    for p in scan_projects():
+        for r in p["records"]:
+            if r["skill"] == name:
+                runs.append({"project": p["name"], "date": r["date"],
+                             "days": r["days"], "status": r["status"],
+                             "points": extract_points(
+                                 read_text(PROJECTS / p["name"] / r["file"]) or "")})
+                last = max(last or 0, r["mtime"])
+    legacy = legacy_records().get(name, {"count": 0, "folders": []})
+    files = [f for f in d.rglob("*") if f.is_file()]
+    links = play_links().get(name, {"plays": [], "chains": []})
+    return {"name": name, "title": name, "pack": label["pack"],
+            "invoke": f"/{name}", "description": fm.get("description", ""),
+            "file": {"bytes": doc["bytes"], "folder_files": len(files),
+                     "has_folder": len(files) > 1},
+            "sop": {"steps": doc["steps"], "step0": doc["step0"],
+                    "final_step": doc["final_step"]},
+            "verification": doc["verification"], "guardrails": doc["guardrails"],
+            "reads": doc["reads"], "writes": doc["writes"],
+            "output": doc["output"],
+            "works_with": {
+                "downstream": [{"name": h, "known": h in known}
+                               for h in doc["handoffs"]],
+                "upstream": [{"name": u, "known": True}
+                             for u in sorted(handoff_index().get(name, []))]},
+            "used_by": links,
+            "learned": {"project_runs": len(runs),
+                        "legacy_records": legacy["count"],
+                        "legacy_folders": legacy["folders"],
+                        "runs": sorted(runs, key=lambda r: r["days"])},
+            "sections": doc["sections"], "gaps": doc["gaps"]}
+
+
+def skill_dir(name):
+    """The only bridge from a URL parameter into ~/.claude/skills."""
+    if not SKILL_NAME.match(name or ""):
+        return None
+    root = SKILLS_DIR.resolve()
+    try:
+        d = (root / name).resolve(strict=True)
+    except OSError:
+        return None
+    return d if d.is_dir() and d.parent == root else None
+
+
+def skill_bytes(name, fmt):
+    """-> (blob, filename, ctype) | None. Serves bytes from OUTSIDE APP_DIR,
+    the only place in the app that does, so all three guards stay."""
+    if fmt not in {"md", "zip"}:
+        return None
+    d = skill_dir(name)
+    if not d:
+        return None
+    if fmt == "md":
+        f = d / "SKILL.md"
+        if not f.is_file():
+            return None
+        return (f.read_bytes(), f"{name}-SKILL.md",
+                "text/markdown; charset=utf-8")
+    buf = io.BytesIO()
+    total = 0
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for p in sorted(d.rglob("*")):
+            if p.is_symlink() or not p.is_file():
+                continue
+            try:
+                if p.resolve().parent != p.parent.resolve():
+                    continue
+                size = p.stat().st_size
+            except OSError:
+                continue
+            if size > 2 * 1024 * 1024 or total + size > 12 * 1024 * 1024:
+                continue
+            total += size
+            z.write(p, arcname=str(Path(d.name) / p.relative_to(d)))
+        z.writestr(f"{d.name}/ATTRIBUTION.txt",
+                   "CREW skill by Jared Croxton / PerformOS.\n"
+                   "Shared from OwnerOS. Keep the attribution with the file.\n")
+    return (buf.getvalue(), f"{name}.zip", "application/zip")
 
 
 def slugify(text):
@@ -849,6 +1147,7 @@ def api_workforce():
             u = usage.setdefault(r["skill"], {"runs": 0, "last_mtime": 0})
             u["runs"] += 1
             u["last_mtime"] = max(u["last_mtime"], r["mtime"])
+    legacy = legacy_records()
     packs = []
     for p in skills_data["packs"]:
         if not p["skills"]:
@@ -859,16 +1158,24 @@ def api_workforce():
             last_days = days_since(u["last_mtime"]) if u else None
             status = ("active" if u and last_days <= 30 else
                       "live" if u else "ready")
+            leg = legacy.get(s["name"], {"count": 0})
+            # Deliberately NOT folded into `runs`: project runs and legacy
+            # pack-folder records are different truths and are worded apart.
             out.append({**s, "dossier": dossiers.get(s["name"]),
                         "status": status, "runs": u["runs"] if u else 0,
-                        "last_days": last_days})
+                        "last_days": last_days,
+                        "legacy_records": leg["count"],
+                        "has_sop": (SKILLS_DIR / s["name"] / "SKILL.md").is_file()})
         packs.append({"label": p["label"], "skills": out})
     if skills_data["unpacked"]:
         packs.append({"label": "Unfiled", "skills": [
             {**s, "dossier": dossiers.get(s["name"]), "status": "ready",
-             "runs": 0, "last_days": None} for s in skills_data["unpacked"]]})
+             "runs": 0, "last_days": None,
+             "legacy_records": legacy.get(s["name"], {"count": 0})["count"],
+             "has_sop": False} for s in skills_data["unpacked"]]})
     return {"business": owner()["business"], "packs": packs,
-            "total": sum(len(p["skills"]) for p in packs)}
+            "total": sum(len(p["skills"]) for p in packs),
+            "capabilities": 108}
 
 
 def parse_playbook():
@@ -973,6 +1280,19 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(blob)
 
+    def send_download(self, blob, filename, ctype):
+        """The only response in the app carrying bytes from outside APP_DIR.
+        filename is built from a name that already matched ^crew-[a-z0-9-]+$."""
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(blob)))
+        self.send_header("Content-Disposition",
+                         'attachment; filename="%s"' % filename)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.end_headers()
+        self.wfile.write(blob)
+
     def send_file(self, rel):
         path = (APP_DIR / rel.lstrip("/")).resolve()
         if not path.is_relative_to(APP_DIR) or not path.is_file():
@@ -1013,6 +1333,19 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(parse_playbook())
         if url.path == "/api/owner":
             return self.send_json(owner())
+        if url.path == "/api/role":
+            data = api_role((q.get("name") or [""])[0])
+            return self.send_json(data if data else {"error": "unknown role"},
+                                  200 if data else 404)
+        if url.path == "/api/skill-file":
+            fmt = (q.get("format") or ["md"])[0]
+            if fmt not in {"md", "zip"}:
+                return self.send_json({"error": "bad format"}, 400)
+            got = skill_bytes((q.get("name") or [""])[0], fmt)
+            if not got:
+                return self.send_json({"error": "unknown role"}, 404)
+            blob, filename, ctype = got
+            return self.send_download(blob, filename, ctype)
         if url.path == "/api/learned":
             proj = (q.get("project") or [""])[0]
             if proj:
