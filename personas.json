@@ -1,0 +1,294 @@
+{
+  "version": 1,
+  "note": "App-owned. Hand-edited. The server never writes this file. Every entry in a pillar's roles[] and every signature chain is validated against the live roster at request time; anything that does not resolve renders as a visible warning rather than being dropped.",
+  "personas": [
+    {
+      "id": "trades",
+      "name": "Trades and field service",
+      "badge": "ELECTRICAL · PLUMBING · BUILDING",
+      "tagline": "Quotes out the same day, invoices that do not sit in the ute for a fortnight.",
+      "blurb": "You win work on the tools and lose it in the paperwork. This shape of the OS takes the quote, the follow-up, and the invoice off your night shift, and keeps every job's history in one project so the next quote starts from what the last one taught you.",
+      "north_star": "Days from site visit to invoice sent",
+      "pillars": [
+        {
+          "name": "Win the job",
+          "note": "The enquiry becomes a researched quote with a real angle, not a number guessed at 9pm.",
+          "roles": ["crew-sales-lead-research", "crew-sales-outreach-draft",
+                    "crew-web-slide-deck-mobile", "crew-sales-follow-up-sequence"]
+        },
+        {
+          "name": "Get paid",
+          "note": "How invoicing actually runs: who raises it, when it chases, what happens at 30 days.",
+          "roles": ["crew-finance-invoice-workflow", "crew-finance-cashflow-brief",
+                    "crew-finance-expense-review"]
+        },
+        {
+          "name": "Answer the phone",
+          "note": "The calls that come while you are up a ladder stop going to voicemail.",
+          "roles": ["crew-voice-receptionist", "crew-support-reply-builder",
+                    "crew-support-faq-builder"]
+        },
+        {
+          "name": "Be findable",
+          "note": "A site that says what you do, where you work, and how to book you.",
+          "roles": ["crew-web-booking-site-builder", "crew-marketing-seo-page-builder",
+                    "crew-marketing-landing-page-review"]
+        },
+        {
+          "name": "Run the crew",
+          "note": "The way you do a job written down once, so a new pair of hands does it your way.",
+          "roles": ["crew-ops-process-map", "crew-docs-sop-builder",
+                    "crew-training-onboarding-programme-builder"]
+        }
+      ],
+      "tools": ["Xero or MYOB", "ServiceM8 or Tradify", "Google Business Profile",
+                "Gmail or Outlook", "A mobile phone that rings too much"],
+      "tracks": ["Quote turnaround time", "Quote to win rate", "Days sales outstanding",
+                 "Callouts per week", "Repeat and referral share"],
+      "signature": {
+        "chain": "Chain 02: Quote to cash",
+        "why": "Site visit Monday, quote Monday night, follow-up Thursday, invoice on completion. One project holds the client's whole story, so the third job for the same customer starts from the first two."
+      }
+    },
+    {
+      "id": "clinic",
+      "name": "Clinic and allied health",
+      "badge": "PHYSIO · DENTAL · PSYCHOLOGY",
+      "tagline": "The front desk stops being the bottleneck between a full book and an empty one.",
+      "blurb": "Your practitioners are the product and the admin is the tax. This shape puts the enquiry handling, the intake paperwork, and the patient-facing explanations into roles that run the same way every time, and keeps the clinical judgement exactly where it belongs, with you.",
+      "north_star": "Chair or room utilisation",
+      "pillars": [
+        {
+          "name": "Fill the book",
+          "note": "New enquiries answered in your voice, booked, and reminded.",
+          "roles": ["crew-voice-receptionist", "crew-web-booking-site-builder",
+                    "crew-support-reply-builder"]
+        },
+        {
+          "name": "Explain the care",
+          "note": "The handouts and FAQs patients actually read, written once and reused.",
+          "roles": ["crew-support-faq-builder", "crew-support-help-document-generator",
+                    "crew-docs-training-guide-creator"]
+        },
+        {
+          "name": "Keep the practice compliant",
+          "note": "Policies and consent language kept current, with the review points named.",
+          "roles": ["crew-docs-policy-document-generator", "crew-docs-compliance-review-check",
+                    "crew-hr-policy-summary"]
+        },
+        {
+          "name": "Grow the practitioners",
+          "note": "Onboarding and skills growth for a team that turns over.",
+          "roles": ["crew-training-onboarding-programme-builder", "crew-training-skill-gap-mapper",
+                    "crew-training-coaching-conversation-guide"]
+        },
+        {
+          "name": "Watch the money",
+          "note": "The monthly numbers read to you, not left in the accounting software.",
+          "roles": ["crew-finance-monthly-summary", "crew-finance-cashflow-brief",
+                    "crew-finance-expense-review"]
+        }
+      ],
+      "tools": ["Cliniko, Nookal, or Dentrix", "Medicare and health fund portals",
+                "Xero", "A practice website", "SMS reminders"],
+      "tracks": ["Utilisation per practitioner", "New patient conversion",
+                 "Rebooking rate", "No-show rate", "Revenue per practitioner day"],
+      "signature": {
+        "chain": "Chain 08: Support intelligence loop",
+        "why": "Every enquiry and complaint gets triaged, the patterns get summarised, the top questions become the FAQ, and the process that caused them gets fixed. The front desk stops answering the same question for the four hundredth time."
+      }
+    },
+    {
+      "id": "agency",
+      "name": "Marketing agency",
+      "badge": "AGENCY OPERATOR",
+      "tagline": "Ten retainers on a small team, without a ball dropped on the tenth.",
+      "blurb": "You sell attention and you have none left for your own operation. This shape runs the pitch, the delivery, and the handover as named roles, so the work that wins a client is the same work that keeps them.",
+      "north_star": "Retained monthly revenue kept, not just won",
+      "pillars": [
+        {
+          "name": "New business",
+          "note": "Research, brief, proposal. The pitch built on evidence, not adjectives.",
+          "roles": ["crew-sales-lead-research", "crew-sales-prospect-brief",
+                    "crew-sales-proposal-builder", "crew-sales-audit-deck"]
+        },
+        {
+          "name": "Client delivery",
+          "note": "Campaign to assets to review, one project per client.",
+          "roles": ["crew-marketing-campaign-plan", "crew-marketing-social-post-pack",
+                    "crew-marketing-email-campaign-builder", "crew-marketing-content-repurpose"]
+        },
+        {
+          "name": "Keep the voice",
+          "note": "Everything that ships checked against the client's voice, not yours.",
+          "roles": ["crew-marketing-brand-voice-check", "crew-core-quality-checker",
+                    "crew-design-quality"]
+        },
+        {
+          "name": "Prove the value",
+          "note": "The handover and the playbook that make renewal a formality.",
+          "roles": ["crew-docs-handover-document-writer", "crew-docs-client-playbook-builder",
+                    "crew-docs-meeting-notes-to-actions"]
+        },
+        {
+          "name": "Agency ops",
+          "note": "Your own pipeline and margin, reviewed on a rhythm.",
+          "roles": ["crew-sales-pipeline-review", "crew-finance-monthly-summary",
+                    "crew-ops-automation-opportunity-review"]
+        }
+      ],
+      "tools": ["HubSpot or Pipedrive", "Asana, Notion, or ClickUp", "Slack",
+                "Meta and Google Ads managers", "GA4", "Xero"],
+      "tracks": ["Retained monthly revenue", "Client health", "On-time delivery",
+                 "Team utilisation", "Gross margin per account"],
+      "signature": {
+        "chain": "Chain 11: Client delivery, start to finish",
+        "why": "The prospect brief becomes the proposal, the proposal becomes the handover, the handover becomes the client playbook. Four documents that agree with each other because each one read the last."
+      }
+    },
+    {
+      "id": "realestate",
+      "name": "Real estate team",
+      "badge": "SALES · PROPERTY MANAGEMENT",
+      "tagline": "Every listing gets the campaign the flagship listing gets.",
+      "blurb": "Your best campaign and your quietest one should not be different jobs. This shape makes the listing campaign a repeatable run, and keeps the vendor updates and the appraisal follow-ups from depending on which day of the week it is.",
+      "north_star": "Listings won per appraisal",
+      "pillars": [
+        {
+          "name": "Win the listing",
+          "note": "The appraisal presentation and the follow-up that comes after it.",
+          "roles": ["crew-sales-lead-research", "crew-sales-audit-deck",
+                    "crew-sales-follow-up-sequence"]
+        },
+        {
+          "name": "Launch the campaign",
+          "note": "Plan, social pack, email, landing page. Same standard on every property.",
+          "roles": ["crew-marketing-campaign-plan", "crew-marketing-social-post-pack",
+                    "crew-marketing-email-campaign-builder", "crew-marketing-landing-page-review"]
+        },
+        {
+          "name": "Show the property",
+          "note": "The immersive listing page that makes a scroll feel like a walk-through.",
+          "roles": ["crew-web-real-estate-immersive", "crew-web-spotlight-hero",
+                    "crew-web-page-builder"]
+        },
+        {
+          "name": "Keep the vendor informed",
+          "note": "The weekly update written from what actually happened at the open.",
+          "roles": ["crew-docs-meeting-notes-to-actions", "crew-support-reply-builder",
+                    "crew-marketing-brand-voice-check"]
+        },
+        {
+          "name": "Run the office",
+          "note": "New agents onboarded to your process, not to their last agency's.",
+          "roles": ["crew-ops-process-map", "crew-docs-sop-builder",
+                    "crew-training-onboarding-programme-builder"]
+        }
+      ],
+      "tools": ["Agentbox, VaultRE, or Rex", "REA and Domain portals",
+                "Canva", "Mailchimp", "A CRM with too many stale contacts"],
+      "tracks": ["Appraisal to listing rate", "Days on market", "Enquiries per listing",
+                 "Vendor-paid marketing uptake", "Repeat and referral share"],
+      "signature": {
+        "chain": "Chain 03: Campaign launch",
+        "why": "One angle chosen at the plan step is inherited by the socials, the email, and the landing page, because all four run inside the same project. The campaign reads as one campaign."
+      }
+    },
+    {
+      "id": "hospitality",
+      "name": "Hospitality and venue",
+      "badge": "CAFE · RESTAURANT · VENUE",
+      "tagline": "The feed keeps running on the weeks you are too flat out to post.",
+      "blurb": "Your marketing happens when service allows, which is never. This shape turns one good shoot or one good week into a month of posts, keeps the function enquiries answered, and gets the staff trained the same way every intake.",
+      "north_star": "Covers per trading day",
+      "pillars": [
+        {
+          "name": "Feed the feed",
+          "note": "One asset becomes a month. Repurpose first, create second.",
+          "roles": ["crew-marketing-content-repurpose", "crew-marketing-social-post-pack",
+                    "crew-marketing-carousel-campaign"]
+        },
+        {
+          "name": "Fill the room",
+          "note": "Bookings, functions, and the enquiries that arrive at 11pm.",
+          "roles": ["crew-web-booking-site-builder", "crew-voice-receptionist",
+                    "crew-support-reply-builder"]
+        },
+        {
+          "name": "Be found locally",
+          "note": "The page that ranks for your suburb and your dish.",
+          "roles": ["crew-marketing-seo-page-builder", "crew-web-landing-page-builder",
+                    "crew-marketing-landing-page-review"]
+        },
+        {
+          "name": "Train the floor",
+          "note": "Service standards written down, taught the same way to every intake.",
+          "roles": ["crew-docs-sop-builder", "crew-training-onboarding-programme-builder",
+                    "crew-training-facilitator-guide-creator"]
+        },
+        {
+          "name": "Mind the margin",
+          "note": "Where the money went, monthly, in words you can act on.",
+          "roles": ["crew-finance-expense-review", "crew-finance-monthly-summary",
+                    "crew-finance-cashflow-brief"]
+        }
+      ],
+      "tools": ["Square or Lightspeed", "SevenRooms or Now Book It",
+                "Instagram", "Google Business Profile", "Deputy or Tanda"],
+      "tracks": ["Covers per day", "Average spend per head", "Function enquiries",
+                 "Cost of goods percentage", "Staff turnover"],
+      "signature": {
+        "chain": "Chain 09: Content engine",
+        "why": "One shoot, repurposed into a social pack, an email, and a voice check. The month is done in an afternoon and it all sounds like the venue, not like a template."
+      }
+    },
+    {
+      "id": "professional",
+      "name": "Professional services",
+      "badge": "ACCOUNTING · BOOKKEEPING · CONSULTING",
+      "tagline": "The advice is yours. The month-end assembly is not.",
+      "blurb": "You bill for judgement and spend your week assembling the inputs to it. This shape runs the recurring money work, the client reporting, and the proposals, and leaves the call with the client exactly where it should be.",
+      "north_star": "Billable hours as a share of the week",
+      "pillars": [
+        {
+          "name": "The monthly run",
+          "note": "Expenses, summary, cashflow, invoicing. Same order, every month.",
+          "roles": ["crew-finance-expense-review", "crew-finance-monthly-summary",
+                    "crew-finance-cashflow-brief", "crew-finance-invoice-workflow"]
+        },
+        {
+          "name": "Report to the client",
+          "note": "The numbers turned into a document a business owner can act on.",
+          "roles": ["crew-finance-finance-dashboard-plan", "crew-design-documents",
+                    "crew-docs-client-playbook-builder"]
+        },
+        {
+          "name": "Win the next engagement",
+          "note": "Scoped proposals that name the deliverable and the boundary.",
+          "roles": ["crew-sales-prospect-brief", "crew-sales-proposal-builder",
+                    "crew-sales-follow-up-sequence"]
+        },
+        {
+          "name": "Systemise the practice",
+          "note": "The work you repeat, mapped and then automated where it is safe to.",
+          "roles": ["crew-ops-process-map", "crew-ops-recurring-task-automation",
+                    "crew-ops-automation-opportunity-review"]
+        },
+        {
+          "name": "Stay defensible",
+          "note": "Policies, engagement terms, and compliance checks kept current.",
+          "roles": ["crew-docs-policy-document-generator", "crew-docs-compliance-review-check",
+                    "crew-core-quality-checker"]
+        }
+      ],
+      "tools": ["Xero or QuickBooks", "Karbon or FYI", "Microsoft 365",
+                "A document signing tool", "A CRM you half use"],
+      "tracks": ["Billable share of hours", "Realisation rate", "Write-offs",
+                 "Client retention", "Revenue per client"],
+      "signature": {
+        "chain": "Chain 07: The monthly money hour",
+        "why": "Expenses read first so the summary knows what moved, the summary feeds the cashflow brief, and the invoicing workflow closes the loop. An hour a month per client instead of a day."
+      }
+    }
+  ]
+}

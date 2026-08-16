@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personas · OwnerOS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d1d1f'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper: #ffffff; --band: #f5f5f7; --navbg: rgba(250,250,252,.8);
+    --wash: #e8e8ed; --hairline: #d6d6d6;
+    --ink: #1d1d1f; --mid: #707070; --deep: #474747;
+    --blue: #0071e3; --link: #0066cc; --ember: #b64400;
+  }
+  * { margin: 0; box-sizing: border-box; }
+  html { height: 100%; scroll-behavior: smooth; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui,
+      "Segoe UI", Roboto, sans-serif;
+    font-size: 17px; line-height: 1.47; letter-spacing: -.022em;
+    min-height: 100%;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+          font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; letter-spacing: inherit; color: inherit;
+           background: none; border: 0; cursor: pointer; padding: 0;
+           text-align: left; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px;
+                   border-radius: 4px; }
+  .gnav { position: sticky; top: 0; z-index: 50; height: 44px;
+          background: var(--navbg);
+          backdrop-filter: blur(20px) saturate(1.8);
+          -webkit-backdrop-filter: blur(20px) saturate(1.8); }
+  .gnav-in { max-width: 1024px; margin: 0 auto; height: 100%;
+             display: flex; align-items: center; gap: 28px; padding: 0 22px; }
+  .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+  .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
+  .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
+                 scrollbar-width: none; min-width: 0; }
+  .gnav .links::-webkit-scrollbar { display: none; }
+  .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
+                   white-space: nowrap; transition: color .15s; }
+  .gnav .links a:hover { color: var(--ink); }
+  .gnav .links a.here { color: var(--ink); font-weight: 600; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+            border: 1px solid var(--ink); display: grid; place-items: center;
+            font-size: 12px; font-weight: 600; }
+  .band { padding: 36px 22px; }
+  .band-in { max-width: 1100px; margin: 0 auto; }
+  .hero { text-align: center; padding-top: 34px; padding-bottom: 40px;
+    background:
+      linear-gradient(rgba(255,255,255,.93) 0%, rgba(255,255,255,.80) 100%),
+      url(/assets/apple/workforce.png) center / cover no-repeat; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+             font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+             color: var(--mid); }
+  .page-hero h2 { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+                  font-size: clamp(44px, 7vw, 80px); line-height: 1.05;
+                  font-weight: 700; letter-spacing: -.015em; margin-top: 14px; }
+  .page-hero .cursor { color: var(--mid); font-weight: 400; }
+  .sub { font-size: 21px; color: var(--mid); margin-top: 16px;
+         letter-spacing: .01em; max-width: 680px; margin-left: auto;
+         margin-right: auto; }
+
+  .pnav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+          margin-top: 26px; }
+  .pchip { display: inline-flex; align-items: baseline; gap: 8px;
+           font-size: 14px; padding: 8px 18px; border-radius: 980px;
+           background: var(--band); color: var(--deep);
+           transition: background .15s, color .15s; }
+  .pchip:hover { background: var(--wash); }
+  .pchip.on { background: var(--ink); color: #fff; }
+  .pchip .n { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 11px; opacity: .6; }
+
+  .card { background: var(--paper); border-radius: 28px; padding: 40px 44px;
+          margin-top: 24px; text-align: left;
+          box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
+  .badge { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+           font-size: 12px; letter-spacing: .06em; color: var(--mid); }
+  .pname { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+           font-size: 40px; font-weight: 600; letter-spacing: -.012em;
+           margin-top: 8px; }
+  .tag { font-size: 21px; color: var(--deep); margin-top: 10px;
+         letter-spacing: -.01em; }
+  .blurb { font-size: 17px; color: var(--mid); margin-top: 16px;
+           max-width: 720px; }
+
+  .sec { margin-top: 34px; padding-top: 30px; border-top: 1px solid var(--wash); }
+  .sl { font-size: 12px; font-weight: 600; letter-spacing: .05em;
+        text-transform: uppercase; color: var(--mid); margin-bottom: 14px; }
+  .star { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
+          font-size: 28px; font-weight: 600; letter-spacing: -.01em; }
+
+  /* min(300px, 100%) or the track floor is wider than a phone and the page
+     scrolls sideways. */
+  .pillars { display: grid; gap: 14px;
+             grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+  .pillar { background: var(--band); border-radius: 20px; padding: 22px 24px; }
+  .pillar h4 { font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+  .pillar p { font-size: 15px; color: var(--mid); margin-top: 6px; }
+  .roles { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
+  .role { font-size: 13px; background: var(--paper); border-radius: 980px;
+          padding: 5px 13px; color: var(--deep); transition: background .15s; }
+  a.role:hover { background: var(--wash); }
+
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-size: 14px; background: var(--band); border-radius: 980px;
+          padding: 6px 15px; color: var(--deep); }
+
+  .sig { background: var(--band); border-radius: 20px; padding: 26px 28px; }
+  .sig .st { font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+  .steps { display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+           margin-top: 14px; }
+  .step { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 12px; background: var(--paper); border-radius: 980px;
+          padding: 5px 12px; transition: background .15s; }
+  a.step:hover { background: var(--wash); }
+  .arrow { color: var(--hairline); font-size: 13px; }
+  .sig p { font-size: 15px; color: var(--mid); margin-top: 14px; }
+
+  .acts { display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+          margin-top: 30px; }
+  .btn { display: inline-block; background: var(--blue); color: #fff;
+         border-radius: 980px; padding: 11px 24px; font-size: 15px;
+         transition: background .15s; text-align: center; }
+  .btn:hover { background: #0077ed; }
+  .btn.ghost { background: transparent; color: var(--ink);
+               box-shadow: inset 0 0 0 1px var(--ink); }
+  .btn.ghost:hover { background: var(--wash); box-shadow: inset 0 0 0 1px var(--ink); }
+  .copied { font-size: 13px; color: var(--link); }
+  .warn { font-size: 13px; color: var(--ember); margin-top: 18px; }
+  .note { font-size: 14px; color: var(--mid); margin-top: 16px; }
+  .empty { color: var(--mid); padding: 30px 0; text-align: center; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  .rise { animation: rise .5s cubic-bezier(.2,.7,.3,1) backwards; }
+  @media (prefers-reduced-motion: reduce) {
+    .rise { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 720px) {
+    .card { padding: 30px 24px; }
+    .pname { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+<nav class="gnav">
+  <div class="gnav-in">
+    <span class="word">OwnerOS<em>_</em></span>
+    <div class="links">
+      <a href="/today">Today</a>
+      <a href="/projects">Projects</a>
+      <a href="/brain">Brain</a>
+      <a href="/capture">Capture</a>
+      <a href="/launch">Workforce</a>
+      <a href="/plays">Plays</a>
+      <a class="here" href="/personas" aria-current="page">Personas</a>
+      <a href="/files">Files</a>
+      <a href="/roadmap">Roadmap</a>
+    </div>
+    <span class="avatar">J</span>
+  </div>
+</nav>
+<main>
+  <section class="band hero">
+    <div class="band-in">
+      <div class="eyebrow mono" id="chip">loading…</div>
+      <div class="page-hero"><h2>Whose business is it<span class="cursor">?</span></h2></div>
+      <p class="sub">The same crew, arranged six ways. Pick the shape closest to the
+        business in front of you, copy the kickoff, and it starts staffed.</p>
+      <div class="pnav" id="pnav"></div>
+      <div id="stage"><div class="empty">Reading the shapes…</div></div>
+    </div>
+  </section>
+</main>
+<script>
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+    (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const copy = (text) => navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } finally { ta.remove(); }
+  });
+  const shortName = (n) => n.replace(
+    /^crew-(core|sales|marketing|ops|hr|finance|support|docs|training|web|design|voice|my|real)?-?/,
+    "").replace(/-/g, " ");
+  const CAPS = /\b(faq|sop|seo|crm|hr|ai|kpi)\b/gi;
+  const title = (n) => { const s = shortName(n);
+    return (s.charAt(0).toUpperCase() + s.slice(1))
+      .replace(CAPS, (w) => w.toUpperCase()); };
+  const pad = (n) => String(n).padStart(2, "0");
+
+  let data = { personas: [] };
+  let current = 0;
+
+  // The kickoff names the exact chain and the exact roles, and spells out the
+  // cabinet read and write. That way the same paste works in Claude Code or in
+  // Hermes: both runtimes read the skill from disk and both write the record to
+  // the one shared folder.
+  function kickoff(p) {
+    const sig = p.signature || {};
+    const lines = [];
+    lines.push("New project, call it [your business name].");
+    lines.push("");
+    lines.push("I am running the " + p.name + " shape of OwnerOS.");
+    lines.push("North star: " + p.north_star + ".");
+    lines.push("");
+    if ((sig.roles || []).length) {
+      lines.push("Start with " + sig.chain + ", in this order:");
+      sig.roles.forEach((r, i) => { if (r) lines.push((i + 1) + ". " + r); });
+      lines.push("");
+    }
+    lines.push("Before each step read ~/.claude/crew-state/brand-context.md and that "
+      + "skill's lessons file, and when a step finishes write its record into the "
+      + "project. Every step after the first reads what the step before it wrote.");
+    lines.push("");
+    lines.push("These roles are staffed and ready when I call them:");
+    (p.pillars || []).forEach((pil) => {
+      const names = (pil.roles || []).map((r) => r.name).join(", ");
+      if (names) lines.push("- " + pil.name + ": " + names);
+    });
+    return lines.join("\n");
+  }
+
+  function render() {
+    const p = data.personas[current];
+    const nav = document.getElementById("pnav");
+    nav.innerHTML = data.personas.map((x, i) =>
+      '<button class="pchip' + (i === current ? " on" : "") + '" data-i="' + i +
+      '" type="button"><span class="n mono">' + pad(i + 1) + "</span>" +
+      esc(x.name) + "</button>").join("");
+    nav.querySelectorAll(".pchip").forEach((b) =>
+      b.addEventListener("click", () => {
+        current = Number(b.dataset.i);
+        history.replaceState(null, "", "/personas?p=" + data.personas[current].id);
+        render();
+      }));
+    if (!p) {
+      document.getElementById("stage").innerHTML =
+        '<div class="empty">No personas on file.</div>';
+      return;
+    }
+    document.getElementById("chip").textContent =
+      "PERSONAS · " + pad(current + 1) + " OF " + pad(data.personas.length) +
+      " · " + p.role_count + " ROLES STAFFED";
+
+    const sig = p.signature || {};
+    const stepsHtml = (sig.steps || []).map((s, i) => {
+      const role = (sig.roles || [])[i];
+      return role
+        ? '<a class="step" href="/launch?role=' + encodeURIComponent(role) + '">' +
+          esc(s) + "</a>"
+        : '<span class="step">' + esc(s) + " · not installed</span>";
+    }).join('<span class="arrow">→</span>');
+
+    document.getElementById("stage").innerHTML =
+      '<div class="card rise">' +
+        '<div class="badge">' + esc(p.badge) + "</div>" +
+        '<h3 class="pname">' + esc(p.name) + "</h3>" +
+        '<div class="tag">' + esc(p.tagline) + "</div>" +
+        '<p class="blurb">' + esc(p.blurb) + "</p>" +
+
+        '<div class="sec"><div class="sl">North star</div>' +
+          '<div class="star">' + esc(p.north_star) + "</div></div>" +
+
+        '<div class="sec"><div class="sl">The pillars · ' +
+          (p.pillars || []).length + "</div>" +
+          '<div class="pillars">' + (p.pillars || []).map((pil) =>
+            '<div class="pillar"><h4>' + esc(pil.name) + "</h4><p>" +
+            esc(pil.note) + '</p><div class="roles">' +
+            (pil.roles || []).map((r) =>
+              '<a class="role" href="/launch?role=' + encodeURIComponent(r.name) +
+              '" title="' + esc(r.description) + '">' + esc(title(r.name)) +
+              "</a>").join("") +
+            "</div></div>").join("") + "</div></div>" +
+
+        '<div class="sec"><div class="sl">Signature play</div>' +
+          '<div class="sig"><div class="st">' + esc(sig.chain || "") + "</div>" +
+          '<div class="steps">' + stepsHtml + "</div>" +
+          "<p>" + esc(sig.why || "") + "</p></div></div>" +
+
+        '<div class="sec"><div class="sl">Tools these roles assume you already use</div>' +
+          '<div class="chips">' + (p.tools || []).map((t) =>
+            '<span class="chip">' + esc(t) + "</span>").join("") + "</div>" +
+          '<div class="note">Named so the roles talk about your actual stack. ' +
+          'OwnerOS does not connect to any of them.</div></div>' +
+
+        '<div class="sec"><div class="sl">What you watch</div>' +
+          '<div class="chips">' + (p.tracks || []).map((t) =>
+            '<span class="chip">' + esc(t) + "</span>").join("") + "</div></div>" +
+
+        '<div class="acts">' +
+          '<button class="btn" id="kick" type="button">Copy the kickoff</button>' +
+          '<a class="btn ghost" href="/launch?persona=' + encodeURIComponent(p.id) +
+          '">See these roles</a>' +
+          '<span class="copied" id="copied" hidden>Copied.</span>' +
+        "</div>" +
+        (p.missing && p.missing.length
+          ? '<div class="warn">Not installed on this machine: ' +
+            esc(p.missing.join(", ")) + "</div>"
+          : "") +
+      "</div>";
+
+    document.getElementById("kick").addEventListener("click", () => {
+      copy(kickoff(p));
+      const c = document.getElementById("copied");
+      c.hidden = false;
+      setTimeout(() => { c.hidden = true; }, 1600);
+    });
+  }
+
+  fetch("/api/personas").then((r) => r.json()).then((d) => {
+    data = d;
+    const want = new URLSearchParams(location.search).get("p");
+    const i = data.personas.findIndex((x) => x.id === want);
+    current = i >= 0 ? i : 0;
+    render();
+  }).catch(() => {
+    document.getElementById("stage").innerHTML =
+      '<div class="empty">Could not read the personas file.</div>';
+  });
+</script>
+</body>
+</html>

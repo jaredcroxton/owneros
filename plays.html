@@ -41,7 +41,7 @@
   .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
   .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
   .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
-                 scrollbar-width: none; }
+                 scrollbar-width: none; min-width: 0; }
   .gnav .links::-webkit-scrollbar { display: none; }
   .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
                    white-space: nowrap; transition: color .15s; }
@@ -80,7 +80,9 @@
   .search svg { display: none; }
   .plate { display: block; width: 100%; max-width: 1100px; margin: 0 auto;
            border-radius: 28px; }
-  .wrap { display: grid; gap: 18px; }
+  /* minmax(0, 1fr) or the track takes its width from the widest card's
+     min-content and every card overflows the column. */
+  .wrap { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
   .cat { background: var(--paper); border-radius: 28px; padding: 28px 30px; }
   .cat-head { display: flex; align-items: baseline; gap: 12px;
               margin-bottom: 8px; flex-wrap: wrap; }
@@ -187,6 +189,7 @@
       <a href="/capture">Capture</a>
       <a href="/launch">Workforce</a>
       <a class="here" href="/plays" aria-current="page">Plays</a>
+      <a href="/personas">Personas</a>
       <a href="/files">Files</a>
       <a href="/roadmap">Roadmap</a>
     </div>
@@ -292,8 +295,13 @@
         chains.map((ch, i) => '<div class="chain glass" style="animation-delay:' +
           Math.min(i * 50, 250) + 'ms"><div class="ctitle">' + esc(ch.title) +
           '</div><div class="steps">' +
-          ch.steps.map((s) => '<span class="step">' + esc(s) + "</span>")
-            .join('<span class="step-arrow">→</span>') +
+          ch.steps.map((s, si) => {
+            const role = (ch.roles || [])[si];
+            return role
+              ? '<a class="step" href="/launch?role=' + encodeURIComponent(role) +
+                '">' + esc(s) + "</a>"
+              : '<span class="step">' + esc(s) + " · not installed</span>";
+          }).join('<span class="step-arrow">→</span>') +
           '</div><div class="cnote">' + esc(ch.note) + "</div>" +
           '<button class="btn chain-copy" data-ci="' + i +
           '" type="button">Copy chain prompt</button></div>').join("");
@@ -302,7 +310,8 @@
       '<div class="empty">No play matches. Try fewer words, or ask Brock.</div>';
     document.getElementById("countChip").textContent =
       (q ? shown + " matching" : data.total_plays + " plays · " +
-        data.chains.length + " chains");
+        data.chains.length + " chains" +
+        (data.fallback ? " · play library fallback active" : ""));
     deck.querySelectorAll(".play").forEach((el) =>
       el.addEventListener("click", () =>
         openPlay(el.dataset.cat, el.dataset.title)));

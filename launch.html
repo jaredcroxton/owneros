@@ -38,7 +38,7 @@
   .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
   .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
   .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
-                 scrollbar-width: none; }
+                 scrollbar-width: none; min-width: 0; }
   .gnav .links::-webkit-scrollbar { display: none; }
   .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
                    letter-spacing: -.01em; white-space: nowrap;
@@ -135,6 +135,8 @@
   .results.on { display: block; }
   .depts-sec.off { display: none; }
   .res-count { font-size: 14px; color: var(--mid); margin-bottom: 18px; }
+  .reslink { color: var(--link); }
+  .reslink::after { content: " ›"; }
   .res-grid { display: grid; gap: 12px;
               grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
   .scrim { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.4);
@@ -259,6 +261,7 @@
       <a href="/capture">Capture</a>
       <a class="here" href="/launch" aria-current="page">Workforce</a>
       <a href="/plays">Plays</a>
+      <a href="/personas">Personas</a>
       <a href="/files">Files</a>
       <a href="/roadmap">Roadmap</a>
     </div>
@@ -359,8 +362,10 @@
   const shortName = (n) => n.replace(
     /^crew-(core|sales|marketing|ops|hr|finance|support|docs|training|web|design|voice|my|real)?-?/,
     "").replace(/-/g, " ");
+  const CAPS = /\b(faq|sop|seo|crm|hr|ai|kpi)\b/gi;
   const title = (n) => { const s = shortName(n);
-    return s.charAt(0).toUpperCase() + s.slice(1); };
+    return (s.charAt(0).toUpperCase() + s.slice(1))
+      .replace(CAPS, (w) => w.toUpperCase()); };
   const statusWord = (s) => s === "active" ? "Worked this month" :
     s === "live" ? "Has worked for you" : "Ready to work";
   const workedWord = (n) => n === 1 ? "1 has worked" : n + " have worked";
@@ -496,6 +501,31 @@
       : "No roles match that yet — try another word.";
   }
 
+  // Personas deep-link here to show only the roles they staff. Same results
+  // grid the search uses, so there is one way a filtered roster looks.
+  async function showPersona(id) {
+    let d;
+    try { d = await (await fetch("/api/personas")).json(); }
+    catch (e) { return; }
+    const p = (d.personas || []).find(x => x.id === id);
+    if (!p) return;
+    const wanted = [];
+    (p.pillars || []).forEach(pil => (pil.roles || []).forEach(r => {
+      if (!wanted.includes(r.name)) wanted.push(r.name);
+    }));
+    $("deptsSec").classList.add("off");
+    $("results").classList.add("on");
+    const grid = $("resGrid");
+    grid.innerHTML = "";
+    wanted.forEach(n => {
+      const hit = index[n];
+      if (hit) grid.appendChild(roleCard(hit.skill, hit.pack));
+    });
+    $("resCount").innerHTML = "The " + esc(p.name) +
+      " persona staffs these " + grid.children.length + " roles. " +
+      '<a class="reslink" href="/launch">Show every role</a>';
+  }
+
   async function load() {
     try {
       data = await (await fetch("/api/workforce")).json();
@@ -515,6 +545,8 @@
         " capabilities — three roles carry bundled specs. <b>" +
         workedWord(worked) + " for you.</b>";
       buildDepts();
+      const persona = new URLSearchParams(location.search).get("persona");
+      if (persona) await showPersona(persona);
     } catch (e) {
       $("subLine").textContent = "Could not reach the workforce. Is the server running?";
     }

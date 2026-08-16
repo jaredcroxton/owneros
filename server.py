@@ -606,14 +606,11 @@ def play_links():
                     out.setdefault(s, {"plays": [], "chains": []})["plays"].append(
                         {"title": play["title"], "category": cat["category"]})
     for ch in data.get("chains", []):
-        steps = ch.get("steps", [])
-        for i, step in enumerate(steps):
-            for piece in re.split(r"\s+/\s+", step):
-                s = resolve_step(piece, known)
-                if s:
-                    out.setdefault(s, {"plays": [], "chains": []})["chains"].append(
-                        {"title": ch["title"], "position": i + 1,
-                         "of": len(steps)})
+        roles = ch.get("roles", [])
+        for i, s in enumerate(roles):
+            if s:
+                out.setdefault(s, {"plays": [], "chains": []})["chains"].append(
+                    {"title": ch["title"], "position": i + 1, "of": len(roles)})
     return out
 
 
@@ -1178,11 +1175,18 @@ def api_workforce():
             "capabilities": 108}
 
 
-def parse_playbook():
-    """Parse playbook.md (app-owned copy of the CREW plays library) fresh per
-    request. Tolerant: a play missing fields still renders with what it has."""
-    text = read_text(APP_DIR / "playbook.md") or ""
-    main, _, chain_part = text.partition("\n# Chain plays")
+PLAYS_SRC = SKILLS_DIR / "crew-core-using-crew" / "references" / "plays.md"
+# Both heading shapes exist in the wild: the dispatcher's copy uses "## Chain
+# plays", the app's older copy uses "# Chain plays".
+CHAIN_SPLIT = re.compile(r"^##? Chain plays\s*$", re.M)
+
+
+def parse_play_text(text):
+    """Parse one play library. Tolerant: a play missing fields still renders
+    with what it has."""
+    parts = CHAIN_SPLIT.split(text, 1)
+    main = parts[0]
+    chain_part = parts[1] if len(parts) > 1 else ""
 
     def field(block, name):
         m = re.search(r"\*\*" + name + r":\*\*\s*(.+)", block)
@@ -1215,6 +1219,110 @@ def parse_playbook():
 
     return {"categories": categories, "chains": chains,
             "total_plays": sum(len(c["plays"]) for c in categories)}
+
+
+def annotate_chains(data):
+    """Resolve every chain step to an installed skill. Steps that do not
+    resolve are marked, never dropped: a chain that cannot be staffed must say
+    so rather than quietly shrink."""
+    known = {d.name for d in SKILLS_DIR.glob("crew-*") if d.is_dir()}
+    unresolved = []
+    for ch in data.get("chains", []):
+        roles = []
+        for step in ch.get("steps", []):
+            hit = None
+            for piece in re.split(r"\s+/\s+", step):
+                hit = resolve_step(piece, known)
+                if hit:
+                    break
+            roles.append(hit)
+            if not hit:
+                unresolved.append(ch["title"] + " · " + step)
+        ch["roles"] = roles
+        ch["staffed"] = all(roles)
+    return unresolved
+
+
+def parse_playbook():
+    """Serve the live CREW play library, fresh per request, with a validation
+    gate. The dispatcher's own references/plays.md is the source of truth; the
+    app copy is the fallback so the Plays room never goes dark, and the page
+    says which one it is reading."""
+    for path, source in ((PLAYS_SRC, "crew"), (APP_DIR / "playbook.md", "app")):
+        text = read_text(path)
+        if not text:
+            continue
+        data = parse_play_text(text)
+        data["source"] = source
+        data["source_path"] = str(path)
+        unresolved = annotate_chains(data)
+        problems = []
+        if not data["chains"]:
+            problems.append("No chain plays parsed")
+        if unresolved:
+            problems.append(str(len(unresolved)) + " chain steps do not resolve "
+                            "to an installed skill: " + ", ".join(unresolved[:4]))
+        if source == "crew" and problems:
+            continue
+        data["fallback"] = source != "crew"
+        data["problems"] = problems
+        return data
+    return {"categories": [], "chains": [], "total_plays": 0, "source": "none",
+            "source_path": "", "fallback": True,
+            "problems": ["No play library found on disk"]}
+
+
+def api_personas():
+    """The six market shapes, staffed from the live roster. Every role named in
+    personas.json is checked against what is actually installed, and every
+    signature chain against the parsed play library. A name that does not
+    resolve is returned in missing[] so the page can show it: a persona that
+    promises a role you do not have is worse than one that admits the gap."""
+    try:
+        data = json.loads(read_text(APP_DIR / "personas.json") or "{}")
+    except ValueError:
+        return {"personas": [], "problems": ["personas.json is not valid JSON"]}
+
+    known = {}
+    for d in SKILLS_DIR.glob("crew-*"):
+        if d.is_dir():
+            fm = parse_frontmatter(d / "SKILL.md")
+            if fm.get("name"):
+                known[d.name] = {"name": d.name,
+                                 "description": fm.get("description", "")}
+    plays = parse_playbook()
+    chains = {c["title"]: c for c in plays.get("chains", [])}
+
+    out, problems = [], []
+    for p in data.get("personas", []):
+        missing = []
+        pillars = []
+        for pil in p.get("pillars", []):
+            staffed = []
+            for r in pil.get("roles", []):
+                if r in known:
+                    staffed.append(known[r])
+                else:
+                    missing.append(r)
+            pillars.append({"name": pil.get("name", ""), "note": pil.get("note", ""),
+                            "roles": staffed})
+        sig = dict(p.get("signature") or {})
+        chain = chains.get(sig.get("chain", ""))
+        if chain:
+            sig["steps"] = chain.get("steps", [])
+            sig["roles"] = chain.get("roles", [])
+            sig["staffed"] = chain.get("staffed", False)
+        else:
+            sig["steps"], sig["roles"], sig["staffed"] = [], [], False
+            missing.append("chain: " + sig.get("chain", "(none named)"))
+        if missing:
+            problems.append(p.get("name", p.get("id", "?")) + ": " + ", ".join(missing))
+        out.append({**p, "pillars": pillars, "signature": sig, "missing": missing,
+                    "role_count": sum(len(x["roles"]) for x in pillars)})
+
+    return {"personas": out, "problems": problems,
+            "play_source": plays.get("source", ""),
+            "play_fallback": plays.get("fallback", False)}
 
 
 def api_brands():
@@ -1262,7 +1370,8 @@ def api_health():
 ROUTES = {"/": "today.html", "/today": "today.html", "/projects": "projects.html",
           "/brain": "brain.html", "/capture": "capture.html",
           "/launch": "launch.html", "/roadmap": "roadmap.html",
-          "/files": "files.html", "/plays": "plays.html"}
+          "/files": "files.html", "/plays": "plays.html",
+          "/personas": "personas.html"}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -1331,6 +1440,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(api_brands())
         if url.path == "/api/plays":
             return self.send_json(parse_playbook())
+        if url.path == "/api/personas":
+            return self.send_json(api_personas())
         if url.path == "/api/owner":
             return self.send_json(owner())
         if url.path == "/api/role":
