@@ -34,6 +34,17 @@ FISH_KEY_FILE = OWN / "fish.key"
 URL_FILE = OWN / "os-url.txt"
 BRAIN_URL = "http://localhost:4880"
 
+# The Hermes side of the house. Both trees are read-only to this app: it never
+# writes an agent record, a profile, or a skill into them.
+AGENTS_DIR = HOME / ".claude-os" / "agents"
+AGENTS_EXPORT = HOME / "Desktop" / "Hermes-Agent-Network" / "agents"
+HERMES = HOME / ".hermes"
+HERMES_PROFILES = HERMES / "profiles"
+HERMES_SKILLS = HERMES / "skills" / "crew"
+# If this path ever exists the cabinet has been forked and the one-brain claim
+# is false. Checked on every request; never created, never removed by this app.
+HERMES_STATE = HERMES / "crew-state"
+
 SANCTIONED = ["NOT STARTED", "IN PROGRESS", "BLOCKED", "READY FOR REVIEW",
               "DONE", "DONE_WITH_GAPS", "NO OUTPUT"]
 
@@ -1272,6 +1283,280 @@ def parse_playbook():
             "problems": ["No play library found on disk"]}
 
 
+SOUL_H2 = re.compile(r"^## +(.+?)\s*$", re.M)
+SOUL_FENCE = re.compile(r"^```")
+SOUL_MAX_SECTIONS = 40
+SOUL_MAX_CHARS = 8000
+
+
+def parse_soul(path):
+    """Split a soul.md into ## sections. Lines starting with a single # before
+    the first ## are preamble, so a '# Version: 1.0' header does not become a
+    section. Fenced code is passed through untouched. Anything this cannot
+    split degrades to one section holding the raw text, the same idiom the
+    handoff parser uses for an unparsed record."""
+    text = read_text(path)
+    if not text:
+        return []
+    lines, fenced = text.splitlines(), False
+    sections, cur = [], {"title": "", "body": []}
+    for line in lines:
+        if SOUL_FENCE.match(line):
+            fenced = not fenced
+        if not fenced:
+            m = SOUL_H2.match(line)
+            if m:
+                if cur["title"] or "".join(cur["body"]).strip():
+                    sections.append(cur)
+                cur = {"title": m.group(1), "body": []}
+                continue
+        cur["body"].append(line)
+    if cur["title"] or "".join(cur["body"]).strip():
+        sections.append(cur)
+    out = []
+    for s in sections[:SOUL_MAX_SECTIONS]:
+        body = "\n".join(s["body"]).strip()
+        if not (s["title"] or body):
+            continue
+        out.append({"title": s["title"], "body": body[:SOUL_MAX_CHARS]})
+    if not out:
+        out = [{"title": "", "body": text[:SOUL_MAX_CHARS]}]
+    return out
+
+
+def agent_runtime(agent_id, aliases):
+    """Where this agent actually runs. The profile directory is the agent id
+    with underscores removed, with a small alias table for the ones that do not
+    follow it. Reported as found on disk, never assumed."""
+    if not agent_id:
+        return {"kind": "unknown", "profile": None, "skills": 0, "crew_skills": 0}
+    slug = aliases.get(agent_id) or agent_id.replace("_", "")
+    d = HERMES_PROFILES / slug
+    if not d.is_dir():
+        return {"kind": "no-profile", "profile": None, "skills": 0,
+                "crew_skills": 0}
+    sk = d / "skills"
+    names = [x.name for x in sk.iterdir() if x.is_dir()] if sk.is_dir() else []
+    return {"kind": "hermes-profile", "profile": slug, "path": str(d),
+            "skills": len(names),
+            "crew_skills": sum(1 for n in names if n.startswith("crew-"))}
+
+
+def load_agent_records():
+    """Agent records from the live tree, falling back to the Desktop export.
+    A record that will not parse is skipped into errors[], never fatal."""
+    for root, source in ((AGENTS_DIR, "live"), (AGENTS_EXPORT, "export")):
+        if not root.is_dir():
+            continue
+        agents, errors = [], []
+        for d in sorted(root.iterdir()):
+            f = d / "agent.json"
+            if not f.is_file():
+                continue
+            try:
+                a = json.loads(read_text(f) or "")
+            except ValueError:
+                errors.append(d.name + ": agent.json will not parse")
+                continue
+            if not a.get("id"):
+                errors.append(d.name + ": no id")
+                continue
+            a["_dir"] = d
+            agents.append(a)
+        if agents:
+            return agents, source, errors
+    return [], "none", []
+
+
+def api_hermes():
+    """The Hermes agent network, read from disk. Two claims this endpoint is
+    careful about: it never says an agent is wired into a Hermes profile unless
+    that profile's own skills folder actually holds CREW skills, and it reports
+    the split-brain check on every request."""
+    records, source, errors = load_agent_records()
+    try:
+        amap = json.loads(read_text(APP_DIR / "agent-map.json") or "{}")
+    except ValueError:
+        amap = {}
+        errors.append("agent-map.json will not parse; ownership omitted")
+    aliases = amap.get("profile_aliases", {})
+
+    subs_index = {}
+    for a in records:
+        for s in a.get("subAgents", []):
+            if s.get("id"):
+                subs_index[s["id"]] = {**s, "parent": a["id"]}
+
+    receives = {}
+    for a in records:
+        for t in a.get("handsOffTo", []):
+            receives.setdefault(t, []).append(a["id"])
+
+    try:
+        packs = json.loads(read_text(APP_DIR / "pack-map.json") or "{}")
+    except ValueError:
+        packs = {}
+    pack_label = {p["id"]: p["label"] for p in packs.get("packs", [])}
+    pack_size = {}
+    for skill, pid in (packs.get("skills") or {}).items():
+        pack_size[pid] = pack_size.get(pid, 0) + 1
+
+    owns, vacancies, dangling = {}, [], []
+    known_owner = {a["id"] for a in records} | set(subs_index)
+    for pid, cfg in (amap.get("packs") or {}).items():
+        owner = (cfg or {}).get("owner")
+        entry = {"pack": pid, "label": pack_label.get(pid, pid),
+                 "roles": pack_size.get(pid, 0)}
+        if owner and owner in known_owner:
+            owns.setdefault(owner, []).append(entry)
+        else:
+            if owner:
+                dangling.append(owner + " (named for " + pid + ")")
+            vacancies.append({**entry, "note": (cfg or {}).get("vacancy_note", "")})
+
+    # Packs owned by a sub-agent are shown on that sub-agent's parent card, so
+    # Bob's five leaves read as real owners rather than decoration.
+    sub_owns_by_parent = {}
+    for sid, sub in subs_index.items():
+        for entry in owns.get(sid, []):
+            sub_owns_by_parent.setdefault(sub["parent"], []).append(
+                {**entry, "sub": sid, "sub_name": sub.get("name", sid)})
+
+    agents = []
+    for a in records:
+        aid = a["id"]
+        rt = agent_runtime(aid, aliases)
+        agents.append({
+            "id": aid, "name": a.get("name", aid),
+            "codename": a.get("codename", ""), "role": a.get("role", ""),
+            "tagline": a.get("tagline", ""), "longTagline": a.get("longTagline", ""),
+            "color": a.get("color", ""), "notes": a.get("notes", ""),
+            "triggers": a.get("triggers", []),
+            "declared_skills": a.get("skills", []),
+            "telegram": a.get("telegramHandle", ""),
+            "reportsTo": a.get("reportsTo"),
+            "handsOffTo": a.get("handsOffTo", []),
+            "receivesFrom": sorted(receives.get(aid, [])),
+            "subAgents": a.get("subAgents", []),
+            "runtime": rt,
+            "cover": ("/assets/hermes/" + aid + ".jpg"
+                      if (APP_DIR / "assets" / "hermes" / (aid + ".jpg")).is_file()
+                      else None),
+            "soul": parse_soul(a["_dir"] / "soul.md"),
+            "owns": owns.get(aid, []),
+            "sub_owns": sub_owns_by_parent.get(aid, []),
+        })
+
+    # None of the declared skills[] values are CREW skills, and none resolve in
+    # either skill tree. Say so rather than implying a wire.
+    declared = sorted({s for a in records for s in a.get("skills", [])})
+    resolved = [s for s in declared
+                if (SKILLS_DIR / s).is_dir() or (HERMES_SKILLS / s).is_dir()]
+    wired_profiles = [a["id"] for a in agents
+                      if a["runtime"].get("crew_skills")]
+
+    return {
+        "agents": agents,
+        "sub_total": len(subs_index),
+        "sources": {"agents": source, "agents_path":
+                    str(AGENTS_DIR if source == "live" else AGENTS_EXPORT)},
+        "vacancies": vacancies,
+        "bridge": {
+            "crew_in_hermes_tree": len([d for d in HERMES_SKILLS.glob("crew-*")
+                                        if d.is_dir()]) if HERMES_SKILLS.is_dir() else 0,
+            "hermes_profiles": len([d for d in HERMES_PROFILES.iterdir()
+                                    if d.is_dir()]) if HERMES_PROFILES.is_dir() else 0,
+            "profiles_with_crew": wired_profiles,
+            "declared_skills": declared,
+            "declared_resolved": resolved,
+            "dangling_owners": dangling,
+            "split_brain": HERMES_STATE.exists(),
+            "split_brain_path": str(HERMES_STATE),
+        },
+        "errors": errors,
+    }
+
+
+def api_connections():
+    """Every claim this app makes about being connected, checked against disk
+    on each request. A row is either connected or it is not; there is no
+    'probably'. The one-brain claim is gated on split_brain being false, and
+    the Hermes runtime claim stays unproven until the handoff demo is run."""
+    h = api_hermes()
+    b = h["bridge"]
+    plays = parse_playbook()
+    projects = [d for d in PROJECTS.iterdir() if d.is_dir()] \
+        if PROJECTS.is_dir() else []
+    records = sum(len(list(d.glob("*-handoff.md"))) for d in projects)
+    skills = len([d for d in SKILLS_DIR.glob("crew-*")
+                  if d.is_dir() and parse_frontmatter(d / "SKILL.md").get("name")])
+    brain = False
+    try:
+        with urllib.request.urlopen(BRAIN_URL, timeout=1.5):
+            brain = True
+    except Exception:
+        brain = False
+    inbox_files = len(list(INBOX.glob("*.md"))) if INBOX.is_dir() else 0
+
+    rows = [
+        {"what": "Crew skills write to the cabinet",
+         "on": bool(skills and (CREW / "brand-context.md").is_file()),
+         "detail": str(skills) + " roles installed · " + str(len(projects)) +
+                   " projects · " + str(records) + " records filed",
+         "where": str(CREW)},
+        {"what": "Capture writes to the inbox",
+         "on": INBOX.is_dir(),
+         "detail": str(inbox_files) + " captures on file",
+         "where": str(INBOX)},
+        {"what": "The Brain is running",
+         "on": brain,
+         "detail": "Serving on port 4880" if brain else
+                   "Not answering. Load com.jared.secondbrain to bring it back.",
+         "where": BRAIN_URL},
+        {"what": "Crew skills installed in the Hermes tree",
+         "on": b["crew_in_hermes_tree"] > 0,
+         "detail": str(b["crew_in_hermes_tree"]) + " skills present",
+         "where": str(HERMES_SKILLS)},
+        {"what": "Crew skills wired into named Hermes profiles",
+         "on": bool(b["profiles_with_crew"]),
+         "detail": str(len(b["profiles_with_crew"])) + " of " +
+                   str(b["hermes_profiles"]) + " profiles carry them",
+         "where": str(HERMES_PROFILES)},
+        {"what": "Agent skills[] resolve to an installed skill",
+         "on": bool(b["declared_resolved"]),
+         "detail": str(len(b["declared_resolved"])) + " of " +
+                   str(len(b["declared_skills"])) +
+                   " resolve. They are declared capabilities, not wires.",
+         "where": str(AGENTS_DIR)},
+        {"what": "One cabinet, not two",
+         "on": not b["split_brain"],
+         "detail": "No forked cabinet found" if not b["split_brain"] else
+                   "A second cabinet exists. Nothing here is one brain until "
+                   "it is merged and removed.",
+         "where": b["split_brain_path"]},
+        {"what": "A crew skill has finished a job inside Hermes",
+         "on": False,
+         "detail": "Not run yet. Until it is, the shared cabinet is an "
+                   "argument from the file paths, not a demonstration.",
+         "where": "Run any crew skill in a hermes session, then look in Projects"},
+        {"what": "Play library reads the live crew source",
+         "on": not plays.get("fallback"),
+         "detail": (str(plays.get("total_plays", 0)) + " plays · " +
+                    str(len(plays.get("chains", []))) + " chains" +
+                    (" · fallback active" if plays.get("fallback") else "")),
+         "where": plays.get("source_path", "")},
+        {"what": "Brock can speak",
+         "on": FISH_KEY_FILE.is_file(),
+         "detail": "Fish key present" if FISH_KEY_FILE.is_file() else
+                   "No Fish key. The browser voice is the fallback.",
+         "where": str(FISH_KEY_FILE)},
+    ]
+    return {"rows": rows,
+            "split_brain": b["split_brain"],
+            "one_brain_claim_allowed": not b["split_brain"],
+            "connected": sum(1 for r in rows if r["on"]), "total": len(rows)}
+
+
 def api_personas():
     """The six market shapes, staffed from the live roster. Every role named in
     personas.json is checked against what is actually installed, and every
@@ -1371,7 +1656,7 @@ ROUTES = {"/": "today.html", "/today": "today.html", "/projects": "projects.html
           "/brain": "brain.html", "/capture": "capture.html",
           "/launch": "launch.html", "/roadmap": "roadmap.html",
           "/files": "files.html", "/plays": "plays.html",
-          "/personas": "personas.html"}
+          "/personas": "personas.html", "/hermes": "hermes.html"}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -1442,6 +1727,10 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(parse_playbook())
         if url.path == "/api/personas":
             return self.send_json(api_personas())
+        if url.path == "/api/hermes":
+            return self.send_json(api_hermes())
+        if url.path == "/api/connections":
+            return self.send_json(api_connections())
         if url.path == "/api/owner":
             return self.send_json(owner())
         if url.path == "/api/role":
