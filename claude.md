@@ -75,6 +75,15 @@ Skill card: frontmatter `name` + `description` from `~/.claude/skills/crew-*/SKI
 pack membership from `pack-map.json` (generated from `~/Desktop/cluade/crew-skill-packs/packs/`,
 regenerate by rerunning the build snippet in progress.md when packs change).
 
+## Feature freeze (2026-08-16, before the workshop)
+The feature set is frozen. Polish, copy, screenshots and rehearsal only; no new rooms,
+endpoints or capabilities until Jared lifts it. `workshop-run-sheet.md` is the operating
+document for the day. Two things it depends on that must not be broken:
+`~/.claude/crew-state/projects/hermes-handoff-demo/` is the evidence behind the
+Connections proof row (delete it and the row honestly reverts to "not yet"), and the live
+demo must run in the DEFAULT Hermes profile, because the 13 named profiles carry no crew
+skills.
+
 ## Maintenance log
 - Serve: LaunchAgent `com.jared.owneros` (RunAtLoad + KeepAlive), binds 127.0.0.1, port walk
   starting at 4890, chosen URL written to `~/.owneros/os-url.txt`, log at `~/.owneros/os.log`.
