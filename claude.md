@@ -1,7 +1,8 @@
 # OwnerOS — Constitution
 
-Local Business OS cockpit. One stdlib Python server, five screens plus roadmap, PerformOS brand,
-ivory default theme with ink stage mode.
+Local Business OS cockpit. One stdlib Python server, ten rooms (Today, Projects, Brain,
+Capture, Workforce, Plays, Personas, Hermes, Files, Roadmap), PerformOS brand, Apple
+language throughout.
 
 ## Design law v4 — the Apple language (locked 2026-08-13 night, OS-wide)
 Distilled from Jared's five references (GSAP, Superr, Portrait, dope.security, Apple
@@ -55,11 +56,21 @@ Status sanctioned list: NOT STARTED | IN PROGRESS | BLOCKED | READY FOR REVIEW |
 "Needs me" statuses: BLOCKED, READY FOR REVIEW. Stale threshold: 14 days.
 Capture file: `~/.owneros/inbox/<YYYYMMDD-HHMMSS>-<slug>.md` with frontmatter
 `name`, `description` (<=140 chars), `captured`, `source: owneros-capture`.
-Playbook: `playbook.md` in this folder (app-owned copy of the CREW plays library) is
-the single source for the Plays screen; parsed fresh per request by `parse_playbook()`
-(## = category, ### = play, `**Field:**` bullets, `# Chain plays` section). To update
-plays: edit playbook.md here (or re-copy from wherever the master lives) and reload
-the page. Intents power the plain-words search.
+Playbook: parsed fresh per request by `parse_playbook()` from the dispatcher's own
+`references/plays.md` (## = category, ### = play, `**Field:**` bullets, `^##? Chain
+plays` partition). To update plays, edit that file and reload the page. Each chain is
+annotated with `roles[]` (each step resolved to an installed skill) and `staffed`.
+Intents power the plain-words search.
+Role dossier: `parse_skill_doc(name)` slices a SKILL.md on `^## ` headings and returns
+steps, step0, final_step, verification, guardrails, handoffs, reads, writes, output and
+`gaps[]`. It never raises; a skill with no `## Workflow` reports `gaps:["sop"]` and the
+drawer says so. Boilerplate terminates on `^\*\*Final Step` (prefix-anchored: both
+"Handoff Save" and "Record Save" variants exist in the corpus). Served by `/api/role`,
+deliberately NOT by `/api/workforce` (eager SOP text measured +309KB on a grid where at
+most one drawer opens). `handoff_index()` is the app's only cache, memoised on a corpus
+signature of (name, mtime_ns, size) so a hand-edited skill is live on next reload.
+A `crew-*` folder whose SKILL.md has no parseable `name` is skipped from the roster
+entirely. It is never deleted, moved, or "fixed".
 Skill card: frontmatter `name` + `description` from `~/.claude/skills/crew-*/SKILL.md`;
 pack membership from `pack-map.json` (generated from `~/Desktop/cluade/crew-skill-packs/packs/`,
 regenerate by rerunning the build snippet in progress.md when packs change).
@@ -79,21 +90,38 @@ regenerate by rerunning the build snippet in progress.md when packs change).
   to be logged in (interactive `claude` then /login if it ever expires again).
 - Capture inbox is watched by the Brain (listed in both scan_config.json copies). If captures
   stop birthing nodes, reload `com.jared.secondbrain` the sanctioned way (launchctl unload/load).
-- Workforce (route /launch, all in launch.html): "The Company Register" design,
-  built 2026-08-13 from scratch after Jared reverted a GSAP-look reskin. Its own law
-  (this screen only; coral law governs the rest): warm paper #F6F3EC, ink #161310,
-  single rubric red #B42318 (index numerals, links, worked-this-month dot, stamp —
-  nothing else), Fraunces (variable, local) + IBM Plex Mono 400/500 data voice,
-  14px floor, radius 2px, no shadows/gradients/glass, light only. Structure:
-  masthead nameplate + double rule + compiled line, Brock editor's-note card,
-  underline search with red match counter, status legend, 17 numbered department
-  entries (01-17) on a 1px spine, single-open wells with dotted-leader role lines
-  numbered 001-089 (stable by API order), personnel-file drawer (salary AUD
-  units-only, $ stripped; COPIED stamp on copy), 72px two-letter rail (bottom bar
-  ≤390px), bottom-sheet drawer ≤560px. Deep link `/launch?open=<dept>` preserved.
-  Entrance rule learned hard: base state = final state, animations fill backwards;
-  never base-hidden + forwards. The old map build lives unused in `workforce-map/`;
-  do not re-embed without Jared's ask (map rejected 2026-08-13, GSAP skin reverted
-  same day — its tokens live in git history at 30fe05e if ever wanted).
+- Workforce (route /launch, all in launch.html): department tiles, single-open roles
+  panel, role drawer with three tabs. The Company Register law that used to sit here
+  (warm paper, Fraunces, rubric red) was retired at 852aac0; this screen is pure Apple
+  language like every other room. Deep links: `?open=<dept>`, `?role=<crew-skill>`
+  with optional `&tab=sop|learned`, `?persona=<id>` to filter to a persona's roster.
+  Drawer tabs: The role (what it replaces, trust ladder, invoke phrase, and the
+  downloadable skill file), The SOP (steps parsed from the skill's own `## Workflow`),
+  Learned (every job the role finished, newest first, read from handoff records).
+  The old map build lives unused in `workforce-map/`; do not re-embed without Jared's
+  ask (map rejected 2026-08-13, GSAP skin reverted same day — tokens at 30fe05e).
+- Personas (route /personas): six market shapes from `personas.json`, app-owned and
+  hand-edited. Every role and signature chain named there is validated against the
+  live roster per request; anything unresolved renders as a visible warning and is
+  never dropped. "Copy the kickoff" names the exact chain and roles and spells out
+  the Step 0 read and Final Step write so one paste works in either runtime.
+- Hermes (route /hermes): the second runtime, read from `~/.claude-os/agents` (falls
+  back to `~/Desktop/Hermes-Agent-Network/agents`, source reported in the payload).
+  Both that tree and `~/.hermes` are READ-ONLY to this app. Ownership of packs lives
+  in `agent-map.json` (app-owned, hand-edited, server never writes it); an owner id
+  that resolves to nothing becomes a vacancy, never an error. Covers are rebuilt with
+  `sips -s format jpeg -s formatOptions 72 -Z 800` into `assets/hermes/<id>.jpg`;
+  re-run when agents change. The page ends in the Connections panel, which checks
+  every claim against disk per request.
+- NEVER split the cabinet. `~/.claude/crew-state` is the one memory root, hardcoded in
+  every skill's Step 0 and Final Step; that is the only reason multi-runtime works. An
+  old Hermes deployment doc carries a `sed` that would rewrite it to
+  `~/.hermes/crew-state`. Do not run it. `/api/connections` asserts that path does not
+  exist, and the Hermes page refuses any one-brain claim if it ever does.
+- Play library source of truth is `~/.claude/skills/crew-core-using-crew/references/plays.md`
+  (47 plays, 12 chains). `playbook.md` in this folder is now only the validated
+  fallback: it is used when the live source is missing, unparseable, has no chains, or
+  names a step that resolves to no installed skill, and the Plays room says
+  "play library fallback active" when that happens.
 - Fonts are local (`fonts/`). No CDN at runtime.
 - Debug: `tail -20 ~/.owneros/os.log`; `curl localhost:4890/api/health`.
