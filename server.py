@@ -1396,7 +1396,10 @@ def api_hermes():
         packs = json.loads(read_text(APP_DIR / "pack-map.json") or "{}")
     except ValueError:
         packs = {}
-    pack_label = {p["id"]: p["label"] for p in packs.get("packs", [])}
+    # pack-map.json is generated, so "HR" arrives title-cased as "Hr". The
+    # Workforce room fixes it client-side; do the same here so both rooms agree.
+    pack_label = {p["id"]: ("HR" if p["label"].lower() == "hr" else p["label"])
+                  for p in packs.get("packs", [])}
     pack_size = {}
     for skill, pid in (packs.get("skills") or {}).items():
         pack_size[pid] = pack_size.get(pid, 0) + 1

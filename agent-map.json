@@ -7,10 +7,11 @@
   "packs": {
     "01-core": { "owner": "brock" },
     "02-sales": { "owner": null,
-      "vacancy_note": "No sales agent exists. Brock routes but does not sell, and none of the eight sales roles has ever run." },
+      "vacancy_note": "No named sales owner yet. Brock routes but does not sell. Run history for these roles is counted separately on the Workforce tiles, project runs and legacy records both." },
     "03-marketing": { "owner": "serge_seo" },
     "04-ops": { "owner": "otto_automation" },
-    "05-hr": { "owner": "harry_hr" },
+    "05-hr": { "owner": null,
+      "vacancy_note": "No People Ops owner yet. Harry_HR reviews employment legislation and legal risk, which is a narrower job than owning the HR pack, so he is not named here." },
     "06-finance": { "owner": null,
       "vacancy_note": "No finance agent exists. The six finance roles are the clearest gap: they are the ones a small business feels weekly." },
     "07-support": { "owner": null,
