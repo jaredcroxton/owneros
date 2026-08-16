@@ -1,8 +1,8 @@
 # OwnerOS — Constitution
 
-Local Business OS cockpit. One stdlib Python server, ten rooms (Today, Projects, Brain,
-Capture, Workforce, Plays, Personas, Hermes, Files, Roadmap), PerformOS brand, Apple
-language throughout.
+Local Business OS cockpit. One stdlib Python server, eleven rooms (Today, Projects, Brain,
+Capture, Workforce, Plays, Personas, Hermes, Sessions, Files, Roadmap), PerformOS brand,
+Apple language throughout.
 
 ## Design law v4 — the Apple language (locked 2026-08-13 night, OS-wide)
 Distilled from Jared's five references (GSAP, Superr, Portrait, dope.security, Apple
@@ -113,6 +113,27 @@ regenerate by rerunning the build snippet in progress.md when packs change).
   `sips -s format jpeg -s formatOptions 72 -Z 800` into `assets/hermes/<id>.jpg`;
   re-run when agents change. The page ends in the Connections panel, which checks
   every claim against disk per request.
+- Sessions (route /sessions): both runtimes, METADATA ONLY. This room gets projected in
+  workshops, so three rules are load-bearing and must not be relaxed: no message text,
+  prompt text or file contents are ever read or returned (`lastPrompt` is deliberately
+  not parsed, since it is a raw human turn); folder names are shown instead of full
+  paths; cost columns are not selected from the database. Claude Code side reads
+  head 16KB + tail 64KB per transcript and never the middle (223 sessions, 2.1GB,
+  largest single file 92MB), which is why it reports no message count at all rather
+  than a wrong one. Hermes side reads `state.db` (root = Brock) plus each profile's own
+  `state.db`; there is no agent column in that schema, so the agent IS the profile
+  directory, resolved via `agent-map.json` `profile_aliases`. Sessions with
+  `message_count <= 2` are excluded: a bulk agent-mirror-sync cron left an untitled
+  two-message probe in ten profiles inside the same four minutes. A project folder name
+  is a lossy case-collapsed encoding of the cwd and is NEVER reversed into a path.
+- The Hermes proof row in `/api/connections` is computed, never hardcoded. A handoff
+  record does not name the runtime that wrote it (that is the point of the shared
+  cabinet), so `hermes_ran_a_crew_skill()` correlates the newest 25 records' mtimes
+  against Hermes session windows in `state.db`, requires that the session also NAME the
+  skill in its own messages (tested with a COUNT; no body is read), and bounds an
+  unfinished session by its own last message rather than by "now". Timing alone is
+  reported as timing, and does not turn the row on. All state.db reads use a
+  `mode=ro` URI plus busy_timeout, because the gateways hold WAL locks.
 - NEVER split the cabinet. `~/.claude/crew-state` is the one memory root, hardcoded in
   every skill's Step 0 and Final Step; that is the only reason multi-runtime works. An
   old Hermes deployment doc carries a `sed` that would rewrite it to
