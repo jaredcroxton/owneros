@@ -1493,6 +1493,20 @@ def api_hermes():
     }
 
 
+CC_PROJECTS = HOME / ".claude" / "projects"
+UPLOADS = HOME / ".claude-os" / "uploads"
+SESSION_LIMIT = 60          # rows returned per side
+CC_HEAD = 16 * 1024         # enough for cwd and the opening timestamp
+CC_TAIL = 64 * 1024         # enough for the title records, which are appended
+TITLE_CAP = 72              # screen-share safe: titles are truncated, not full
+UUID_RE = re.compile(r"\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-"
+                     r"[0-9a-f]{4}-[0-9a-f]{12}\Z")
+# A bulk agent-mirror-sync cron left a 2-message untitled probe session in ten
+# of the thirteen profiles inside the same four minutes. Counting those would
+# claim every agent was working at once, so they are not real sessions.
+SWEEP_MESSAGES = 2
+
+
 def hermes_db_rows(path, sql, args=(), limit_note=""):
     """Read-only query against a Hermes state.db. The gateways keep these in WAL
     mode with live writers attached, so this opens with mode=ro and a short
@@ -1690,6 +1704,215 @@ def api_connections():
             "connected": sum(1 for r in rows if r["on"]), "total": len(rows)}
 
 
+def safe_title(text, cap=TITLE_CAP):
+    """Screen-share safe: one line, collapsed whitespace, truncated. This room
+    gets projected in workshops, so a title is a label, never a paragraph."""
+    s = " ".join((text or "").split())
+    return s[:cap].rstrip() + "…" if len(s) > cap else s
+
+
+def folder_only(path):
+    """Show the folder, not the whole path. A full home path on a projector
+    leaks client names and directory structure for no benefit."""
+    p = (path or "").rstrip("/")
+    return p.rsplit("/", 1)[-1] if p else ""
+
+
+def upload_tally(session_id):
+    """Counts only. The files are never listed by this endpoint."""
+    d = UPLOADS / session_id
+    if not (session_id and d.is_dir()):
+        return {"files": 0, "images": 0, "docs": 0, "bytes": 0}
+    imgs = docs = total = n = 0
+    for f in d.iterdir():
+        try:
+            if not f.is_file():
+                continue
+            total += f.stat().st_size
+        except OSError:
+            continue
+        n += 1
+        if f.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+            imgs += 1
+        else:
+            docs += 1
+    return {"files": n, "images": imgs, "docs": docs, "bytes": total}
+
+
+def cc_session_head_tail(path):
+    """Read the two ends of a transcript, never the middle. One session on this
+    machine is 208 MB; the append-only format puts cwd and the opening
+    timestamp in the head, and the title records at the tail, so ~80 KB answers
+    everything this room shows."""
+    try:
+        size = path.stat().st_size
+        with path.open("rb") as fh:
+            head = fh.read(CC_HEAD)
+            if size > CC_HEAD + CC_TAIL:
+                fh.seek(-CC_TAIL, os.SEEK_END)
+                tail = fh.read(CC_TAIL)
+            else:
+                tail = fh.read()
+    except OSError:
+        return "", "", 0
+    return (head.decode("utf-8", "replace"), tail.decode("utf-8", "replace"),
+            size)
+
+
+CC_CWD = re.compile(r'"cwd":"((?:[^"\\]|\\.)*)"')
+CC_TS = re.compile(r'"timestamp":"([0-9T:\-\.]+Z)"')
+CC_CUSTOM = re.compile(r'"customTitle":"((?:[^"\\]|\\.)*)"')
+CC_AI = re.compile(r'"aiTitle":"((?:[^"\\]|\\.)*)"')
+# Deliberately NOT parsed: "lastPrompt". It is the raw text of a human turn, and
+# using it as a title fallback would put prompt bodies on a projected screen.
+# Only titles the session actually has are shown; the rest read "Untitled".
+# Scoped to claude- models so MCP tool payloads (nano-banana, veo3) cannot be
+# mistaken for the session's own model.
+CC_MODEL = re.compile(r'"model":"(claude-[a-z0-9\-\.]+)"')
+
+
+def cc_sessions(limit=SESSION_LIMIT):
+    """Claude Code sessions, newest first, from head+tail reads only.
+
+    Deliberately absent: a message count. Counting turns means reading all
+    2.3 GB, so the room says the number is not counted rather than showing a
+    plausible wrong one. Only top-level <uuid>.jsonl files are listed; the
+    nested subagent and workflow logs are not sessions.
+    """
+    if not CC_PROJECTS.is_dir():
+        return [], 0
+    found = []
+    for proj in CC_PROJECTS.iterdir():
+        if not proj.is_dir():
+            continue
+        for f in proj.glob("*.jsonl"):
+            if not UUID_RE.match(f.stem):
+                continue
+            try:
+                found.append((f.stat().st_mtime, f, proj.name))
+            except OSError:
+                continue
+    total = len(found)
+    found.sort(key=lambda r: r[0], reverse=True)
+
+    out = []
+    for mtime, f, proj in found[:limit]:
+        head, tail, size = cc_session_head_tail(f)
+        def pick(rx, where):
+            m = rx.findall(where)
+            return m[-1] if m else ""
+        # The folder name is a lossy, case-collapsed encoding of the cwd, so it
+        # is never reversed into a path: the real cwd comes from the records.
+        cwd = pick(CC_CWD, head) or pick(CC_CWD, tail)
+        title = pick(CC_CUSTOM, tail) or pick(CC_AI, tail)
+        started = pick(CC_TS, head)
+        m = CC_MODEL.findall(tail) or CC_MODEL.findall(head)
+        model = m[-1] if m else ""
+        out.append({
+            "id": f.stem, "side": "claude",
+            "title": safe_title(title) or "Untitled",
+            "titled": bool(title),
+            "where": folder_only(cwd) or folder_only(proj),
+            "started": started, "ended_ts": mtime,
+            "days": days_since(mtime), "model": model,
+            "bytes": size, "messages": None,
+            "uploads": upload_tally(f.stem),
+        })
+    return out, total
+
+
+def hermes_profile_dbs():
+    """(agent label, path) for every Hermes session store. The root install is
+    Brock; every other agent IS a profile directory, because no agent column
+    exists anywhere in the schema."""
+    try:
+        amap = json.loads(read_text(APP_DIR / "agent-map.json") or "{}")
+    except ValueError:
+        amap = {}
+    # profile_aliases maps agent id -> profile dir; invert it, because the
+    # directory is what we have. laralearning <-> lara_learningdesign is the one
+    # pair that does not follow the de-underscore rule.
+    back = {v: k for k, v in (amap.get("profile_aliases") or {}).items()}
+    dbs = [("brock", HERMES_DB)]
+    if HERMES_PROFILES.is_dir():
+        for d in sorted(HERMES_PROFILES.iterdir()):
+            db = d / "state.db"
+            if db.is_file():
+                dbs.append((back.get(d.name, d.name), db))
+    return dbs
+
+
+def hermes_sessions(limit=SESSION_LIMIT):
+    """Hermes sessions across the root install and every profile."""
+    rows, total, agents = [], 0, {}
+    for agent, db in hermes_profile_dbs():
+        got = hermes_db_rows(
+            db,
+            # Cost columns are deliberately not selected: this room gets
+            # projected, and spend is nobody else's business.
+            "SELECT id, title, source, model, started_at, ended_at, "
+            "message_count, tool_call_count, cwd "
+            "FROM sessions WHERE message_count > ? "
+            "ORDER BY started_at DESC LIMIT ?", (SWEEP_MESSAGES, limit))
+        if not got:
+            continue
+        total += len(got)
+        agents[agent] = max(
+            [r[4] for r in got if r[4] is not None] or [0])
+        for (sid, title, source, model, started, ended, msgs, tools,
+             cwd) in got:
+            rows.append({
+                "id": sid, "side": "hermes", "agent": agent,
+                "title": safe_title(title) or "Untitled",
+                "titled": bool(title),
+                "source": source or "", "model": model or "",
+                "started": started, "ended_ts": ended or started,
+                "days": days_since(started or time.time()),
+                "messages": msgs, "tools": tools,
+                "where": folder_only(cwd),
+            })
+    rows.sort(key=lambda r: r["started"] or 0, reverse=True)
+    return rows[:limit], total, agents
+
+
+def api_sessions():
+    """Both runtimes, metadata only. No transcript text, no prompt bodies, no
+    message content is read or returned by this endpoint on either side."""
+    cc, cc_total = cc_sessions()
+    hm, hm_total, agents = hermes_sessions()
+
+    up_dirs = [d for d in UPLOADS.iterdir() if d.is_dir()] \
+        if UPLOADS.is_dir() else []
+    live = {s["id"] for s in cc}
+    known = set()
+    if CC_PROJECTS.is_dir():
+        for proj in CC_PROJECTS.iterdir():
+            if proj.is_dir():
+                known |= {f.stem for f in proj.glob("*.jsonl")}
+    # Orphans are counted and named as orphans; their sessions were pruned and
+    # pretending otherwise would inflate the history.
+    orphans = sum(1 for d in up_dirs if d.name not in known)
+
+    return {
+        "claude": {
+            "sessions": cc, "total": cc_total,
+            "counted": len(cc),
+            "uploads": sum(s["uploads"]["files"] for s in cc),
+            "messages_counted": False,
+            "root": str(CC_PROJECTS),
+        },
+        "hermes": {
+            "sessions": hm, "total": hm_total, "counted": len(hm),
+            "agents": len(agents), "stores": len(hermes_profile_dbs()),
+            "messages": sum(s["messages"] or 0 for s in hm),
+            "root": str(HERMES),
+        },
+        "uploads": {"dirs": len(up_dirs), "orphans": orphans,
+                    "root": str(UPLOADS)},
+        "safe_mode": True,
+    }
+
+
 def api_personas():
     """The six market shapes, staffed from the live roster. Every role named in
     personas.json is checked against what is actually installed, and every
@@ -1789,7 +2012,8 @@ ROUTES = {"/": "today.html", "/today": "today.html", "/projects": "projects.html
           "/brain": "brain.html", "/capture": "capture.html",
           "/launch": "launch.html", "/roadmap": "roadmap.html",
           "/files": "files.html", "/plays": "plays.html",
-          "/personas": "personas.html", "/hermes": "hermes.html"}
+          "/personas": "personas.html", "/hermes": "hermes.html",
+          "/sessions": "sessions.html"}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -1864,6 +2088,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(api_hermes())
         if url.path == "/api/connections":
             return self.send_json(api_connections())
+        if url.path == "/api/sessions":
+            return self.send_json(api_sessions())
         if url.path == "/api/owner":
             return self.send_json(owner())
         if url.path == "/api/role":
