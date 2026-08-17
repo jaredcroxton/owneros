@@ -70,19 +70,25 @@
         text-transform: uppercase; color: var(--mid); margin: 0 0 16px; }
   .sec { margin-top: 40px; text-align: left; }
 
-  /* The handover chart. Tiles are laid out by grid; the lines are drawn into an
-     SVG layer from measured tile centres, so the chart reflows at any width.
-     Solid hairline = reports to. Dashed = hands work to. */
+  /* The handover chart. One relation only: who hands work to whom. Reporting is
+     a constant (all nine report to Brock), and a constant needs a caption, not
+     eight lines, so it is never drawn. Agents sit in tiers computed by longest
+     path through the handoff graph, every edge flows downward, and the whole
+     picture funnels into whoever the work lands on. Lines are measured from the
+     laid-out tiles, so the chart survives any reflow. */
   .chart { position: relative; }
   .chart svg { position: absolute; inset: 0; width: 100%; height: 100%;
                pointer-events: none; z-index: 0; overflow: visible; }
-  .chart .reports { stroke: var(--hairline); stroke-width: 1; fill: none; }
   .chart .hands { stroke: var(--mid); stroke-width: 1; fill: none;
-                  stroke-dasharray: 4 5; opacity: .55; }
+                  stroke-dasharray: 4 5; opacity: .5; }
+  .chart marker path { fill: var(--mid); }
+  .flowline { font-size: 15px; color: var(--mid); margin: -6px 0 26px; }
   .tier0 { display: flex; justify-content: center; position: relative; z-index: 1; }
-  .tiles { display: grid; gap: 20px 14px; margin-top: 64px; position: relative;
-           z-index: 1;
-           grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); }
+  .tcap { font-size: 13px; color: var(--mid); max-width: 300px;
+          text-align: center; margin-top: 2px; }
+  .tiers { display: flex; flex-direction: column; gap: 58px; margin-top: 48px;
+           position: relative; z-index: 1; }
+  .trow { display: flex; justify-content: center; gap: 34px; flex-wrap: wrap; }
   .tile { display: flex; flex-direction: column; align-items: center;
           gap: 10px; padding: 4px; }
   .tile .shot { width: 96px; height: 96px; border-radius: 20px;
@@ -134,15 +140,6 @@
   .subs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
   .sub-chip { font-size: 12px; background: var(--band); border-radius: 980px;
               padding: 4px 11px; color: var(--deep); }
-
-  .ladder { display: grid; gap: 12px; }
-  .rung { background: var(--paper); border-radius: 20px; padding: 18px 22px;
-          box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
-  .rung .to { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
-  .rung .from { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
-  .fchip { font-size: 13px; background: var(--band); border-radius: 980px;
-           padding: 5px 13px; color: var(--deep); transition: background .15s; }
-  .fchip:hover { background: var(--wash); }
 
   .vac { background: var(--band); border-radius: 20px; padding: 20px 22px; }
   .vac .vt { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
@@ -270,20 +267,15 @@
 
       <div class="sec" id="orgSec">
         <div class="sl">The network</div>
+        <div class="flowline" id="flowline"></div>
         <div class="chart" id="chart">
           <svg id="wires" aria-hidden="true"></svg>
           <div class="tier0" id="tier0"></div>
-          <div class="tiles" id="tiles"></div>
+          <div class="tiers" id="tiers"></div>
         </div>
         <div class="legend">
-          <span><i></i>reports to</span>
-          <span><i class="dash"></i>hands work to</span>
+          <span><i class="dash"></i>hands work to · every line flows down</span>
         </div>
-      </div>
-
-      <div class="sec" id="ladderSec">
-        <div class="sl">Who hands work to whom</div>
-        <div class="ladder" id="ladder"></div>
       </div>
 
       <div class="sec" id="vacSec">
@@ -371,81 +363,104 @@
     return el;
   }
 
-  // Lines are measured, not hand-placed, so the chart survives any reflow.
-  // Brock's handsOffTo list is every direct report, so drawing it as well as the
-  // reporting lines would just double every edge: peer handoffs only.
+  // The peer handoff graph, laid out as tiers. Computed from the data every
+  // load, never hand-placed: layer = longest handoff path that reaches the
+  // agent, so every edge flows downward and the sink lands at the bottom.
+  let flowEdges = [];
+
+  function buildFlow(agents, boss) {
+    const peers = agents.filter(a => a !== boss);
+    flowEdges = [];
+    peers.forEach(a => (a.handsOffTo || []).forEach(t => {
+      if (byId[t] && (!boss || t !== boss.id)) {
+        flowEdges.push({ from: a.id, to: t });
+      }
+    }));
+    const layer = {};
+    peers.forEach(a => { layer[a.id] = 0; });
+    // Bounded relaxation: longest path in a DAG; a cycle in bad data cannot
+    // hang it, the layers just stop improving.
+    for (let i = 0; i < peers.length; i++) {
+      flowEdges.forEach(e => {
+        layer[e.to] = Math.max(layer[e.to], layer[e.from] + 1);
+      });
+    }
+    const depth = Math.max(0, ...peers.map(a => layer[a.id]));
+    const tiers = [];
+    for (let k = 0; k <= depth; k++) {
+      tiers.push(peers.filter(a => layer[a.id] === k));
+    }
+    // Barycenter ordering inside each tier so the lines stay untangled: a tier
+    // sorts toward the average position of what it hands to, then of what it
+    // takes from. Two sweeps settle a graph this small.
+    const pos = {};
+    tiers.forEach(t => t.forEach((a, i) => { pos[a.id] = (i + 0.5) / t.length; }));
+    const mean = (xs, fallback) => xs.length
+      ? xs.reduce((x, y) => x + y, 0) / xs.length : fallback;
+    for (let sweep = 0; sweep < 2; sweep++) {
+      for (let k = tiers.length - 2; k >= 0; k--) {
+        tiers[k].sort((a, b) =>
+          mean(flowEdges.filter(e => e.from === a.id).map(e => pos[e.to]), pos[a.id]) -
+          mean(flowEdges.filter(e => e.from === b.id).map(e => pos[e.to]), pos[b.id]));
+        tiers[k].forEach((a, i) => { pos[a.id] = (i + 0.5) / tiers[k].length; });
+      }
+      for (let k = 1; k < tiers.length; k++) {
+        tiers[k].sort((a, b) =>
+          mean(flowEdges.filter(e => e.to === a.id).map(e => pos[e.from]), pos[a.id]) -
+          mean(flowEdges.filter(e => e.to === b.id).map(e => pos[e.from]), pos[b.id]));
+        tiers[k].forEach((a, i) => { pos[a.id] = (i + 0.5) / tiers[k].length; });
+      }
+    }
+    return tiers;
+  }
+
   function drawWires() {
     const svg = $("wires");
     const host = $("chart");
-    if (!svg || !host || !data.agents.length) return;
+    if (!svg || !host || !flowEdges.length) return;
     const box = host.getBoundingClientRect();
     svg.setAttribute("viewBox", "0 0 " + box.width + " " + box.height);
-    // Anchor on the shot's top edge, but leave from the bottom of the whole
-    // tile: a line that starts at the photo runs straight through the name.
-    const centre = (id, which) => {
+    const shotBox = (id) => {
       const el = tileEls[id];
       if (!el) return null;
-      const shot = el.querySelector(".shot").getBoundingClientRect();
+      const r = el.querySelector(".shot").getBoundingClientRect();
       const full = el.getBoundingClientRect();
-      return { x: shot.left - box.left + shot.width / 2,
-               y: (which === "top" ? shot.top : full.bottom + 4) - box.top };
+      return { cx: r.left - box.left + r.width / 2, w: r.width,
+               top: r.top - box.top - 7, bottom: full.bottom - box.top + 5 };
     };
-    const boss = data.agents.find(a => !a.reportsTo);
-    const parts = [];
-    if (boss) {
-      const from = centre(boss.id, "bottom");
-      data.agents.forEach(a => {
-        if (a.reportsTo !== boss.id) return;
-        const to = centre(a.id, "top");
-        if (from && to) {
-          parts.push('<path class="reports" d="M' + from.x + " " + from.y +
-                     "L" + to.x + " " + to.y + '"/>');
-        }
+    // Several lines arriving at one tile would stack their arrowheads into a
+    // blob, so arrivals (and departures) spread across the photo's width in
+    // source order. Six lines funnelling into the sink is the picture.
+    const slot = (edges, key, otherKey) => {
+      const groups = {};
+      edges.forEach(e => (groups[e[key]] = groups[e[key]] || []).push(e));
+      Object.values(groups).forEach(g => {
+        g.sort((a, b) => {
+          const pa = shotBox(a[otherKey]), pb = shotBox(b[otherKey]);
+          return (pa ? pa.cx : 0) - (pb ? pb.cx : 0);
+        });
+        g.forEach((e, i) => {
+          e[key + "Off"] = g.length === 1 ? 0
+            : (i / (g.length - 1) - 0.5) * 0.72;
+        });
       });
-    }
-    data.agents.forEach(a => {
-      if (boss && a.id === boss.id) return;
-      a.handsOffTo.forEach(t => {
-        const from = centre(a.id, "bottom");
-        const to = centre(t, "bottom");
-        if (!from || !to) return;
-        // Peers sit on the same rows, so a straight line would run through the
-        // tiles between them. Bow the path under the row instead.
-        const dip = Math.min(46, 18 + Math.abs(to.x - from.x) * 0.06);
-        parts.push('<path class="hands" d="M' + from.x + " " + from.y +
-                   "Q" + (from.x + to.x) / 2 + " " +
-                   (Math.max(from.y, to.y) + dip) + " " +
-                   to.x + " " + to.y + '"/>');
-      });
+    };
+    slot(flowEdges, "to", "from");
+    slot(flowEdges, "from", "to");
+    const parts = ['<defs><marker id="arr" markerWidth="7" markerHeight="7" ' +
+      'refX="5.5" refY="3.5" orient="auto">' +
+      '<path d="M0 0 L7 3.5 L0 7 Z"/></marker></defs>'];
+    flowEdges.forEach(e => {
+      const a = shotBox(e.from), b = shotBox(e.to);
+      if (!a || !b) return;
+      const x1 = a.cx + a.w * e.fromOff, y1 = a.bottom;
+      const x2 = b.cx + b.w * e.toOff, y2 = b.top;
+      const dy = Math.max(30, (y2 - y1) * 0.5);
+      parts.push('<path class="hands" marker-end="url(#arr)" d="M' +
+        x1 + " " + y1 + " C" + x1 + " " + (y1 + dy) + " " +
+        x2 + " " + (y2 - dy) + " " + x2 + " " + y2 + '"/>');
     });
     svg.innerHTML = parts.join("");
-  }
-
-  function card(a, boss) {
-    const el = document.createElement("button");
-    el.type = "button";
-    el.className = "ag rise" + (boss ? " boss" : "");
-    const inbound = a.receivesFrom.length;
-    el.innerHTML =
-      '<div class="top">' + faceHtml(a, "face") +
-      '<div><div class="an">' + esc(a.name.replace(/_/g, " ")) + "</div>" +
-      '<div class="ar">' + esc(a.role) + "</div></div></div>" +
-      '<div class="atag">' + esc(a.tagline) + "</div>" +
-      (a.subAgents.length
-        ? '<div class="subs">' + a.subAgents.map(s =>
-            '<span class="sub-chip">' + esc(s.name.replace(/_/g, " ")) +
-            "</span>").join("") + "</div>"
-        : "") +
-      '<div class="arow">' +
-        (a.runtime.kind === "hermes-profile"
-          ? "Hermes profile · " + esc(a.runtime.profile)
-          : a.telegram ? "Telegram · " + esc(a.telegram)
-          : a.id === "brock" ? "Telegram · no handle set"
-          : "No Hermes profile found") +
-        (inbound ? " · takes work from " + inbound : "") +
-      "</div>";
-    el.addEventListener("click", () => openAgent(a.id));
-    return el;
   }
 
   function openAgent(id) {
@@ -610,8 +625,30 @@
       d.bridge.crew_in_hermes_tree + " skills are installed in the Hermes " +
       "tree; <b>" + d.bridge.profiles_with_crew.length + " of " +
       d.bridge.hermes_profiles + "</b> named profiles carry them.";
-    if (boss) $("tier0").appendChild(tile(boss, true));
-    rest.forEach(a => $("tiles").appendChild(tile(a, false)));
+    if (boss) {
+      const bt = tile(boss, true);
+      bt.insertAdjacentHTML("beforeend", '<div class="tcap">All ' +
+        rest.length + " report to him. He routes the work; the lines below " +
+        "are what the floor hands each other.</div>");
+      $("tier0").appendChild(bt);
+    }
+    const tiers = buildFlow(d.agents, boss);
+    tiers.forEach(t => {
+      const row = document.createElement("div");
+      row.className = "trow";
+      t.forEach(a => row.appendChild(tile(a, false)));
+      $("tiers").appendChild(row);
+    });
+    // The one-line reading of the whole picture, computed from the edges.
+    const incoming = {};
+    flowEdges.forEach(e => { incoming[e.to] = (incoming[e.to] || 0) + 1; });
+    const sinkId = Object.keys(incoming)
+      .sort((x, y) => incoming[y] - incoming[x])[0];
+    if (sinkId && byId[sinkId]) {
+      $("flowline").textContent = "Work flows down. " + incoming[sinkId] +
+        " of the " + rest.length + " hand their finished work to " +
+        byId[sinkId].name.replace(/_/g, " ") + ", who ships it.";
+    }
     // Portraits decide the geometry, so wait for them before measuring.
     const shots = [...document.querySelectorAll(".tile img.shot")];
     let left = shots.filter(i => !i.complete).length;
@@ -621,20 +658,6 @@
     }, { once: true }));
     addEventListener("resize", drawWires);
     if (window.ResizeObserver) new ResizeObserver(drawWires).observe($("chart"));
-
-    const ladder = {};
-    d.agents.forEach(a => a.receivesFrom.length && (ladder[a.id] = a.receivesFrom));
-    const order = Object.keys(ladder)
-      .sort((x, y) => ladder[y].length - ladder[x].length);
-    $("ladder").innerHTML = order.map(to =>
-      '<div class="rung"><div class="to">' +
-      esc(byId[to].name.replace(/_/g, " ")) + " takes work from " +
-      ladder[to].length + '</div><div class="from">' +
-      ladder[to].map(f => '<button class="fchip" data-go="' + esc(f) + '">' +
-        esc((byId[f] || {name: f}).name.replace(/_/g, " ")) + "</button>")
-        .join("") + "</div></div>").join("");
-    $("ladder").querySelectorAll("[data-go]").forEach(b =>
-      b.addEventListener("click", () => openAgent(b.dataset.go)));
 
     if (d.vacancies.length) {
       document.querySelector("#vacSec .sl").innerHTML =
