@@ -72,36 +72,48 @@
 
   /* The handover chart. One relation only: who hands work to whom. Reporting is
      a constant (all nine report to Brock), and a constant needs a caption, not
-     eight lines, so it is never drawn. Agents sit in tiers computed by longest
-     path through the handoff graph, every edge flows downward, and the whole
-     picture funnels into whoever the work lands on. Lines are measured from the
-     laid-out tiles, so the chart survives any reflow. */
+     eight lines, so it is never drawn. The flow reads left to right on one
+     screen: columns computed by longest path through the handoff graph, the
+     sink alone on the right, everything funnelling into it. The card gives the
+     lines clean paper to sit on; the hero plate stays outside it. */
+  .flowline { font-size: 15px; color: var(--mid); margin: -6px 0 26px; }
+  .tier0 { display: flex; justify-content: center; }
+  .tcap { font-size: 13px; color: var(--mid); max-width: 320px;
+          text-align: center; margin-top: 2px; }
+  .chartcard { background: var(--paper); border-radius: 28px;
+               padding: 40px 36px; margin-top: 30px;
+               box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
   .chart { position: relative; }
   .chart svg { position: absolute; inset: 0; width: 100%; height: 100%;
                pointer-events: none; z-index: 0; overflow: visible; }
-  .chart .hands { stroke: var(--mid); stroke-width: 1; fill: none;
-                  stroke-dasharray: 4 5; opacity: .5; }
+  .chart .hands { stroke: var(--mid); stroke-width: 1.25; fill: none;
+                  opacity: .8; transition: opacity .18s, stroke .18s; }
+  .chart .hands.dim { opacity: .5; }
+  /* Hover an agent and only their handoffs stay lit. */
+  .chart.focused .hands { opacity: .1; }
+  .chart.focused .hands.hot { opacity: 1; stroke: var(--ink); }
   .chart marker path { fill: var(--mid); }
-  .flowline { font-size: 15px; color: var(--mid); margin: -6px 0 26px; }
-  .tier0 { display: flex; justify-content: center; position: relative; z-index: 1; }
-  .tcap { font-size: 13px; color: var(--mid); max-width: 300px;
-          text-align: center; margin-top: 2px; }
-  .tiers { display: flex; flex-direction: column; gap: 58px; margin-top: 48px;
-           position: relative; z-index: 1; }
-  .trow { display: flex; justify-content: center; gap: 34px; flex-wrap: wrap; }
+  .pipeline { display: flex; justify-content: space-between; gap: 18px;
+              position: relative; z-index: 1; }
+  .pcol { display: flex; flex-direction: column; justify-content: center;
+          gap: 22px; flex: 1; }
+  .plab { font-family: ui-monospace, "SF Mono", Menlo, monospace;
+          font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+          color: var(--mid); text-align: center; margin-bottom: 4px; }
   .tile { display: flex; flex-direction: column; align-items: center;
-          gap: 10px; padding: 4px; }
-  .tile .shot { width: 96px; height: 96px; border-radius: 20px;
+          gap: 8px; padding: 2px; align-self: center; }
+  .tile .shot { width: 66px; height: 66px; border-radius: 16px;
                 object-fit: cover; background: var(--band);
-                box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 10px 24px rgba(0,0,0,.06);
+                box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 8px 20px rgba(0,0,0,.07);
                 transition: transform .2s cubic-bezier(.2,.7,.3,1); }
   .tile:hover .shot { transform: translateY(-3px); }
-  .tile .tn { font-size: 15px; font-weight: 600; letter-spacing: -.01em;
-              text-align: center; }
-  .tile .tr { font-size: 12px; color: var(--mid); text-align: center;
-              margin-top: -6px; }
-  .tile.boss .shot { width: 116px; height: 116px; }
+  .tile .tn { font-size: 14px; font-weight: 600; letter-spacing: -.01em;
+              text-align: center; line-height: 1.2; }
+  .tile .tr { font-size: 11px; color: var(--mid); text-align: center;
+              margin-top: -4px; max-width: 150px; }
+  .tile.boss .shot { width: 96px; height: 96px; border-radius: 20px; }
   .tile.boss .tn { font-size: 19px; }
+  .tile.boss .tr { font-size: 12px; }
   .crown { position: absolute; top: -10px; right: -10px; width: 28px;
            height: 28px; border-radius: 50%; background: var(--ink); color: #fff;
            display: grid; place-items: center; font-size: 15px; line-height: 1;
@@ -268,13 +280,15 @@
       <div class="sec" id="orgSec">
         <div class="sl">The network</div>
         <div class="flowline" id="flowline"></div>
-        <div class="chart" id="chart">
-          <svg id="wires" aria-hidden="true"></svg>
-          <div class="tier0" id="tier0"></div>
-          <div class="tiers" id="tiers"></div>
+        <div class="tier0" id="tier0"></div>
+        <div class="chartcard">
+          <div class="chart" id="chart">
+            <svg id="wires" aria-hidden="true"></svg>
+            <div class="pipeline" id="pipeline"></div>
+          </div>
         </div>
         <div class="legend">
-          <span><i class="dash"></i>hands work to · every line flows down</span>
+          <span><i></i>hands finished work to</span>
         </div>
       </div>
 
@@ -359,6 +373,18 @@
       '<div class="tn">' + esc(a.name.replace(/_/g, " ")) + "</div>" +
       '<div class="tr">' + esc(a.role) + "</div>";
     el.addEventListener("click", () => openAgent(a.id));
+    el.dataset.id = a.id;
+    el.addEventListener("mouseenter", () => {
+      const chart = $("chart");
+      if (!chart.contains(el)) return;
+      chart.classList.add("focused");
+      chart.querySelectorAll(".hands").forEach(p =>
+        p.classList.toggle("hot",
+          p.dataset.a === a.id || p.dataset.b === a.id));
+    });
+    el.addEventListener("mouseleave", () => {
+      $("chart").classList.remove("focused");
+    });
     tileEls[a.id] = el;
     return el;
   }
@@ -367,6 +393,7 @@
   // load, never hand-placed: layer = longest handoff path that reaches the
   // agent, so every edge flows downward and the sink lands at the bottom.
   let flowEdges = [];
+  let flowLayer = {};
 
   function buildFlow(agents, boss) {
     const peers = agents.filter(a => a !== boss);
@@ -385,7 +412,9 @@
         layer[e.to] = Math.max(layer[e.to], layer[e.from] + 1);
       });
     }
+    flowLayer = layer;
     const depth = Math.max(0, ...peers.map(a => layer[a.id]));
+    flowEdges.forEach(e => { e.span = layer[e.to] - layer[e.from]; });
     const tiers = [];
     for (let k = 0; k <= depth; k++) {
       tiers.push(peers.filter(a => layer[a.id] === k));
@@ -424,41 +453,124 @@
       const el = tileEls[id];
       if (!el) return null;
       const r = el.querySelector(".shot").getBoundingClientRect();
-      const full = el.getBoundingClientRect();
-      return { cx: r.left - box.left + r.width / 2, w: r.width,
-               top: r.top - box.top - 7, bottom: full.bottom - box.top + 5 };
+      return { cx: r.left - box.left + r.width / 2,
+               cy: r.top - box.top + r.height / 2,
+               w: r.width, h: r.height,
+               left: r.left - box.left - 7, right: r.right - box.left + 7,
+               top: r.top - box.top - 7, bottom: r.bottom - box.top + 7 };
     };
-    // Several lines arriving at one tile would stack their arrowheads into a
-    // blob, so arrivals (and departures) spread across the photo's width in
-    // source order. Six lines funnelling into the sink is the picture.
-    const slot = (edges, key, otherKey) => {
+    // The pipeline runs left to right on a wide screen and stacks vertically on
+    // a narrow one, so the anchor sides come from the measured geometry of each
+    // edge rather than from an assumed direction.
+    const horiz = (a, b) => Math.abs(b.cx - a.cx) >= Math.abs(b.cy - a.cy);
+    // Several lines arriving at one photo would stack their arrowheads into a
+    // blob, so arrivals and departures spread along the photo's edge in source
+    // order. Five lines fanning into the sink is the picture.
+    const slot = (key, otherKey) => {
       const groups = {};
-      edges.forEach(e => (groups[e[key]] = groups[e[key]] || []).push(e));
+      flowEdges.forEach(e => (groups[e[key]] = groups[e[key]] || []).push(e));
       Object.values(groups).forEach(g => {
-        g.sort((a, b) => {
-          const pa = shotBox(a[otherKey]), pb = shotBox(b[otherKey]);
-          return (pa ? pa.cx : 0) - (pb ? pb.cx : 0);
+        g.sort((p, q) => {
+          const bp = shotBox(p[otherKey]), bq = shotBox(q[otherKey]);
+          return (bp ? bp.cy - (bq ? bq.cy : 0) : 0) ||
+                 (bp && bq ? bp.cx - bq.cx : 0);
         });
         g.forEach((e, i) => {
           e[key + "Off"] = g.length === 1 ? 0
-            : (i / (g.length - 1) - 0.5) * 0.72;
+            : (i / (g.length - 1) - 0.5) * 0.7;
         });
       });
     };
-    slot(flowEdges, "to", "from");
-    slot(flowEdges, "from", "to");
+    slot("to", "from");
+    slot("from", "to");
     const parts = ['<defs><marker id="arr" markerWidth="7" markerHeight="7" ' +
       'refX="5.5" refY="3.5" orient="auto">' +
       '<path d="M0 0 L7 3.5 L0 7 Z"/></marker></defs>'];
+    // Every tile except the edge's own two ends is an obstacle. A line that
+    // runs through a face or a name is what made the first chart unreadable,
+    // so each edge tries a family of arcs and keeps the first one that clears
+    // everything. Ten edges, a handful of candidates each: trivial to test,
+    // and the result looks placed rather than scribbled.
+    const rects = {};
+    Object.keys(tileEls).forEach(id => {
+      const el = tileEls[id];
+      const r = el.getBoundingClientRect();
+      rects[id] = { l: r.left - box.left - 9, r: r.right - box.left + 9,
+                    t: r.top - box.top - 6, b: r.bottom - box.top + 6 };
+    });
+    const clear = (pts, skip) => pts.every(p =>
+      Object.keys(rects).every(id => skip.includes(id) ||
+        p.x < rects[id].l || p.x > rects[id].r ||
+        p.y < rects[id].t || p.y > rects[id].b));
+    const sample = (x1, y1, c1x, c1y, c2x, c2y, x2, y2) => {
+      const pts = [];
+      for (let t = 0.06; t < 0.95; t += 0.06) {
+        const u = 1 - t;
+        pts.push({
+          x: u*u*u*x1 + 3*u*u*t*c1x + 3*u*t*t*c2x + t*t*t*x2,
+          y: u*u*u*y1 + 3*u*u*t*c1y + 3*u*t*t*c2y + t*t*t*y2,
+        });
+      }
+      return pts;
+    };
+    const sink = flowEdges.map(e => e.to).sort((x, y) =>
+      flowEdges.filter(e => e.to === y).length -
+      flowEdges.filter(e => e.to === x).length)[0];
     flowEdges.forEach(e => {
       const a = shotBox(e.from), b = shotBox(e.to);
       if (!a || !b) return;
-      const x1 = a.cx + a.w * e.fromOff, y1 = a.bottom;
-      const x2 = b.cx + b.w * e.toOff, y2 = b.top;
-      const dy = Math.max(30, (y2 - y1) * 0.5);
-      parts.push('<path class="hands" marker-end="url(#arr)" d="M' +
-        x1 + " " + y1 + " C" + x1 + " " + (y1 + dy) + " " +
-        x2 + " " + (y2 - dy) + " " + x2 + " " + y2 + '"/>');
+      let d;
+      if (horiz(a, b)) {
+        const x1 = a.right, y1 = a.cy + a.h * e.fromOff;
+        const x2 = b.left,  y2 = b.cy + b.h * e.toOff;
+        const dx = (x2 - x1) * 0.4;
+        const mid = (y1 + y2) / 2;
+        // Candidate heights for the middle of the arc. A skipping edge aims
+        // for the real gaps between tiles in the columns it crosses, nearest
+        // gap first; short edges just try gentle bows. The sample test has
+        // the final say either way.
+        const cands = [];
+        if (e.span > 1) {
+          for (let k = flowLayer[e.from] + 1; k < flowLayer[e.to]; k++) {
+            const col = Object.keys(flowLayer)
+              .filter(id => flowLayer[id] === k && rects[id])
+              .map(id => rects[id]).sort((p, q) => p.t - q.t);
+            let edgeY = 8;
+            col.forEach(rc => {
+              if (rc.t - edgeY > 26) cands.push((edgeY + rc.t) / 2);
+              edgeY = Math.max(edgeY, rc.b);
+            });
+            if (box.height - edgeY > 26) cands.push((edgeY + box.height) / 2);
+          }
+          cands.sort((p, q) => Math.abs(p - mid) - Math.abs(q - mid));
+        }
+        const toward = b.cy <= a.cy ? -1 : 1;
+        // A lane height becomes the control-point height that makes the curve
+        // actually pass through it: y(.5) = .125(y1+y2) + .75g, solved for g.
+        const gs = cands.map(cy => (cy - 0.125 * (y1 + y2)) / 0.75 - mid)
+          .concat(e.span > 1
+            ? [56 * toward, -56 * toward, 120 * toward, -120 * toward, 0]
+            : [0, 34 * toward, -34 * toward, 68 * toward, -68 * toward]);
+        let best = gs[gs.length - 1];
+        for (const g of gs) {
+          if (clear(sample(x1, y1, x1 + dx, y1 + g, x2 - dx, y2 + g,
+                           x2, y2), [e.from, e.to])) { best = g; break; }
+        }
+        d = "M" + x1 + " " + y1 +
+            " C" + (x1 + dx) + " " + (y1 + best) + " " +
+            (x2 - dx) + " " + (y2 + best) + " " + x2 + " " + y2;
+      } else {
+        const x1 = a.cx + a.w * e.fromOff, y1 = a.bottom;
+        const x2 = b.cx + b.w * e.toOff,   y2 = b.top;
+        const dy = Math.max(26, (y2 - y1) * 0.45);
+        d = "M" + x1 + " " + y1 +
+            " C" + x1 + " " + (y1 + dy) + " " +
+            x2 + " " + (y2 - dy) + " " + x2 + " " + y2;
+      }
+      // The fan into the sink is the story; every other line steps back.
+      parts.push('<path class="hands' + (e.to === sink ? "" : " dim") +
+        '" data-a="' + esc(e.from) + '" data-b="' + esc(e.to) +
+        '" marker-end="url(#arr)" d="' + d + '"/>');
     });
     svg.innerHTML = parts.join("");
   }
@@ -633,11 +745,19 @@
       $("tier0").appendChild(bt);
     }
     const tiers = buildFlow(d.agents, boss);
-    tiers.forEach(t => {
-      const row = document.createElement("div");
-      row.className = "trow";
-      t.forEach(a => row.appendChild(tile(a, false)));
-      $("tiers").appendChild(row);
+    tiers.forEach((t, k) => {
+      const col = document.createElement("div");
+      col.className = "pcol";
+      if (tiers.length > 1 && k === 0) {
+        col.insertAdjacentHTML("beforeend",
+          '<div class="plab">Starts here</div>');
+      }
+      if (tiers.length > 1 && k === tiers.length - 1) {
+        col.insertAdjacentHTML("beforeend",
+          '<div class="plab">The work lands here</div>');
+      }
+      t.forEach(a => col.appendChild(tile(a, false)));
+      $("pipeline").appendChild(col);
     });
     // The one-line reading of the whole picture, computed from the edges.
     const incoming = {};
@@ -645,9 +765,10 @@
     const sinkId = Object.keys(incoming)
       .sort((x, y) => incoming[y] - incoming[x])[0];
     if (sinkId && byId[sinkId]) {
-      $("flowline").textContent = "Work flows down. " + incoming[sinkId] +
-        " of the " + rest.length + " hand their finished work to " +
-        byId[sinkId].name.replace(/_/g, " ") + ", who ships it.";
+      $("flowline").textContent = "Everything funnels to " +
+        byId[sinkId].name.replace(/_/g, " ") + ": " + incoming[sinkId] +
+        " of the " + rest.length +
+        " hand him their finished work to ship.";
     }
     // Portraits decide the geometry, so wait for them before measuring.
     const shots = [...document.querySelectorAll(".tile img.shot")];
