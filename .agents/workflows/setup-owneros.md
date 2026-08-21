@@ -49,7 +49,7 @@ test -d ~/.hermes && echo hermes-found || echo hermes-absent
   signing in opens a browser page for them to approve.
 - CREW count is 0: continue, but say Workforce, Plays and Personas stay empty until
   the CREW skills are installed, and offer to install them now:
-  `git clone https://github.com/jaredcroxton/Crew-Agents.git ~/Crew-Agents && bash ~/Crew-Agents/install.sh --all --global`
+  `git clone https://github.com/jaredcroxton/Crew-Agents.git ~/Crew-Agents && bash ~/Crew-Agents/install.sh --all --showcase --global`
 - hermes-absent: say nothing about it. Do not list it in the checklist.
 - hermes-found: also run `test -e ~/.hermes/crew-state && echo SPLIT-BRAIN || echo one-brain`.
   On SPLIT-BRAIN, delete nothing. Explain that `~/.hermes/crew-state` is a second

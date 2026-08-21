@@ -1293,9 +1293,13 @@ def parse_playbook():
         if not data["chains"]:
             problems.append("No chain plays parsed")
         if unresolved:
+            # Reported and rendered per step ("not installed"), never grounds
+            # for fallback: the public CREW install skips the Showcase pack by
+            # default, and two core chains name a Showcase skill. Falling back
+            # over that served a stale copy to every workshop install.
             problems.append(str(len(unresolved)) + " chain steps do not resolve "
                             "to an installed skill: " + ", ".join(unresolved[:4]))
-        if source == "crew" and problems:
+        if source == "crew" and not data["chains"]:
             continue
         data["fallback"] = source != "crew"
         data["problems"] = problems

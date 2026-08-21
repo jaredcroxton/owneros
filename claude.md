@@ -174,9 +174,13 @@ new rooms, no new capabilities beyond that.
   exist, and the Hermes page refuses any one-brain claim if it ever does.
 - Play library source of truth is `~/.claude/skills/crew-core-using-crew/references/plays.md`
   (47 plays, 12 chains). `playbook.md` in this folder is now only the validated
-  fallback: it is used when the live source is missing, unparseable, has no chains, or
-  names a step that resolves to no installed skill, and the Plays room says
-  "play library fallback active" when that happens.
+  fallback: it is used when the live source is missing, unparseable, or has no chains,
+  and the Plays room says "play library fallback active" when that happens. A chain
+  step that resolves to no installed skill is NOT grounds for fallback (changed
+  2026-08-21): it is listed in `problems` and the room renders that step as "not
+  installed". Reason: the public Crew-Agents installer skips pack 16-showcase unless
+  `--showcase`, and chains 01 and 06 name `crew-web-learning-experience` from that
+  pack, so every workshop install was being served the stale app copy.
 - Runtime switch (`hermes` in owner.json). Off: every room drops the Hermes nav link
   (the same per-page `/api/owner` snippet that sets the avatar initial), `/hermes` answers
   302 to `/today`, `/api/sessions` does not open any Hermes store and reports

@@ -81,7 +81,7 @@ and running `./start-os.sh`.
 | macOS | `uname` is Darwin | The service uses launchd; other platforms are not supported yet |
 | git and python3 | `command -v git python3` | Run `xcode-select --install`; macOS shows a dialog, the owner clicks Install |
 | Claude Code, signed in | `command -v claude` | Not a blocker for the rooms. Brock's briefing and the Files assistant need it |
-| CREW skills | `ls -d ~/.claude/skills/crew-*` count > 0 | `git clone https://github.com/jaredcroxton/Crew-Agents.git ~/Crew-Agents && bash ~/Crew-Agents/install.sh --all --global` |
+| CREW skills | `ls -d ~/.claude/skills/crew-*` count > 0 | `git clone https://github.com/jaredcroxton/Crew-Agents.git ~/Crew-Agents && bash ~/Crew-Agents/install.sh --all --showcase --global` |
 | Brand context | `~/.claude/crew-state/brand-context.md` exists | Not a blocker. The first job after install; you can run it in this chat |
 | Hermes Agent | `~/.hermes` is a directory | Absent: say nothing. Present: one extra question at install |
 
