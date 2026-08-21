@@ -4,128 +4,190 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Files · OwnerOS</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d1d1f'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2308090a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ff6b35'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/midnight.css">
 <style>
-  :root {
-    --paper: #ffffff; --band: #f5f5f7; --navbg: rgba(250,250,252,.8);
-    --wash: #e8e8ed; --hairline: #d6d6d6;
-    --ink: #1d1d1f; --mid: #707070; --deep: #474747;
-    --blue: #0071e3; --link: #0066cc; --ember: #b64400;
-    --text: #1d1d1f; --mut: #707070; --faint: #707070;
-    --accent: #b64400; --ok: #1d1d1f; --line: #d6d6d6;
-  }
+  /* Midnight Cockpit, design law v5. Tokens + fonts come from /midnight.css;
+     this block is page CSS only. --read is the long-form reading tone on dark. */
+  :root { --read: #cbc8c3; }
   * { margin: 0; box-sizing: border-box; }
-  html { height: 100%; }
+  html { height: 100%; background: var(--g0); }
   body {
-    background: var(--paper); color: var(--ink);
-    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui,
-      "Segoe UI", Roboto, sans-serif;
-    font-size: 17px; line-height: 1.47; letter-spacing: -.022em;
+    background: var(--g0); color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px; line-height: 1.55; letter-spacing: 0;
     min-height: 100%;
+    -webkit-font-smoothing: antialiased;
   }
-  .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  ::selection { background: var(--ember); color: #08090a; }
+  .mono { font-family: var(--f-mono);
           font-variant-numeric: tabular-nums; letter-spacing: 0; }
   a { color: inherit; text-decoration: none; }
   button { font: inherit; letter-spacing: inherit; color: inherit;
            background: none; border: 0; cursor: pointer; padding: 0;
            text-align: left; }
-  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px;
+  :focus-visible { outline: 2px solid var(--ember); outline-offset: 2px;
                    border-radius: 4px; }
+
+  /* ---- global nav ---- */
   .gnav { position: sticky; top: 0; z-index: 50; height: 44px;
           background: var(--navbg);
+          border-bottom: 1px solid var(--line2);
           backdrop-filter: blur(20px) saturate(1.8);
           -webkit-backdrop-filter: blur(20px) saturate(1.8); }
   .gnav-in { max-width: 1024px; margin: 0 auto; height: 100%;
              display: flex; align-items: center; gap: 28px; padding: 0 22px; }
-  .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
-  .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
+  .gnav .word { font-family: var(--f-display);
+                font-variation-settings: "opsz" 60; font-weight: 480;
+                font-size: 17px; letter-spacing: 0; }
+  .gnav .word em { font-style: normal; color: var(--ember); font-weight: 480; }
   .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
                  scrollbar-width: none; min-width: 0; }
   .gnav .links::-webkit-scrollbar { display: none; }
-  .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
-                   white-space: nowrap; transition: color .15s; }
+  .gnav .links a { font-family: var(--f-statement); font-size: 12px;
+                   color: var(--faint);
+                   letter-spacing: -.01em; white-space: nowrap;
+                   transition: color .15s; }
   .gnav .links a:hover { color: var(--ink); }
   .gnav .links a.here { color: var(--ink); font-weight: 600; }
   .avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-            border: 1px solid var(--ink); display: grid; place-items: center;
-            font-size: 12px; font-weight: 600; }
-  .band { padding: 32px 22px; }
-  .band.gray { background: var(--band); }
+            border: 1px solid var(--line); display: grid; place-items: center;
+            font-family: var(--f-mono);
+            font-size: 11px; font-weight: 500; color: var(--mid);
+            background: transparent; }
+
+  /* ---- bands ---- */
+  .band { padding: 36px 22px; }
+  .band.gray { background: var(--g1); }
   .band-in { max-width: 980px; margin: 0 auto; }
-  .hero { text-align: center; padding-top: 30px; padding-bottom: 30px; }
-  .datechip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
-              font-size: 12px; letter-spacing: .06em;
-              text-transform: uppercase; color: var(--mid); }
-  .page-hero h2 { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
-                  font-size: clamp(40px, 6.5vw, 72px); line-height: 1.05;
-                  font-weight: 700; letter-spacing: -.015em; margin-top: 14px; }
-  .page-hero .cursor { color: var(--mid); font-weight: 400; }
-  .roots { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
-  .root-pill { font-size: 14px; padding: 9px 20px; border-radius: 980px;
-               background: var(--band); color: var(--deep);
-               transition: background .15s, color .15s; }
-  .root-pill:hover { background: var(--wash); }
-  .root-pill.on { background: var(--ink); color: #fff; }
+
+  /* ---- hero ---- */
+  .hero { text-align: center; padding-top: 34px; padding-bottom: 40px;
+          /* rollout step 4: card-index drawer plate under the veil stops.
+             veil-btm melts the plate into the g0 page, no visible band edge. */
+          background:
+            linear-gradient(180deg, var(--veil-top) 0%, var(--veil-mid) 45%, var(--veil-btm) 100%),
+            url(/assets/midnight/files.jpg) center 38% / cover no-repeat,
+            var(--g0); }
+  /* the vault sits in its own band on g0 so the hero plate can end and melt;
+     text-align keeps the file rows' inherited centering from before the split */
+  .band.vaultband { padding-top: 0; text-align: center; }
+  .datechip { font-family: var(--f-mono);
+              font-size: 11px; letter-spacing: .12em;
+              text-transform: uppercase; color: var(--faint); }
+  /* over the plate the lit desk top pushes faint under the 4.5:1 mono floor,
+     so the hero datechip climbs one rung to mid (plays eyebrow precedent) */
+  .hero .datechip { color: var(--mid); }
+  .page-hero h2 { font-family: var(--f-display);
+                  font-variation-settings: "opsz" 144;
+                  font-size: clamp(44px, 7vw, 84px); line-height: 1.0;
+                  font-weight: 420; letter-spacing: -.015em; margin-top: 16px; }
+  .page-hero .cursor { color: var(--ember); font-weight: 300; }
+
+  /* ---- roots + crumbs ---- */
+  .roots { display: flex; justify-content: center; gap: 10px; margin-top: 24px; }
+  .root-pill { font-family: var(--f-statement); font-weight: 500;
+               font-size: 14px; letter-spacing: -.01em;
+               padding: 9px 20px; border-radius: 980px;
+               background: var(--g1); border: 1px solid var(--line);
+               color: var(--mid);
+               transition: background .15s, color .15s, border-color .15s; }
+  .root-pill:hover { background: var(--g2); color: var(--ink); }
+  .root-pill.on { background: var(--ink); border-color: var(--ink);
+                  color: #08090a; font-weight: 600; }
   .crumbs { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap;
             margin-top: 18px; font-size: 14px; color: var(--mid); }
-  .crumbs button { color: var(--link); }
+  .crumbs button { color: var(--ink); }
   .crumbs button:hover { text-decoration: underline; }
-  .crumbs .sep { color: var(--hairline); }
-  .askbar { display: flex; gap: 10px; max-width: 640px; margin: 16px auto 0; }
-  .askbar input { flex: 1; border: 0; background: var(--band);
+  .crumbs .sep { color: var(--faint); }
+
+  /* ---- ask bar + answer ---- */
+  .askbar { display: flex; gap: 10px; max-width: 640px; margin: 18px auto 0; }
+  .askbar input { flex: 1; border: 1px solid var(--line);
+                  background: var(--g1); color: var(--ink);
+                  caret-color: var(--ember);
                   border-radius: 980px; padding: 12px 22px; font: inherit;
                   font-size: 15px; outline: none; transition: background .15s; }
-  .askbar input:focus { background: var(--wash); }
-  .askbar input::placeholder { color: var(--mid); }
-  .btn { background: var(--blue); color: #fff; border-radius: 980px;
-         padding: 10px 22px; font-size: 15px; transition: background .15s;
+  .askbar input:focus { background: var(--g2); }
+  .askbar input::placeholder { color: var(--faint); }
+
+  /* ---- buttons ---- */
+  .btn { background: var(--ember); color: #08090a; border-radius: 980px;
+         font-family: var(--f-statement);
+         padding: 10px 22px; font-size: 14px; font-weight: 600;
+         letter-spacing: -.01em; transition: background .15s;
          text-align: center; }
-  .btn:hover { background: #0077ed; }
-  .btn.ghost { background: transparent; color: var(--ink);
-               border: 1px solid rgba(29,29,31,.8); }
-  .btn.ghost:hover { background: var(--wash); }
+  .btn:hover { background: var(--ember-hover); }
+  .btn.ghost { background: transparent; color: var(--ink); font-weight: 500;
+               border: 1px solid var(--line); }
+  .btn.ghost:hover { background: var(--g2); }
   .btn.mini { font-size: 12px; padding: 6px 14px; }
+  .btn:disabled { opacity: .55; cursor: default; }
+
   .answer { position: relative; max-width: 760px; margin: 22px auto 0;
-            background: var(--band); border-radius: 18px; padding: 18px 44px 18px 22px;
-            font-size: 15px; line-height: 1.55; color: var(--deep);
+            background: var(--g1); border: 1px solid var(--line);
+            border-radius: 12px; padding: 18px 44px 18px 22px;
+            font-size: 15px; line-height: 1.55; color: var(--read);
             display: none; text-align: left; }
   .answer.on { display: block; }
-  .answer .tag { display: block; font-family: ui-monospace, "SF Mono", Menlo, monospace;
-                 font-size: 10px; letter-spacing: .08em; color: var(--mid);
+  .answer .tag { display: block; font-family: var(--f-mono);
+                 font-size: 10px; letter-spacing: .12em;
+                 text-transform: uppercase; color: var(--faint);
                  margin-bottom: 6px; }
   .answer .x { position: absolute; top: 12px; right: 14px; color: var(--mid);
-               font-size: 16px; }
+               font-size: 16px; transition: color .15s; }
+  .answer .x:hover { color: var(--ink); }
   .protect-note { display: none; font-size: 13px; color: var(--ember);
                   margin-bottom: 14px; }
   .protect-note.on { display: block; }
+
+  /* ---- vault listing ---- */
   .vault { max-width: 980px; margin: 0 auto; }
   .frow { display: flex; align-items: center; gap: 14px;
-          background: var(--paper); border-radius: 14px; padding: 13px 18px;
-          margin-bottom: 8px; }
+          background: var(--g1); border: 1px solid var(--line2);
+          border-radius: 12px; padding: 13px 18px;
+          margin-bottom: 8px;
+          animation: rise .5s cubic-bezier(.2,.7,.3,1) backwards; }
   .frow > svg { width: 18px; height: 18px; flex-shrink: 0;
-                stroke: var(--mid); fill: none; stroke-width: 1.7; }
-  .frow.dir > svg { stroke: var(--link); }
-  .frow.dir .fname { color: var(--link); cursor: pointer; }
-  .fname { font-size: 15px; font-weight: 500; letter-spacing: -.01em;
+                stroke: var(--faint); fill: none; stroke-width: 1.7; }
+  .frow.dir > svg { stroke: var(--ink); }
+  .frow.dir .fname { cursor: pointer; }
+  .frow.dir .fname:hover { text-decoration: underline; }
+  .fname { font-family: var(--f-statement);
+           font-size: 15px; font-weight: 500; letter-spacing: -.01em;
            overflow-wrap: anywhere; min-width: 0; flex: 1; }
-  .meta { font-family: ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 11px; color: var(--mid); white-space: nowrap; }
-  .lock { font-size: 11px; color: var(--ember); }
+  .meta { font-family: var(--f-mono);
+          font-size: 11px; color: var(--faint); white-space: nowrap; }
+  .lock { font-family: var(--f-mono); font-size: 11px; color: var(--ember); }
   .acts { display: flex; gap: 8px; opacity: 0; transition: opacity .15s; }
   .frow:hover .acts, .frow:focus-within .acts { opacity: 1; }
+  .frow input.rn { font: inherit; font-size: 15px; min-width: 0; flex: 1;
+                   background: var(--g2); color: var(--ink);
+                   border: 1px solid var(--line); border-radius: 8px;
+                   padding: 4px 10px; outline: none;
+                   caret-color: var(--ember); }
   .mover { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
            margin-top: 8px; }
+  .mover select { font: inherit; font-size: 12px;
+                  background: var(--g2); color: var(--ink);
+                  border: 1px solid var(--line); border-radius: 8px;
+                  padding: 5px 8px; }
   .empty { color: var(--mid); padding: 22px 0; text-align: center; }
+
+  /* ---- filter search ---- */
   .search { display: flex; align-items: center; gap: 8px;
             justify-content: center; margin-top: 16px; }
-  .search svg { width: 15px; height: 15px; stroke: var(--mid); fill: none;
+  .search svg { width: 15px; height: 15px; stroke: var(--faint); fill: none;
                 stroke-width: 1.8; }
-  .search input { border: 0; border-bottom: 1px solid var(--hairline);
+  .search input { border: 0; border-bottom: 1px solid var(--line);
                   background: none; outline: none; font: inherit;
                   font-size: 14px; padding: 6px 2px; width: 210px;
+                  color: var(--ink); caret-color: var(--ember);
                   transition: border-color .15s; }
   .search input:focus { border-bottom-color: var(--ink); }
-  .search input::placeholder { color: var(--mid); }
+  .search input::placeholder { color: var(--faint); }
+
+  /* ---- footer strip ---- */
   .foot { display: flex; align-items: center; justify-content: center;
           gap: 20px; padding: 26px 22px 40px; font-size: 12px;
           color: var(--mid); flex-wrap: wrap; }
@@ -133,13 +195,28 @@
   .dot { width: 8px; height: 8px; border-radius: 50%; }
   .dot.ok { background: var(--ink); }
   .dot.bad { background: var(--ember); }
+
+  /* ---- toasts ---- */
+  .toast { position: fixed; bottom: 28px; left: 50%; z-index: 60;
+           background: var(--g2); color: var(--ink);
+           border: 1px solid var(--line); border-radius: 980px;
+           padding: 12px 24px; font-size: 14px; letter-spacing: -.01em;
+           opacity: 0; transform: translate(-50%, 8px);
+           transition: opacity .25s, transform .25s; }
+  .toast.on { opacity: 1; transform: translateX(-50%); }
+  .toast.bad { color: var(--ember); }
+
   .stage { display: none !important; }
+
+  /* ---- motion ---- */
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .frow, .toast { animation: none; }
+  }
   @media (max-width: 720px) {
     .band { padding: 48px 16px; }
     .acts { opacity: 1; }
   }
-  .glass.composer, .goal, .row, .dept, .roles-panel, .cat, .chain, .frow {
-    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
 
   .foot { display: none !important; }
 </style>
@@ -184,7 +261,10 @@
         <span class="tag">FILES ASSISTANT</span><span id="answerText"></span></div>
       <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
         <input id="filter" type="search" placeholder="Filter this folder…" aria-label="Filter files"></label>
-
+    </div>
+  </section>
+  <section class="band vaultband">
+    <div class="band-in">
       <div class="glass vault">
         <div class="protect-note" id="protectNote">This folder is write-protected
           (build-critical). Browsing only.</div>
@@ -337,7 +417,7 @@
     acts.innerHTML = '<span class="mover"><select>' +
       options.map((o) => '<option value="' + esc(o.v) + '">' + esc(o.t) +
         "</option>").join("") +
-      '</select><button class="btn mini" type="button">Go</button>' +
+      '</select><button class="btn ghost mini" type="button">Go</button>' +
       '<button class="btn ghost mini" type="button">×</button></span>';
     acts.style.opacity = 1;
     const [sel, go, x] = acts.querySelectorAll("select, button");
@@ -411,6 +491,7 @@
 </script>
 <script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
   document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
+  if(o.hermes===false){document.querySelectorAll('.gnav a[href="/hermes"]').forEach(function(a){a.remove();});}
   var g=document.getElementById("ownerName"); if(g) g.textContent=o.name;
 }).catch(function(){});</script>
 </body>

@@ -19,3 +19,6 @@ assets/*.png
 # Pre-existing files in this folder that are not part of the OS
 Poppins-*.ttf
 __pycache__/
+
+# Midnight plates: runtime uses the jpg; 2K png sources stay out of the repo
+assets/midnight/*.png

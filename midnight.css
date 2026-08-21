@@ -1,0 +1,149 @@
+/* OwnerOS · Midnight Cockpit · design law v5 (claude.md)
+   One source of truth for tokens + fonts. Rooms link this and keep
+   only page CSS inline. All fonts local, no CDN at runtime. */
+
+@font-face {
+  font-family: "Fraunces";
+  src: url(/fonts/Fraunces-VF.woff2) format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url(/fonts/Fraunces-Italic-VF.woff2) format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Serif";
+  src: url(/fonts/InstrumentSerif-400-normal.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Serif";
+  src: url(/fonts/InstrumentSerif-400-italic.woff2) format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url(/fonts/Inter-400-normal.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url(/fonts/Inter-500-normal.woff2) format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter";
+  src: url(/fonts/Inter-600-normal.woff2) format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter Tight";
+  src: url(/fonts/InterTight-400-normal.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Inter Tight";
+  src: url(/fonts/InterTight-600-normal.woff2) format("woff2");
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url(/fonts/JetBrainsMono-400-normal.woff2) format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url(/fonts/JetBrainsMono-500-normal.woff2) format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* surface ladder */
+  --g0: #08090a;
+  --g1: #0f1011;
+  --g2: #161718;
+  --line: #23252a;
+  --line2: #1b1d21;
+
+  /* text — warm neutrals, no blue cast (Jared 2026-08-18) */
+  --ink: #f7f8f8;
+  --mid: #a3a19c;
+  --faint: #6f6d68;
+
+  /* the accent and the proof */
+  --ember: #ff6b35;
+  --ember-hover: #ff7d4d;
+  --ember-deep: #b64400;
+  --proof: #49de80;
+
+  /* chrome */
+  --navbg: rgba(8, 9, 10, 0.8);
+
+  /* type cast */
+  --f-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --f-statement: "Inter Tight", "Inter", -apple-system, system-ui, sans-serif;
+  --f-body: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-brand: "Instrument Serif", Georgia, serif;
+
+  /* plate hero veil stops (rollout step 4): rooms compose
+     linear-gradient(180deg, var(--veil-top) 0%, var(--veil-mid) 45%, var(--veil-btm) 100%)
+     over url(/assets/midnight/<room>.jpg) center 38% / cover, var(--g0).
+     The text stays the hero: never drop veil-top below .55 alpha. */
+  --veil-top: rgba(8, 9, 10, 0.62);
+  --veil-mid: rgba(8, 9, 10, 0.38);
+  --veil-btm: rgba(8, 9, 10, 0.96);
+
+  /* v4-compat aliases: pre-migration rooms and feature JS color with these */
+  --paper: var(--g0);
+  --band: var(--g1);
+  --wash: var(--g2);
+  --hairline: var(--line);
+  --deep: var(--mid);
+  --blue: var(--ember);
+  --link: var(--ember);
+  --text: var(--ink);
+  --mut: var(--mid);
+  --accent: var(--ember);
+  --ok: var(--ink);
+  --warn: var(--mid);
+  --bad: var(--ember);
+  --info: var(--proof);
+}
+
+/* The typewriter cursor breathes: a slow double-blink every few seconds.
+   Rooms mark their headline cursor span with class "cursor". */
+@keyframes os-cursor-blink {
+  0%, 58% { opacity: 1; }
+  63%, 71% { opacity: 0; }
+  76%, 84% { opacity: 1; }
+  89%, 93% { opacity: 0; }
+  97%, 100% { opacity: 1; }
+}
+.cursor { animation: os-cursor-blink 4.2s step-end infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cursor { animation: none; }
+}

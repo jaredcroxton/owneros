@@ -4,40 +4,55 @@ Local Business OS cockpit. One stdlib Python server, eleven rooms (Today, Projec
 Capture, Workforce, Plays, Personas, Hermes, Sessions, Files, Roadmap), PerformOS brand,
 Apple language throughout.
 
-## Design law v4 — the Apple language (locked 2026-08-13 night, OS-wide)
-Distilled from Jared's five references (GSAP, Superr, Portrait, dope.security, Apple
-MacBook Neo) after he rejected every "AI-feel" build. The five laws: one ink; one
-rationed accent; whisper elevation; two type voices with strict size ownership;
-color lives in content, never chrome.
+## Design law v5, the Midnight Cockpit (locked 2026-08-18, rolling out room by room)
+Chosen by Jared over two researched alternatives (Cinema/parchment, Drafted/blueprint)
+after a live A/B font test (Fraunces beat Instrument Serif for the display seat).
+v4's structure survives; the canvas inverts and the type cast is new. Five laws:
+one ink on near-black; one rationed accent (ember) that only ever marks what needs
+the owner; depth from a four-step surface ladder, never glows or shadow stacks;
+four type voices with strict role ownership; color lives in content and live
+states, never chrome.
 
-Tokens: paper #ffffff, band #f5f5f7, nav #fafafc (blur 20px), hover wash #e8e8ed,
-ink #1d1d1f, mid #707070 (secondary text), deep #474747 (nav), hairline #d6d6d6
-(rare), blue #0071e3 (filled pill CTAs ONLY, never text/decoration), link #0066cc
-(inline text links only), ember #b64400 (tiny status labels, at most once per
-screen, e.g. needs-me counts). Status language: ink = done/positive, mid = quiet,
-ember = needs attention. NO other colors in chrome; teal/coral/amber retired.
+Tokens: canvas g0 #08090a, card g1 #0f1011, raised g2 #161718, border line #23252a
+(inner separator line2 #1b1d21), ink #f7f8f8 (primary text), mid #a3a19c, faint
+#6f6d68 (secondary text is WARM neutral, never blue-cast; Jared 2026-08-18),
+long-form reading tone --read #cbc8c3, ember #ff6b35 (needs-you, headline cursor,
+the ONE filled pill per screen), proof green #49de80 (connected/live states only),
+nav rgba(8,9,10,.8) blur 20px.
+Contrast law: ink on any ladder step 15:1+; mid on g1 7:1+; faint reserved for
+mono labels 9.5px+ (4.5:1 floor); prose on dark always --read, never mid.
+No slug-speak on screen: crew-* skill ids and hyphenated cabinet names render
+humanized (strip crew- and the department word, hyphens to spaces, sentence case).
+Display-only: raw ids stay in data attributes, copy commands, deep links, APIs.
+Status language unchanged: ink dot = done, ember = needs attention, outline = quiet,
+proof green = connected. Blue #0071e3 and link #0066cc retired everywhere; old ember
+#b64400 kept only as a deep-ember reference value.
 
-Type: system font stack ("SF Pro Display"/-apple-system/system-ui — real SF on the
-Mac this runs on). Display 56-96px weight 600/700 tracking -0.015em, section heads
-28-40px weight 600, body 17px 400 lh 1.47 tracking -.022em, captions 12-14px.
-Data/ids/dates in ui-monospace (SF Mono) 12-14px. Nothing under 12px.
+Type (all local woff2 in fonts/, no CDN): Fraunces VF is display, room headlines
+clamp(44-84px) wght 420 opsz 144 tracking -0.015em, wordmark 17px wght 480 opsz 60.
+Inter Tight 600 is statement: section heads 19-28px, card titles, buttons, stat
+numerals (tabular). Inter 400/500 is body, 15-16px lh 1.55. JetBrains Mono 400/500
+is data: eyebrows, ids, dates, states, 9.5-12px caps tracking .12em. Instrument
+Serif (400 + italic) is reserved for brand statement lines 38px and up, nothing
+else. SF Pro, system stacks, Poppins and IBM Plex Mono are retired. Nothing under
+9.5px.
 
-Structure: NO sidebar — 44px sticky global nav bar (blurred #fafafc, wordmark left,
-8 room links center at 12px, avatar right). Full-bleed sections alternating
-#ffffff / #f5f5f7 with 80-120px vertical padding; inner column max 980-1200px.
-Section separation by band alternation, never dividers. Cards 28px radius,
-borderless, no shadow (1px oklab hairline at ≤8% only when floating on same-color
-surface). Buttons: pill 980px radius — filled blue for the one primary action,
-ghost 1px ink outline for secondary, text+arrow links (#0066cc ›) for tertiary.
-Headlines can center; body copy always left-aligned. No gradients, no glass except
-the nav blur, no glow, no decorative color, no icons where a word works.
+Structure: as v4 (44px sticky nav, band system, 980-1200px inner columns, 980px
+pill buttons), with two changes: cards are 12px radius with a 1px line border, and
+elevation is climbing the surface ladder (g0 page, g1 card, g2 raised), never
+shadows. Bands alternate g0 / g1 instead of white / gray. Hero art plates return
+in rollout step 4 as dark re-lights (same objects, black studio ground, one warm
+key light), never under a white veil.
 
-Motion: few, fast, purposeful — 200-400ms ease-out fades/rises on band entry,
-count-ups on stats, smooth sheet slides. Base state = final state; animations fill
-backwards from keyframes (never base-hidden + forwards). Full
-prefers-reduced-motion path. today.html is the canonical reference implementation.
-No theme toggle, no dark mode, no external resources at runtime. Old dark builds
-live in git history (coral canon ≤ a2e22cf, GSAP 30fe05e, Register 6b42127).
+Motion: v4 rules stand (200-400ms, backwards-fill, full reduced-motion paths).
+Planned in rollout step 5: chart wires draw on entry, count-ups on scroll into
+view, one ember flash when the one-brain reveal lands in Projects.
+
+Rollout: shared tokens and @font-face live in midnight.css (served at
+/midnight.css); a migrated room links it and keeps only page CSS inline.
+today.html migrates first (canonical reference), then the other ten rooms. The
+white Apple language (v4) remains in the un-migrated rooms and in git history
+until the rollout reaches them.
 
 ## Architectural invariants
 1. READ-ONLY over `~/.claude/crew-state`. The server's only write path is `~/.owneros/inbox`

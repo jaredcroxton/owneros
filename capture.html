@@ -4,110 +4,139 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Capture · OwnerOS</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d1d1f'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2308090a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ff6b35'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/midnight.css">
 <style>
-  :root {
-    --paper: #ffffff; --band: #f5f5f7; --navbg: rgba(250,250,252,.8);
-    --wash: #e8e8ed; --hairline: #d6d6d6;
-    --ink: #1d1d1f; --mid: #707070; --deep: #474747;
-    --blue: #0071e3; --link: #0066cc; --ember: #b64400;
-    --text: #1d1d1f; --mut: #707070; --faint: #707070;
-    --accent: #b64400; --ok: #1d1d1f; --line: #d6d6d6;
-  }
+  /* Midnight Cockpit, design law v5. Tokens + fonts come from /midnight.css;
+     this block is page CSS only. --read is the long-form reading tone on dark. */
+  :root { --read: #cbc8c3; }
   * { margin: 0; box-sizing: border-box; }
-  html { height: 100%; }
+  html { height: 100%; background: var(--g0); }
   body {
-    background: var(--paper); color: var(--ink);
-    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui,
-      "Segoe UI", Roboto, sans-serif;
-    font-size: 17px; line-height: 1.47; letter-spacing: -.022em;
+    background: var(--g0); color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px; line-height: 1.55; letter-spacing: 0;
     min-height: 100%;
+    -webkit-font-smoothing: antialiased;
   }
-  .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+  ::selection { background: var(--ember); color: #08090a; }
+  .mono { font-family: var(--f-mono);
           font-variant-numeric: tabular-nums; letter-spacing: 0; }
   a { color: inherit; text-decoration: none; }
   button { font: inherit; letter-spacing: inherit; color: inherit;
            background: none; border: 0; cursor: pointer; padding: 0; }
-  :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px;
+  :focus-visible { outline: 2px solid var(--ember); outline-offset: 2px;
                    border-radius: 4px; }
+
+  /* ---- global nav ---- */
   .gnav { position: sticky; top: 0; z-index: 50; height: 44px;
           background: var(--navbg);
+          border-bottom: 1px solid var(--line2);
           backdrop-filter: blur(20px) saturate(1.8);
           -webkit-backdrop-filter: blur(20px) saturate(1.8); }
   .gnav-in { max-width: 1024px; margin: 0 auto; height: 100%;
              display: flex; align-items: center; gap: 28px; padding: 0 22px; }
-  .gnav .word { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
-  .gnav .word em { font-style: normal; color: var(--mid); font-weight: 400; }
+  .gnav .word { font-family: var(--f-display);
+                font-variation-settings: "opsz" 60; font-weight: 480;
+                font-size: 17px; letter-spacing: 0; }
+  .gnav .word em { font-style: normal; color: var(--ember); font-weight: 480; }
   .gnav .links { display: flex; gap: 26px; margin: 0 auto; overflow-x: auto;
                  scrollbar-width: none; min-width: 0; }
   .gnav .links::-webkit-scrollbar { display: none; }
-  .gnav .links a { font-size: 12px; color: rgba(29,29,31,.8);
-                   white-space: nowrap; transition: color .15s; }
+  .gnav .links a { font-family: var(--f-statement); font-size: 12px;
+                   color: var(--faint);
+                   letter-spacing: -.01em; white-space: nowrap;
+                   transition: color .15s; }
   .gnav .links a:hover { color: var(--ink); }
   .gnav .links a.here { color: var(--ink); font-weight: 600; }
   .avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-            border: 1px solid var(--ink); display: grid; place-items: center;
-            font-size: 12px; font-weight: 600; }
+            border: 1px solid var(--line); display: grid; place-items: center;
+            font-family: var(--f-mono);
+            font-size: 11px; font-weight: 500; color: var(--mid);
+            background: transparent; }
+
+  /* ---- bands ---- */
   .band { padding: 36px 22px; }
-  .band.gray { background: var(--band); }
+  .band.gray { background: var(--g1); }
   .band-in { max-width: 780px; margin: 0 auto; }
+
+  /* ---- hero ---- */
   .hero { text-align: center; padding-top: 34px; padding-bottom: 36px; }
   .hero.has-art {
+    /* rollout step 4: dark plate re-light under the veil. The bottom stop
+       melts the plate into the g0 page so the band edge is invisible. */
+    position: relative;
     background:
-      linear-gradient(rgba(255,255,255,.93) 0%, rgba(255,255,255,.78) 100%),
-      url(/assets/apple/capture.png) center / cover no-repeat;
+      linear-gradient(180deg, var(--veil-top) 0%, var(--veil-mid) 45%, var(--veil-btm) 100%),
+      url(/assets/midnight/capture.jpg) center 38% / cover no-repeat,
+      var(--g0);
     padding-bottom: 44px; }
-  .hero .composer { margin-top: 26px; text-align: left;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 18px 40px rgba(0,0,0,.06); }
-  .datechip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
-              font-size: 12px; letter-spacing: .06em;
-              text-transform: uppercase; color: var(--mid); }
-  .hero-head h2 { font-family: "SF Pro Display", -apple-system, system-ui, sans-serif;
-                  font-size: clamp(44px, 7vw, 80px); line-height: 1.05;
-                  font-weight: 700; letter-spacing: -.015em; margin-top: 14px; }
-  .hero-head .cursor { color: var(--mid); font-weight: 400; }
-  .hero-head p { font-size: 21px; color: var(--mid); margin: 16px auto 0;
-                 letter-spacing: .01em; max-width: 560px; }
+  .datechip { font-family: var(--f-mono);
+              font-size: 11px; letter-spacing: .12em;
+              text-transform: uppercase; color: var(--faint); }
+  .hero-head h2 { font-family: var(--f-display);
+                  font-variation-settings: "opsz" 144;
+                  font-size: clamp(44px, 7vw, 84px); line-height: 1.0;
+                  font-weight: 420; letter-spacing: -.015em; margin-top: 16px; }
+  .hero-head .cursor { color: var(--ember); font-weight: 300; }
+  .hero-head p { font-family: var(--f-statement); font-weight: 500;
+                 font-size: 19px; line-height: 1.4; letter-spacing: -.01em;
+                 color: var(--mid); margin: 18px auto 0; max-width: 560px; }
   .plate { display: block; width: 100%; max-width: 860px; margin: 0 auto;
-           border-radius: 28px; }
-  .composer { background: var(--paper); border-radius: 28px; padding: 30px; }
+           border-radius: 12px; }
+
+  /* ---- composer card ---- */
+  .hero .composer { margin-top: 26px; text-align: left; }
+  .composer { background: var(--g1); border: 1px solid var(--line);
+              border-radius: 12px; padding: 28px; }
   .composer input[type="text"] {
-    width: 100%; border: 0; background: var(--band); border-radius: 12px;
-    padding: 13px 16px; font: inherit; font-size: 17px; outline: none;
-    color: var(--ink); transition: background .15s; }
+    width: 100%; border: 1px solid var(--line); background: var(--g0);
+    border-radius: 12px;
+    padding: 13px 16px; font: inherit; font-size: 16px; outline: none;
+    color: var(--read); caret-color: var(--ember);
+    transition: border-color .15s; }
   .composer textarea {
-    width: 100%; min-height: 170px; border: 0; background: var(--band);
-    border-radius: 12px; padding: 14px 16px; font: inherit; font-size: 17px;
-    line-height: 1.5; outline: none; color: var(--ink); resize: vertical;
-    margin-top: 12px; transition: background .15s; }
-  .composer input:focus, .composer textarea:focus { background: var(--wash); }
+    width: 100%; min-height: 170px; border: 1px solid var(--line);
+    background: var(--g0);
+    border-radius: 12px; padding: 14px 16px; font: inherit; font-size: 16px;
+    line-height: 1.55; outline: none; color: var(--read); resize: vertical;
+    caret-color: var(--ember);
+    margin-top: 12px; transition: border-color .15s; }
+  .composer input:focus, .composer textarea:focus { border-color: var(--mid); }
   .composer ::placeholder { color: var(--mid); }
   .bar { display: flex; align-items: center; gap: 12px; margin-top: 16px;
          flex-wrap: wrap; }
-  .btn { background: var(--blue); color: #fff; border-radius: 980px;
-         padding: 11px 24px; font-size: 15px; transition: background .15s; }
-  .btn:hover { background: #0077ed; }
-  .btn.ghost { background: transparent; color: var(--ink);
-               border: 1px solid rgba(29,29,31,.8); }
-  .btn.ghost:hover { background: var(--wash); }
-  .btn.ghost.rec { color: #fff; background: var(--ember);
-                   border-color: var(--ember);
+
+  /* ---- buttons ---- */
+  .btn { background: var(--ember); color: #08090a; border-radius: 980px;
+         font-family: var(--f-statement);
+         padding: 10px 22px; font-size: 14px; font-weight: 600;
+         letter-spacing: -.01em; transition: background .15s; }
+  .btn:hover { background: var(--ember-hover); }
+  .btn.ghost { background: transparent; color: var(--ink); font-weight: 500;
+               border: 1px solid var(--line); }
+  .btn.ghost:hover { background: var(--g2); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn.ghost.rec { color: #08090a; background: var(--ember);
+                   border-color: var(--ember); font-weight: 600;
                    animation: recpulse 1.4s ease-in-out infinite; }
+  .btn.ghost.rec:hover { background: var(--ember-hover); }
   @keyframes recpulse { 50% { opacity: .82; } }
   .note { font-size: 13px; color: var(--mid); }
-  .chip { font-family: ui-monospace, "SF Mono", Menlo, monospace;
-          font-size: 12px; color: var(--mid); margin-left: auto; }
+  .chip { font-family: var(--f-mono);
+          font-size: 11px; color: var(--faint); margin-left: auto; }
   .err { color: var(--ember); font-size: 14px; max-width: 780px;
          margin: 14px auto 0; text-align: center; }
   .toast { position: fixed; bottom: 28px; left: 50%; z-index: 60;
-           background: var(--ink); color: #fff; border-radius: 980px;
-           padding: 12px 24px; font-size: 14px;
+           background: var(--g2); color: var(--ink);
+           border: 1px solid var(--line); border-radius: 980px;
+           padding: 12px 24px; font-size: 14px; letter-spacing: -.01em;
            opacity: 0; transform: translate(-50%, 8px);
            transition: opacity .25s, transform .25s; pointer-events: none; }
   .toast.on { opacity: 1; transform: translateX(-50%); }
   .toast b { font-weight: 600; }
-  .toast code { font-family: ui-monospace, "SF Mono", Menlo, monospace;
-                font-size: 12px; }
+  .toast code { font-family: var(--f-mono);
+                font-size: 12px; color: var(--ember); }
   .foot { display: flex; align-items: center; justify-content: center;
           gap: 20px; padding: 26px 22px 40px; font-size: 12px;
           color: var(--mid); flex-wrap: wrap; }
@@ -122,8 +151,6 @@
     .toast { transition: none; }
   }
   @media (max-width: 720px) { .band { padding: 56px 18px; } }
-  .glass.composer, .goal, .row, .dept, .roles-panel, .cat, .chain, .frow {
-    box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 14px 34px rgba(0,0,0,.05); }
 
   .foot { display: none !important; }
 </style>
@@ -310,6 +337,7 @@
 </script>
 <script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
   document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});
+  if(o.hermes===false){document.querySelectorAll('.gnav a[href="/hermes"]').forEach(function(a){a.remove();});}
   var g=document.getElementById("ownerName"); if(g) g.textContent=o.name;
 }).catch(function(){});</script>
 </body>
