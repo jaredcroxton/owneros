@@ -71,8 +71,12 @@ if [[ -z "$PY3" ]]; then
 fi
 echo "  python3          ok ($PY3)"
 
-if command -v claude >/dev/null 2>&1; then
-  echo "  Claude Code      ok (sign in once if Brock stays quiet)"
+# Same resolver the server uses: PATH, ~/.local/bin, Homebrew, npm, nvm, the IDE
+# extension's bundled binary, or ~/.owneros/claude-bin.txt. launchd gives the
+# server a bare PATH, so "command -v claude" here would prove nothing.
+CLAUDE_BIN="$("$PY3" "$APP_DIR/server.py" --find-claude 2>/dev/null)"
+if [[ $? -eq 0 ]]; then
+  echo "  Claude Code      ok ($CLAUDE_BIN)"
 else
   echo "  Claude Code      MISSING. Brock's briefing, chat and the Files assistant need it."
   echo "                   Install Claude Code and sign in once, then carry on. Every room still loads."

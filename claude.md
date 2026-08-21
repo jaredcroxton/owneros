@@ -222,5 +222,16 @@ new rooms, no new capabilities beyond that.
   exist only for Antigravity's own (Gemini) agent and point at the same files; they are
   not the primary path. One clarification, not a new rule: the OS never writes the
   cabinet, but a CREW skill run by any agent writes exactly what its own SKILL.md says.
+- Claude CLI resolution (`claude_bin()`, 2026-08-21). launchd starts the server with a
+  bare PATH, so `shutil.which` alone found nothing on any Mac where the CLI was not in
+  `~/.local/bin` ("Brock could not run: Claude CLI not found" on the first outside
+  install). Order: `~/.owneros/claude-bin.txt` override, then PATH plus `tool_dirs()`
+  (~/.local/bin, Homebrew, /usr/local/bin, npm-global, bun, volta, ~/.claude/local, every
+  nvm and fnm node bin), then the IDE extension bundles (`CLAUDE_BUNDLES`, newest
+  first). Every CLI call goes through `run_claude()`, which passes that PATH as the
+  subprocess env (an npm-installed claude is a node shim and needs node too). None
+  found = `CLAUDE_MISSING`, one actionable sentence, never a crash. `server.py
+  --find-claude` exposes the same resolver to install.sh and the setup skill;
+  `/api/health` reports the path as `claude`.
 - Fonts are local (`fonts/`). No CDN at runtime.
 - Debug: `tail -20 ~/.owneros/os.log`; `curl localhost:4890/api/health`.

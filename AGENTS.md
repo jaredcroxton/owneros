@@ -82,7 +82,7 @@ and running `./start-os.sh`.
 |---|---|---|
 | macOS | `uname` is Darwin | The service uses launchd; other platforms are not supported yet |
 | git and python3 | `command -v git python3` | Run `xcode-select --install`; macOS shows a dialog, the owner clicks Install |
-| Claude Code, signed in | `command -v claude` | Not a blocker for the rooms. Brock's briefing and the Files assistant need it |
+| Claude CLI reachable | `python3 server.py --find-claude` | Not a blocker for the rooms. Brock and the Files assistant need it. If `which claude` finds one the resolver missed, write that path into `~/.owneros/claude-bin.txt` |
 | CREW skills | `ls -d ~/.claude/skills/crew-*` count > 0 | `git clone https://github.com/jaredcroxton/Crew-Agents.git ~/Crew-Agents && bash ~/Crew-Agents/install.sh --all --showcase --global` |
 | Brand context | `~/.claude/crew-state/brand-context.md` exists | Not a blocker. The first job after install; you can run it in this chat |
 | Hermes Agent | `~/.hermes` is a directory | Absent: say nothing. Present: one extra question at install |
@@ -90,7 +90,8 @@ and running `./start-os.sh`.
 ## After install
 
 - Live URL is in `~/.owneros/os-url.txt` (normally `http://localhost:4890`).
-- Health: `curl localhost:4890/api/health` returns `ok`, `brain`, `fish`, `hermes`.
+- Health: `curl localhost:4890/api/health` returns `ok`, `brain`, `fish`, `hermes`,
+  and `claude` (the CLI path the server will use, or empty).
 - Log: `tail -20 ~/.owneros/os.log`.
 - Restart after any edit: `./start-os.sh`. Stop: `./stop-os.sh`.
 - "Update OwnerOS" means `git pull --ff-only && ./start-os.sh` in this folder.

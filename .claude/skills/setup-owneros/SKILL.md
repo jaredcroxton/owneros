@@ -37,17 +37,19 @@ Run these, then report a short checklist (ok / missing), not a lecture:
 ```
 uname
 command -v python3
-command -v claude
+python3 "$OS/server.py" --find-claude
 find ~/.claude/skills -maxdepth 1 -type d -name 'crew-*' 2>/dev/null | wc -l
 test -f ~/.claude/crew-state/brand-context.md && echo brand-ok || echo brand-missing
 test -d ~/.hermes && echo hermes-found || echo hermes-absent
 ```
 
 - Not Darwin: stop. OwnerOS uses launchd; say it is Mac-only for now.
-- claude missing on PATH: continue. You are Claude Code, so the rooms that call the
-  `claude` CLI (Brock's briefing, the Files assistant) may still be quiet until the
-  CLI is installed; every room still loads. Offer the official installer
-  (`curl -fsSL https://claude.ai/install.sh | bash`) if they want it now.
+- `--find-claude` prints a path: good, Brock can speak. It prints "Claude CLI not
+  found": run `which claude` yourself; if that finds one, write its full path into
+  `~/.owneros/claude-bin.txt` and check again. If there is truly no CLI, every room
+  still loads, Brock's briefing and the Files assistant stay quiet, and you can offer
+  the official installer (`curl -fsSL https://claude.ai/install.sh | bash`). The CLI
+  shares the sign-in this extension already has.
 - CREW count is 0: continue, but say Workforce, Plays and Personas stay empty until
   the CREW skills are installed, and offer to install them now:
   `git clone https://github.com/jaredcroxton/Crew-Agents.git ~/Crew-Agents && bash ~/Crew-Agents/install.sh --all --showcase --global`

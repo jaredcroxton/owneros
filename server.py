@@ -913,8 +913,66 @@ def api_files_reveal(payload):
     return 200, {"ok": True}
 
 
+CLAUDE_BIN_FILE = OWN / "claude-bin.txt"
+# The IDE extension ships its own copy of the CLI. Newest version wins.
+CLAUDE_BUNDLES = (
+    ".antigravity/extensions/anthropic.claude-code-*/resources/native-binary/claude",
+    ".vscode/extensions/anthropic.claude-code-*/resources/native-binary/claude",
+    ".vscode-insiders/extensions/anthropic.claude-code-*/resources/native-binary/claude",
+    ".cursor/extensions/anthropic.claude-code-*/resources/native-binary/claude",
+    ".windsurf/extensions/anthropic.claude-code-*/resources/native-binary/claude",
+)
+CLAUDE_MISSING = ("Claude CLI not found. OwnerOS looked on PATH, in ~/.local/bin, "
+                  "Homebrew, npm, nvm and the IDE extension. If it is installed, put "
+                  "its full path in ~/.owneros/claude-bin.txt (ask your agent: which claude).")
+
+
+def tool_dirs():
+    """Where CLIs live on a Mac. launchd starts this server with a bare PATH
+    (/usr/bin:/bin:/usr/sbin:/sbin), so none of these are visible unless we
+    add them ourselves. Also needed so an npm-installed claude can find node."""
+    dirs = [HOME / ".local" / "bin", Path("/opt/homebrew/bin"), Path("/usr/local/bin"),
+            HOME / ".npm-global" / "bin", HOME / ".bun" / "bin", HOME / ".volta" / "bin",
+            HOME / ".claude" / "local"]
+    dirs += sorted(HOME.glob(".nvm/versions/node/*/bin"), reverse=True)
+    dirs += sorted(HOME.glob(".fnm/node-versions/*/installation/bin"), reverse=True)
+    return [d for d in dirs if d.is_dir()]
+
+
+def claude_env():
+    env = dict(os.environ)
+    env["PATH"] = ":".join([str(d) for d in tool_dirs()] +
+                           [env.get("PATH") or "/usr/bin:/bin"])
+    return env
+
+
 def claude_bin():
-    return shutil.which("claude") or str(HOME / ".local" / "bin" / "claude")
+    """Find the claude CLI: the override file first, then PATH plus the usual
+    install dirs, then the binary the IDE extension bundles. None when nothing
+    is found; callers report CLAUDE_MISSING instead of crashing."""
+    override = (read_text(CLAUDE_BIN_FILE) or "").strip()
+    if override:
+        cand = Path(override).expanduser()
+        if cand.is_file():
+            return str(cand)
+    hit = shutil.which("claude", path=claude_env()["PATH"])
+    if hit:
+        return hit
+    for pat in CLAUDE_BUNDLES:
+        hits = sorted(HOME.glob(pat), reverse=True)
+        if hits:
+            return str(hits[0])
+    return None
+
+
+def run_claude(args, timeout):
+    """Run the claude CLI with the augmented PATH. Raises FileNotFoundError
+    when no binary can be found, which every caller already handles."""
+    exe = claude_bin()
+    if not exe:
+        raise FileNotFoundError(CLAUDE_MISSING)
+    return subprocess.run([exe] + list(args), capture_output=True, text=True,
+                          timeout=timeout, env=claude_env())
 
 
 BRIEF_DIR = OWN / "briefings"
@@ -978,10 +1036,9 @@ def api_briefing(payload):
                                  name=o["name"], business=o["business"],
                                  about=o["about"])
     try:
-        proc = subprocess.run([claude_bin(), "-p", prompt], capture_output=True,
-                              text=True, timeout=180)
+        proc = run_claude(["-p", prompt], 180)
     except FileNotFoundError:
-        return 501, {"ok": False, "error": "claude CLI not found"}
+        return 501, {"ok": False, "error": CLAUDE_MISSING}
     except subprocess.TimeoutExpired:
         return 504, {"ok": False, "error": "Brock took too long, run it again"}
     text = proc.stdout.strip()
@@ -1022,18 +1079,18 @@ def api_brock_chat(payload):
         return 400, {"ok": False, "error": "Empty question"}
     session = (read_text(BROCK_SESSION_FILE) or "").strip()
     if session:
-        cmd = [claude_bin(), "-p", "--resume", session,
+        cmd = ["-p", "--resume", session,
                question.replace('"', "'"), "--output-format", "json"]
     else:
         o = owner()
         prompt = BROCK_CHAT_OPENER.format(
             data=json.dumps(briefing_context()), q=question.replace('"', "'"),
             name=o["name"], business=o["business"])
-        cmd = [claude_bin(), "-p", prompt, "--output-format", "json"]
+        cmd = ["-p", prompt, "--output-format", "json"]
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        proc = run_claude(cmd, 120)
     except FileNotFoundError:
-        return 501, {"ok": False, "error": "claude CLI not found"}
+        return 501, {"ok": False, "error": CLAUDE_MISSING}
     except subprocess.TimeoutExpired:
         return 504, {"ok": False, "error": "Brock took too long"}
     try:
@@ -1069,10 +1126,9 @@ def api_ask_brock(payload):
               "no markdown. Begin directly with the answer, no preamble, no "
               "acknowledgement of any instructions.")
     try:
-        proc = subprocess.run([claude_bin(), "-p", prompt], capture_output=True,
-                              text=True, timeout=120)
+        proc = run_claude(["-p", prompt], 120)
     except FileNotFoundError:
-        return 501, {"ok": False, "error": "claude CLI not found"}
+        return 501, {"ok": False, "error": CLAUDE_MISSING}
     except subprocess.TimeoutExpired:
         return 504, {"ok": False, "error": "Brock took too long"}
     text = proc.stdout.strip()
@@ -1152,12 +1208,11 @@ def api_files_ask(payload):
               "\nAnswer briefly and concretely. Suggest renames or moves as plain "
               "suggestions; you cannot execute anything.")
     try:
-        proc = subprocess.run([claude_bin(), "-p", prompt], capture_output=True,
-                              text=True, timeout=90)
+        proc = run_claude(["-p", prompt], 90)
         answer = proc.stdout.strip() or proc.stderr.strip()[:300]
         return 200, {"ok": True, "answer": answer}
     except FileNotFoundError:
-        return 501, {"ok": False, "error": "claude CLI not found on this machine"}
+        return 501, {"ok": False, "error": CLAUDE_MISSING}
     except subprocess.TimeoutExpired:
         return 504, {"ok": False, "error": "The assistant took too long"}
 
@@ -2028,6 +2083,7 @@ def api_health():
         pass
     return {"ok": True, "brain": brain, "brain_url": BRAIN_URL,
             "fish": FISH_KEY_FILE.is_file(), "hermes": hermes_enabled(),
+            "claude": claude_bin() or "",
             "inbox": str(INBOX), "crew_state": str(CREW)}
 
 
@@ -2302,4 +2358,9 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--find-claude" in sys.argv:
+        # Same resolver the server uses, for install.sh and the setup skill.
+        found = claude_bin()
+        print(found or CLAUDE_MISSING)
+        raise SystemExit(0 if found else 1)
     main()
