@@ -58,6 +58,13 @@ Hermes profile (plain `hermes`); named profiles do not see them. After a CREW up
 ask your agent to run `hermes-sync.sh`. Never create `~/.hermes/crew-state`.
 Without Hermes on the Mac, none of this is mentioned and none of it appears.
 
+## Brock talks you through it
+
+Some rooms carry a small circle with Brock's face: in the top bar, and on the New
+project and New brand sheets. Press it and he explains, out loud and in text, what that
+part of the screen is for and what to press. The clips ship with OwnerOS, so they work
+with no voice key and nothing leaves your Mac.
+
 ## The rooms
 
 | Room | What it is |

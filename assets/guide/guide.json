@@ -1,0 +1,21 @@
+{
+  "voice": "bcb1ae37624844acb88a1889b4e39835",
+  "note": "Shipped room guides. Text is the source; tools/render_guide.py renders <key>.mp3 with the voice above and records the sha it used. Rooms play the mp3 from a blob, or fall back to browser speech on this text.",
+  "rooms": {
+    "projects": {
+      "title": "Projects",
+      "text": "This is Projects, your filing cabinet. Every job the crew has done for you is a record in here, read straight from disk. Open one to see where it stopped and what it handed back. Copy resume puts the pick-up prompt on your clipboard: paste it to Claude and the crew carries on. New project starts a fresh piece of work. New brand sets up a second business.",
+      "sha": "16e9d17ec23d"
+    },
+    "new-project": {
+      "title": "New project",
+      "text": "A new project is a drawer the crew opens for one piece of work. Give it a short name, say what it should deliver and who it is for, pick the brand, and add a deadline if there is one. Press Generate, then Copy, and paste the prompt to Claude. The crew creates the drawer itself, and it appears here the next time you reload.",
+      "sha": "a5ff6783256c"
+    },
+    "new-brand": {
+      "title": "New brand",
+      "text": "One cabinet holds one active brand at a time. Working for a different business? Type its name and paste its website. Claude reads the site first: colours, fonts, logo, products, and how the business sounds, so everything the crew builds looks like them. Copy the prompt, paste it to Claude, answer a few short questions, and the new brand becomes the active one. Your current brand's projects are parked safely in their own drawer.",
+      "sha": "2022c0f2646e"
+    }
+  }
+}

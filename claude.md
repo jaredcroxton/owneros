@@ -255,6 +255,20 @@ new rooms, no new capabilities beyond that.
   prompt is the whole feature. The New brand button is a filled proof-green pill
   (`.btn.brand`), Jared's explicit call on 2026-08-21 and the one sanctioned use of
   green on a button; ember stays the one filled pill elsewhere on the screen.
+- Room guide (2026-08-21, Jared's idea: a small circle that talks you through the room).
+  `guide.js` is the one shared script, the same exception `midnight.css` is for styles;
+  rooms stay single files and add one tag plus `<button data-guide="<key>">` where an orb
+  belongs. Clips are rendered ONCE on the maintainer's Mac by `tools/render_guide.py`
+  from `assets/guide/guide.json` (text is the source, sha of voice + text recorded per
+  clip, re-render only what changed, `--check` for CI) with the guide voice
+  `bcb1ae37624844acb88a1889b4e39835`, which is deliberately not Brock's briefing voice in
+  `~/.owneros/fish-voice.txt`. The mp3s ship in the repo, so an owner needs no Fish key
+  and nothing leaves their Mac. Playback rule: fetch to blob, then `new Audio(objectURL)`;
+  never `<audio src>` (send_file has no Range support, Safari refuses it). Fallback when a
+  clip is missing: the shipped transcript spoken by the browser voice (Lee, then Karen,
+  then any en-AU, after waiting for `voiceschanged`), text shown either way in the
+  caption strip. Never autoplays. First rooms: Projects, plus the New project and New
+  brand sheets. The other nine rooms and a 90-second Welcome follow the same pattern.
 - Claude CLI resolution (`claude_bin()`, 2026-08-21). launchd starts the server with a
   bare PATH, so `shutil.which` alone found nothing on any Mac where the CLI was not in
   `~/.local/bin` ("Brock could not run: Claude CLI not found" on the first outside

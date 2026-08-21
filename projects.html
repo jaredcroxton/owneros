@@ -6,6 +6,7 @@
 <title>Projects · OwnerOS</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2308090a'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23ff6b35'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="/midnight.css">
+<script src="/guide.js" defer></script>
 <style>
   /* Midnight Cockpit, design law v5. Tokens + fonts come from /midnight.css;
      this block is page CSS only. --read is the long-form reading tone on dark. */
@@ -358,6 +359,7 @@
       <a href="/files">Files</a>
       <a href="/roadmap">Roadmap</a>
     </div>
+    <button class="gd-orb" data-guide="projects"></button>
     <span class="avatar">J</span>
   </div>
 </nav>
@@ -395,7 +397,8 @@
 <div class="scrim" id="scrim"></div>
 <div class="npveil" id="npVeil">
   <div class="npbox">
-    <h2>Open a new project</h2>
+    <h2 style="display:flex;align-items:center;gap:12px">Open a new project
+      <button class="gd-orb lg" data-guide="new-project"></button></h2>
     <p class="npsub">The crew creates the drawer, not the OS. This form writes the
       kickoff prompt; paste it to Claude and the project births itself into the
       cabinet. Working for a different business? Close this and use New brand first.</p>
@@ -424,7 +427,8 @@
 </div>
 <div class="npveil" id="nbVeil">
   <div class="npbox">
-    <h2>Set up a new brand</h2>
+    <h2 style="display:flex;align-items:center;gap:12px">Set up a new brand
+      <button class="gd-orb lg" data-guide="new-brand"></button></h2>
     <p class="npsub">One cabinet, one active brand at a time. The crew creates the brand,
       not the OS: paste this prompt to Claude, answer its short brand conversation, and
       the new brand becomes the active one. Give it the website and Claude reads the
