@@ -33,7 +33,7 @@ if [[ -e "$SPLIT" ]]; then
   exit 2
 fi
 
-SRC_COUNT=$(ls -d "$SRC_ROOT"/crew-*/ 2>/dev/null | wc -l | tr -d ' ')
+SRC_COUNT=$(find "$SRC_ROOT" -maxdepth 1 -type d -name 'crew-*' 2>/dev/null | wc -l | tr -d ' ')
 if [[ "$SRC_COUNT" == "0" ]]; then
   echo "hermes-sync: no CREW skills found under $SRC_ROOT."
   echo "Install the CREW skills (the workshop covers this), then run ./hermes-sync.sh again."

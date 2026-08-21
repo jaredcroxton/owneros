@@ -71,7 +71,8 @@ else
   echo "                   Install Claude Code, run 'claude' once to log in, then carry on."
 fi
 
-CREW_COUNT=$(ls -d "$SKILLS"/crew-*/ 2>/dev/null | wc -l | tr -d ' ')
+# find, not a glob: zsh aborts an unmatched glob with "no matches found" before ls runs
+CREW_COUNT=$(find "$SKILLS" -maxdepth 1 -type d -name 'crew-*' 2>/dev/null | wc -l | tr -d ' ')
 if [[ "$CREW_COUNT" -gt 0 ]]; then
   echo "  CREW skills      ok ($CREW_COUNT installed)"
 else
