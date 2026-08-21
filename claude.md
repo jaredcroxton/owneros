@@ -252,7 +252,9 @@ new rooms, no new capabilities beyond that.
   field hands the URL over with the instruction to read the site first and fill the
   skill's Visual identity line (colours as hex, fonts, logo) and Found online, so every
   design and web skill builds to the business's own look. The OS writes nothing; the
-  prompt is the whole feature.
+  prompt is the whole feature. The New brand button is a filled proof-green pill
+  (`.btn.brand`), Jared's explicit call on 2026-08-21 and the one sanctioned use of
+  green on a button; ember stays the one filled pill elsewhere on the screen.
 - Claude CLI resolution (`claude_bin()`, 2026-08-21). launchd starts the server with a
   bare PATH, so `shutil.which` alone found nothing on any Mac where the CLI was not in
   `~/.local/bin` ("Brock could not run: Claude CLI not found" on the first outside
