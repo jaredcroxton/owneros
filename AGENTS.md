@@ -9,6 +9,10 @@ make it theirs. Help them do that. Do not redesign it.
 **The owner does not use a terminal.** You run every command yourself and show them
 what matters. Never answer a setup question with "run this"; run it.
 
+**Do not mention Hermes Agent unless `~/.hermes` exists on this Mac.** It is a second
+runtime almost nobody has. Without that folder, the word never comes up: no question,
+no "optional", no explanation. The installer follows the same rule.
+
 To set it up, follow `.agents/workflows/setup-owneros.md` (`/setup-owneros` when
 this folder is the workspace). If you were pointed here by a pasted prompt and the
 repo is not cloned yet, the workflow's step 0 clones it to `~/OwnerOS`.
@@ -52,16 +56,18 @@ Projects; the OS is never told, it just reads the cabinet.
 
 `install.sh` writes only `~/.owneros/*` (owner.json, fish.key, os-url.txt, logs) and
 `~/Library/LaunchAgents/com.owneros.plist`. Those are the only files setup touches.
-Every question is a flag, so you ask in chat and run it without prompts:
+It asks three things; every one is a flag, so you ask in chat and run it without
+prompts (it exits with a message rather than hanging if an answer is missing):
 
 ```
-./install.sh --name "<first name>" --business "<business>" --about "<one line>" \
-             --hermes yes|no --fish-key "<key or empty>" --no-open
+./install.sh --name "<first name>" --business "<business>" --about "<one line>" --no-open
 ```
 
-`--hermes yes` also runs `./hermes-sync.sh`, which copies the CREW skills into
-`~/.hermes/skills/crew` and verifies with `hermes skills list`. It exits 2 and does
-nothing if `~/.hermes/crew-state` exists. Relay that message to the owner as is.
+Only when `~/.hermes` exists does it ask a fourth question (pass `--hermes yes|no`).
+Yes runs `./hermes-sync.sh`, which copies the CREW skills into `~/.hermes/skills/crew`
+and verifies with `hermes skills list`. It exits 2 and does nothing if
+`~/.hermes/crew-state` exists. Relay that message to the owner as is. `--fish-key` is
+flag-only, never asked.
 
 The runtime switch lives in `~/.owneros/owner.json` as `"hermes": true|false`.
 Off means the Hermes room, the Sessions toggle, and every Hermes read are gone.
@@ -77,7 +83,7 @@ and running `./start-os.sh`.
 | Claude Code, signed in | `command -v claude` | Not a blocker for the rooms. Brock's briefing and the Files assistant need it |
 | CREW skills | `ls -d ~/.claude/skills/crew-*` count > 0 | `git clone https://github.com/jaredcroxton/Crew-Agents.git ~/Crew-Agents && bash ~/Crew-Agents/install.sh --all --global` |
 | Brand context | `~/.claude/crew-state/brand-context.md` exists | Not a blocker. The first job after install; you can run it in this chat |
-| Hermes Agent | `~/.hermes` is a directory | Optional. Only matters if they want the second runtime |
+| Hermes Agent | `~/.hermes` is a directory | Absent: say nothing. Present: one extra question at install |
 
 ## After install
 
@@ -86,8 +92,8 @@ and running `./start-os.sh`.
 - Log: `tail -20 ~/.owneros/os.log`.
 - Restart after any edit: `./start-os.sh`. Stop: `./stop-os.sh`.
 - "Update OwnerOS" means `git pull --ff-only && ./start-os.sh` in this folder.
-- Hermes users run crew skills in the default profile (plain `hermes`), never
-  `hermes -p <name>`; named profiles do not see the CREW skills.
+- If Hermes was connected: crew skills run in the default profile (plain `hermes`),
+  never `hermes -p <name>`; named profiles do not see the CREW skills.
 
 ## If you are asked to change the product
 

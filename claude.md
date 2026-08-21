@@ -185,13 +185,17 @@ new rooms, no new capabilities beyond that.
   and is not on disk. `/api/owner` and `/api/health` both carry the flag. Never gate a
   read on the flag that the constitution already calls read-only; the flag hides, it does
   not protect (the read-only rule does that).
-- Install (`install.sh`, from the cloned folder). Asks five things: first name, business,
-  one line on the business, "do you run Hermes Agent on this Mac" (y/N), and an optional
-  Fish Audio key. Every answer is also a flag (`--name --business --about --hermes yes|no
-  --fish-key --no-open`) so an agent driving the install from Antigravity or Claude Code
-  can ask in chat and run it non-interactively; `--yes` accepts defaults. Before asking it
-  checks python3, the claude CLI, the CREW skills count and the cabinet, and says plainly
-  what is missing. It writes only `~/.owneros/*` and the LaunchAgent plist (`com.owneros`).
+- Install (`install.sh`, from the cloned folder). Asks three things: first name, business,
+  one line on the business. Hermes is NEVER mentioned unless `~/.hermes` exists (Jared,
+  2026-08-21: the 29 Aug workshop room will not have it and the word confuses); when it
+  does exist, one extra question (default yes). The Fish key is flag-only, never asked.
+  Every answer is also a flag (`--name --business --about --hermes yes|no --fish-key
+  --no-open`) so an agent driving the install from Antigravity or Claude Code can ask in
+  chat and run it non-interactively; `--yes` accepts defaults; a missing answer with no
+  terminal exits 2 with the flag syntax instead of hanging on `read`. Before asking it
+  checks python3, the claude CLI, the CREW skills count (with `find`, never a zsh glob)
+  and the cabinet, and says plainly what is missing. It writes only `~/.owneros/*` and
+  the LaunchAgent plist (`com.owneros`).
   Hermes yes runs `hermes-sync.sh`: copies `~/.claude/skills/crew-*` into
   `~/.hermes/skills/crew/` (copies, not links, the layout verified with `hermes skills
   list` on 2026-08-16), refuses to run if `~/.hermes/crew-state` exists (split brain), and

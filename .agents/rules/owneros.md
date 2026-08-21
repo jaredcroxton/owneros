@@ -15,5 +15,6 @@ and it is the contract. The six rules that matter most, so they are never out of
    unless the owner asks for exactly that.
 
 The owner does not use a terminal. You run every command and show them what matters.
+Do not mention Hermes Agent unless `~/.hermes` exists on this Mac.
 Setup is `/setup-owneros` (`.agents/workflows/setup-owneros.md`). Product changes
 start with `claude.md`. No em dashes in anything you write here.

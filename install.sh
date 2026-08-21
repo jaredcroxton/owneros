@@ -1,17 +1,18 @@
 #!/bin/zsh
 # OwnerOS installer. Run from the cloned folder: ./install.sh
 #
-# Asks five things (name, business, one line, Hermes yes/no, optional Fish key),
-# wires the always-on service, opens your cockpit. Every question is also a
-# flag, so an agent (Antigravity, Claude Code) can ask you in chat and run this
-# without prompts:
+# Asks three things (first name, business, one line on it), wires the always-on
+# service, opens your cockpit. Every question is also a flag, so an agent
+# (Antigravity, Claude Code) can ask you in chat and run this without prompts:
 #
-#   ./install.sh --name Jo --business "Jo's Plumbing" --about "domestic plumbing, Brisbane" \
-#                --hermes no --fish-key "" --no-open
+#   ./install.sh --name Jo --business "Jo's Plumbing" --about "domestic plumbing, Brisbane" --no-open
 #
-#   --hermes yes|no     Do you run Hermes Agent on this Mac? yes also copies the
-#                       CREW skills into ~/.hermes/skills/crew (see hermes-sync.sh)
-#   --fish-key KEY      Fish Audio key for Brock's voice (optional, "" to skip)
+# Hermes Agent is only ever mentioned if ~/.hermes exists on this Mac. Then one
+# extra question is asked (default yes), and yes copies the CREW skills into
+# ~/.hermes/skills/crew (see hermes-sync.sh). Without ~/.hermes, silence.
+#
+#   --hermes yes|no     Answer the Hermes question up front (ignored if no ~/.hermes)
+#   --fish-key KEY      Fish Audio key for Brock's voice (never prompted; flag only)
 #   --yes               Accept the default for anything not given, ask nothing
 #   --no-open           Do not open the browser at the end
 #
@@ -24,7 +25,7 @@ CREW_STATE="$HOME/.claude/crew-state"
 SKILLS="$HOME/.claude/skills"
 
 OWNER_NAME=""; OWNER_BIZ=""; OWNER_ABOUT=""; HERMES_ANS=""; FISH_KEY=""
-FISH_GIVEN=0; ASSUME_YES=0; OPEN_AFTER=1
+ASSUME_YES=0; OPEN_AFTER=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -32,10 +33,10 @@ while [[ $# -gt 0 ]]; do
     --business)  OWNER_BIZ="$2"; shift 2 ;;
     --about)     OWNER_ABOUT="$2"; shift 2 ;;
     --hermes)    HERMES_ANS="$2"; shift 2 ;;
-    --fish-key)  FISH_KEY="$2"; FISH_GIVEN=1; shift 2 ;;
+    --fish-key)  FISH_KEY="$2"; shift 2 ;;
     --yes|-y)    ASSUME_YES=1; shift ;;
     --no-open)   OPEN_AFTER=0; shift ;;
-    -h|--help)   sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help)   sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "install.sh: unknown flag $1 (try --help)"; exit 1 ;;
   esac
 done
@@ -46,7 +47,13 @@ ask() {
   if [[ -n "$cur" ]]; then return; fi
   if [[ $ASSUME_YES -eq 1 ]]; then eval "$var=\"\$def\""; return; fi
   if [[ -n "$def" ]]; then printf "%s [%s]: " "$prompt" "$def"; else printf "%s: " "$prompt"; fi
-  local reply; read reply
+  local reply
+  if ! read -t 120 reply; then
+    echo ""
+    echo "install.sh: no answer received. If an agent is running this, pass the answers as flags:"
+    echo "  ./install.sh --name \"<first name>\" --business \"<business>\" --about \"<one line>\" --no-open"
+    exit 2
+  fi
   [[ -z "$reply" ]] && reply="$def"
   eval "$var=\"\$reply\""
 }
@@ -65,10 +72,10 @@ fi
 echo "  python3          ok ($PY3)"
 
 if command -v claude >/dev/null 2>&1; then
-  echo "  Claude Code      ok (run 'claude' once and /login if Brock stays quiet)"
+  echo "  Claude Code      ok (sign in once if Brock stays quiet)"
 else
   echo "  Claude Code      MISSING. Brock's briefing, chat and the Files assistant need it."
-  echo "                   Install Claude Code, run 'claude' once to log in, then carry on."
+  echo "                   Install Claude Code and sign in once, then carry on. Every room still loads."
 fi
 
 # find, not a glob: zsh aborts an unmatched glob with "no matches found" before ls runs
@@ -88,27 +95,21 @@ else
   HAVE_BRAND=0
 fi
 
-HERMES_DEFAULT="n"
+# Hermes is a second runtime almost nobody has. It is only ever mentioned when
+# ~/.hermes exists on this Mac; otherwise the word does not appear.
+HAVE_HERMES=0
 if [[ -d "$HOME/.hermes" ]]; then
   echo "  Hermes Agent     found (~/.hermes)"
-  HERMES_DEFAULT="y"
-else
-  echo "  Hermes Agent     not found (optional)"
+  HAVE_HERMES=1
 fi
 echo ""
 
-# ---- the five questions ----------------------------------------------------
+# ---- the three questions (four only when Hermes is on this Mac) -------------
 ask OWNER_NAME  "Your first name" "Owner"
 ask OWNER_BIZ   "Your business name" "My Business"
 ask OWNER_ABOUT "One line on what the business does" "a small business"
-ask HERMES_ANS  "Do you run Hermes Agent on this Mac? (y/n)" "$HERMES_DEFAULT"
-if [[ $FISH_GIVEN -eq 0 && $ASSUME_YES -eq 0 ]]; then
-  if [[ -s "$OWN/fish.key" ]]; then
-    printf "Fish Audio key for Brock's voice (one is already on file, Enter keeps it): "
-  else
-    printf "Fish Audio key for Brock's voice (optional, Enter to skip): "
-  fi
-  read FISH_KEY
+if [[ $HAVE_HERMES -eq 1 ]]; then
+  ask HERMES_ANS "Hermes Agent is on this Mac. Connect the crew to it too? (y/n)" "y"
 fi
 
 case "${HERMES_ANS:l}" in
@@ -117,12 +118,11 @@ case "${HERMES_ANS:l}" in
 esac
 
 # ---- Hermes: copy CREW in, one brain, default profile ----------------------
-echo ""
 if [[ $HERMES_ON -eq 1 ]]; then
-  if [[ ! -d "$HOME/.hermes" ]]; then
-    echo "You said yes to Hermes, but ~/.hermes is not on this Mac. Recording Hermes as off"
-    echo "so the cockpit stays clean. When Hermes is installed, run ./hermes-sync.sh and"
-    echo "set \"hermes\": true in ~/.owneros/owner.json (or re-run ./install.sh)."
+  echo ""
+  if [[ $HAVE_HERMES -eq 0 ]]; then
+    echo "--hermes yes was given, but ~/.hermes is not on this Mac. Recording Hermes as off."
+    echo "When Hermes is installed, run ./hermes-sync.sh and set \"hermes\": true in ~/.owneros/owner.json."
     HERMES_ON=0
   else
     "$APP_DIR/hermes-sync.sh"
@@ -135,9 +135,10 @@ if [[ $HERMES_ON -eq 1 ]]; then
       echo "Hermes room will show honestly what is and is not connected. Re-run ./hermes-sync.sh later."
     fi
   fi
-else
-  echo "Hermes off. The cockpit loads without the Hermes room or the Sessions toggle."
-  echo "Change your mind later: ./hermes-sync.sh, then set \"hermes\": true in ~/.owneros/owner.json."
+elif [[ $HAVE_HERMES -eq 1 ]]; then
+  echo ""
+  echo "Hermes left out. The cockpit loads without the Hermes room. Later: ./hermes-sync.sh, then"
+  echo "set \"hermes\": true in ~/.owneros/owner.json."
 fi
 
 # ---- identity + switches, the only state this installer owns ---------------
@@ -152,7 +153,7 @@ pathlib.Path.home().joinpath(".owneros/owner.json").write_text(json.dumps({
     "business": biz.strip() or "My Business",
     "about": about.strip() or "a small business",
     "hermes": hermes}, indent=1) + "\n")
-print("identity written: ~/.owneros/owner.json (hermes: %s)" % ("on" if hermes else "off"))
+print("identity written: ~/.owneros/owner.json" + (" (Hermes connected)" if hermes else ""))
 EOF
 
 if [[ -n "$FISH_KEY" ]]; then
@@ -191,7 +192,7 @@ if [[ $HERMES_ON -eq 1 ]]; then
   echo "  in the same cabinet and shows up in Projects without being told."
 fi
 [[ -z "$FISH_KEY" && ! -s "$OWN/fish.key" ]] && \
-  echo "  Voice: Brock speaks with the browser voice. For the real one, paste a Fish Audio key into ~/.owneros/fish.key"
+  echo "  Brock speaks with the browser voice for now. A Fish Audio key in ~/.owneros/fish.key upgrades it."
 echo "  Update later: git pull, then ./start-os.sh"
 echo ""
 [[ $OPEN_AFTER -eq 1 ]] && open "$URL"

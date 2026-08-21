@@ -9,8 +9,8 @@ Fish voice, key-gated).
 
 ## Set up, in Antigravity, no terminal
 
-The workshop put Claude Code and the CREW skills on your Mac (and Hermes Agent, if
-you chose it). From there you never open a terminal. Your agent does the typing.
+The workshop put Claude Code and the CREW skills on your Mac. From there you never
+open a terminal. Your agent does the typing.
 
 Open Antigravity and paste this into the agent chat:
 
@@ -24,17 +24,15 @@ time. Run every command yourself; I will not use a terminal.
 What happens next, all in the chat:
 
 1. **It checks the Mac.** python3, Claude Code, how many CREW skills are installed,
-   whether your brand context exists yet, whether Hermes is there. Anything missing is
-   named, with what it means, and setup carries on.
-2. **It asks you five things, one at a time.**
+   whether your brand context exists yet. Anything missing is named, with what it
+   means, and setup carries on.
+2. **It asks you three things, one at a time.**
 
    | Question | Why |
    |---|---|
    | Your first name | The avatar initial and how Brock addresses you |
    | Your business name | Shown across the rooms |
    | One line on what the business does | Brock's briefing context |
-   | **Do you run Hermes Agent on this Mac?** | **Yes**: copies the CREW skills into `~/.hermes/skills/crew` so Hermes can run them, and keeps the Hermes room and the Sessions toggle. **No**: the cockpit loads without the Hermes room, the Sessions toggle, or any Hermes read. Either answer can be changed later |
-   | A Fish Audio key, if you have one | Brock's real voice. Skip it and the browser voice takes over |
 
 3. **It runs the installer** with your answers, wires the always-on service, and opens
    your cockpit at `http://localhost:4890`.
@@ -47,14 +45,15 @@ What happens next, all in the chat:
 Afterwards, open `~/OwnerOS` as your workspace in Antigravity. `/setup-owneros` and
 the OwnerOS rules are then on hand, and "update OwnerOS" is a sentence, not a command.
 
-### If you said yes to Hermes
+### Advanced: Hermes Agent
 
-- Run crew skills in the **default** Hermes profile (plain `hermes`). Named profiles
-  (`hermes -p name`) keep their own skill folders and do not see the CREW skills.
-- After a CREW update, ask your agent to run `hermes-sync.sh` to refresh the copy
-  Hermes reads.
-- One brain: every runtime reads and writes `~/.claude/crew-state`. Never create
-  `~/.hermes/crew-state`; the sync script refuses to run while it exists.
+If Hermes Agent is already on the Mac (`~/.hermes` exists), setup asks one extra
+question: connect the crew to it too? Yes copies the CREW skills into
+`~/.hermes/skills/crew`, keeps the Hermes room and the Sessions toggle, and the two
+runtimes share one cabinet at `~/.claude/crew-state`. Run crew skills in the default
+Hermes profile (plain `hermes`); named profiles do not see them. After a CREW update,
+ask your agent to run `hermes-sync.sh`. Never create `~/.hermes/crew-state`.
+Without Hermes on the Mac, none of this is mentioned and none of it appears.
 
 ## The rooms
 
@@ -68,8 +67,8 @@ the OwnerOS rules are then on hand, and "update OwnerOS" is a sentence, not a co
 | Plays | The playbook: 46 plays + 12 chains in plain words, intent search, copyable prompts |
 | Files | Safe-zone file manager: browse, rename, move, ask AI about a folder |
 | Personas | Six market shapes, each with a signature chain and a one-paste kickoff |
-| Hermes | The second runtime, only if you said yes: the agent network and a Connections panel that checks every claim against disk |
-| Sessions | Both runtimes (or just Claude Code), metadata only, safe on a projector |
+| Hermes | Only if Hermes Agent is on the Mac and connected: the agent network and a Connections panel that checks every claim against disk |
+| Sessions | Your Claude Code history (and Hermes, if connected), metadata only, safe on a projector |
 | Roadmap | Parked ideas, on purpose |
 
 ## Hard rules baked in
@@ -88,12 +87,11 @@ cd ~/OwnerOS
 ./install.sh
 ```
 
-`install.sh` asks the same five questions, or takes them as flags so an agent can
+`install.sh` asks the same three questions, or takes them as flags so an agent can
 answer without prompts (`./install.sh --help`):
 
 ```
-./install.sh --name Jo --business "Jo's Plumbing" --about "domestic plumbing, Brisbane" \
-             --hermes no --fish-key "" --no-open
+./install.sh --name Jo --business "Jo's Plumbing" --about "domestic plumbing, Brisbane" --no-open
 ```
 
 It writes only `~/.owneros/*` and `~/Library/LaunchAgents/com.owneros.plist`.
