@@ -13,9 +13,10 @@ what matters. Never answer a setup question with "run this"; run it.
 runtime almost nobody has. Without that folder, the word never comes up: no question,
 no "optional", no explanation. The installer follows the same rule.
 
-To set it up, follow `.agents/workflows/setup-owneros.md` (`/setup-owneros` when
-this folder is the workspace). If you were pointed here by a pasted prompt and the
-repo is not cloned yet, the workflow's step 0 clones it to `~/OwnerOS`.
+To set it up, follow `.claude/skills/setup-owneros/SKILL.md` (in Claude Code it is
+`/setup-owneros` when this folder is the workspace). If you were pointed here by a
+pasted prompt and the repo is not cloned yet, its step 0 clones it to `~/OwnerOS`.
+Antigravity's own agent gets the same procedure through `.agents/workflows`.
 
 ## What you must never do here
 
@@ -44,13 +45,14 @@ constitution; these are the ones an agent is most likely to break by being helpf
 
 ## Running a CREW skill from this chat
 
-A CREW skill is a markdown procedure at `~/.claude/skills/<crew-name>/SKILL.md`. Any
-capable agent can run one: read the file, follow it exactly, including its Step 0
-(read `~/.claude/crew-state/brand-context.md` and the active project) and its Final
-Step (write the handoff record where it says). When the owner pastes a play from the
-Plays room, start from `~/.claude/skills/crew-core-using-crew/SKILL.md`, the
-dispatcher, and let it route. The record a skill files is what OwnerOS shows in
-Projects; the OS is never told, it just reads the cabinet.
+In Claude Code the CREW skills load from `~/.claude/skills` on their own: "use the
+crew, build my brand context" invokes `crew-core-brand-context`, and a pasted play
+goes through `crew-core-using-crew`, the dispatcher. Any other agent can run one too:
+a CREW skill is a markdown procedure at `~/.claude/skills/<crew-name>/SKILL.md`; read
+it and follow it exactly, including its Step 0 (read
+`~/.claude/crew-state/brand-context.md` and the active project) and its Final Step
+(write the handoff record where it says). The record a skill files is what OwnerOS
+shows in Projects; the OS is never told, it just reads the cabinet.
 
 ## What the installer owns
 

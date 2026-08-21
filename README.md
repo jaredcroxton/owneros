@@ -7,18 +7,18 @@ capture, the full skill deck, a plain-words playbook, and safe file management.
 Everything runs on your Mac. Nothing leaves it (one optional exception: the
 Fish voice, key-gated).
 
-## Set up, in Antigravity, no terminal
+## Set up from the Claude Code panel, no terminal
 
 The workshop put Claude Code and the CREW skills on your Mac. From there you never
-open a terminal. Your agent does the typing.
+open a terminal. Claude does the typing; you click Allow when it asks to run something.
 
-Open Antigravity and paste this into the agent chat:
+Open your IDE (Antigravity, VS Code or Cursor), open the Claude Code panel, and paste:
 
 ```
 Set up OwnerOS for me. Clone https://github.com/jaredcroxton/owneros.git into ~/OwnerOS
 (pull if it is already there), then read ~/OwnerOS/AGENTS.md and follow
-~/OwnerOS/.agents/workflows/setup-owneros.md step by step. Ask me the questions one at a
-time. Run every command yourself; I will not use a terminal.
+~/OwnerOS/.claude/skills/setup-owneros/SKILL.md step by step. Ask me the questions one
+at a time. Run every command yourself; I will not use a terminal.
 ```
 
 What happens next, all in the chat:
@@ -37,13 +37,13 @@ What happens next, all in the chat:
 3. **It runs the installer** with your answers, wires the always-on service, and opens
    your cockpit at `http://localhost:4890`.
 4. **It starts your first job.** If you have no brand context yet, that is a
-   ten-minute plain-language conversation, right there in the chat. It writes
-   `~/.claude/crew-state/brand-context.md`, the one file every role reads first. Today
-   and Projects fill up from there. Then you open `/plays`, pick a play, press Copy,
-   and paste it back to the agent.
+   ten-minute plain-language conversation with the crew's brand skill, right there in
+   the chat. It writes `~/.claude/crew-state/brand-context.md`, the one file every role
+   reads first. Today and Projects fill up from there. Then you open `/plays`, pick a
+   play, press Copy, and paste it back to Claude.
 
-Afterwards, open `~/OwnerOS` as your workspace in Antigravity. `/setup-owneros` and
-the OwnerOS rules are then on hand, and "update OwnerOS" is a sentence, not a command.
+Afterwards, open `~/OwnerOS` as your workspace. `/setup-owneros` is then a slash
+command in the Claude Code panel, and "update OwnerOS" is a sentence, not a command.
 
 ### Advanced: Hermes Agent
 
@@ -97,8 +97,9 @@ answer without prompts (`./install.sh --help`):
 It writes only `~/.owneros/*` and `~/Library/LaunchAgents/com.owneros.plist`.
 `hermes-sync.sh` is the Hermes copy. `start-os.sh` starts or restarts the service
 (so `git pull` then `./start-os.sh` is the update); `stop-os.sh` stops it.
-`AGENTS.md` is the contract any agent keeps while working in here; `.agents/rules`
-and `.agents/workflows` are the Antigravity-native copies of it.
+`AGENTS.md` is the contract any agent keeps while working in here. The setup
+procedure is the Claude Code project skill at `.claude/skills/setup-owneros/SKILL.md`;
+`.agents/workflows` and `.agents/rules` point Antigravity's own agent at the same files.
 
 ## Customise
 

@@ -1,5 +1,9 @@
 # OwnerOS — Constitution
 
+Here to set this up for an owner, not to change it? Read `AGENTS.md`, then run
+`/setup-owneros` (`.claude/skills/setup-owneros/SKILL.md`). Everything below is for
+working on the product itself.
+
 Local Business OS cockpit. One stdlib Python server, eleven rooms (Today, Projects, Brain,
 Capture, Workforce, Plays, Personas, Hermes, Sessions, Files, Roadmap), PerformOS brand,
 Apple language throughout.
@@ -207,15 +211,16 @@ new rooms, no new capabilities beyond that.
   touches profiles: crew skills run in the DEFAULT Hermes profile only.
 - `start-os.sh` / `stop-os.sh` find the plist by label (`com.owneros` first, the original
   `com.jared.owneros` second) and only touch the Brain agent if its plist exists.
-- Antigravity is the front door; the owner never opens a terminal (Jared, 2026-08-21).
-  The README opens with one paste-prompt: the agent clones to `~/OwnerOS`, reads
-  `AGENTS.md`, follows `.agents/workflows/setup-owneros.md` (`/setup-owneros` once the
-  folder is the workspace), asks the five questions in chat, runs `install.sh` with
-  flags, opens the cockpit, and starts the brand conversation in the same chat by
-  following `crew-core-brand-context/SKILL.md`. `.agents/rules/owneros.md` is the
-  auto-loaded rules copy. All three restate the invariants with one clarification, not
-  a new rule: the OS never writes the cabinet, but a CREW skill run by any agent writes
-  exactly what its own SKILL.md says. That is the same contract Hermes proved on
-  2026-08-16; Antigravity is a third reader of the same files, untested as of this note.
+- The Claude Code panel inside the IDE (Antigravity for Jared, VS Code or Cursor for
+  anyone) is the front door; the owner never opens a terminal (Jared, 2026-08-21). The
+  README opens with one paste-prompt: Claude clones to `~/OwnerOS`, reads `AGENTS.md`,
+  follows the project skill `.claude/skills/setup-owneros/SKILL.md` (`/setup-owneros`
+  once the folder is the workspace), asks three questions in chat, runs `install.sh`
+  with flags, opens the cockpit, and starts the brand conversation in the same chat by
+  invoking `crew-core-brand-context`, which Claude Code loads natively from
+  `~/.claude/skills`. `.agents/workflows/setup-owneros.md` and `.agents/rules/owneros.md`
+  exist only for Antigravity's own (Gemini) agent and point at the same files; they are
+  not the primary path. One clarification, not a new rule: the OS never writes the
+  cabinet, but a CREW skill run by any agent writes exactly what its own SKILL.md says.
 - Fonts are local (`fonts/`). No CDN at runtime.
 - Debug: `tail -20 ~/.owneros/os.log`; `curl localhost:4890/api/health`.
