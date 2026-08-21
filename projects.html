@@ -424,11 +424,15 @@
     <h2>Set up a new brand</h2>
     <p class="npsub">One cabinet, one active brand at a time. The crew creates the brand,
       not the OS: paste this prompt to Claude, answer its short brand conversation, and
-      the new brand becomes the active one. Your current brand's projects are parked in
-      its own drawer, and one more prompt brings them back.</p>
+      the new brand becomes the active one. Give it the website and Claude reads the
+      colours, fonts, logo, products and voice from there, so everything the crew builds
+      looks like the business. Type the name of your current brand to update it from its
+      website instead.</p>
     <div class="npf">
       <label>Business name
         <input id="nbName" type="text" placeholder="Cookie Moments"></label>
+      <label>Website (optional, but worth it)
+        <input id="nbUrl" type="url" placeholder="https://cookiemoments.com.au"></label>
       <label>One line on what it does (optional)
         <textarea id="nbAbout" placeholder="Home-kitchen bakery making cookie gift boxes for offices"></textarea></label>
     </div>
@@ -887,24 +891,43 @@
     if (e.target === nbVeil) nbVeil.classList.remove("on"); });
   document.getElementById("nbGen").addEventListener("click", () => {
     const name = document.getElementById("nbName").value.trim();
+    let url = document.getElementById("nbUrl").value.trim();
     const about = document.getElementById("nbAbout").value.trim();
     if (!name) {
       nbOut.classList.add("on");
       nbOut.textContent = "Give the business a name first.";
       return;
     }
+    if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
     const current = npActiveBrand && npActiveBrand !== "Unknown brand" ? npActiveBrand : "";
-    const lines = [
-      'Use the crew. Switch to brand "' + name + '".',
-      "It is a new business with no drawer yet, so run the full brand context " +
-      "conversation with me now, write its brand-context.md, and make it the active brand."];
-    if (about) lines.push("Start from this: " + about);
-    lines.push("When you finish, confirm the active brand and tell me how to switch back" +
-      (current ? ' to "' + current + '".' : "."));
+    const isCurrent = current && current.toLowerCase() === name.toLowerCase();
+    const siteLine = url
+      ? "Read " + url + " first and treat it as the main source: the name, what they do, " +
+        "products and prices, who buys, how they sound, and the visual identity " +
+        "(brand colours as hex, fonts, the logo). Fill the Visual identity line and " +
+        "Found online from what you find there, then ask me only what the site does not answer."
+      : "";
+    let lines;
+    if (isCurrent) {
+      lines = ['Use the crew. Update my brand context for "' + name + '".'];
+      if (siteLine) lines.push(siteLine);
+      if (about) lines.push("Also take this in: " + about);
+      lines.push("Confirm what changed, and do not overwrite anything I told you before " +
+        "unless the site clearly contradicts it.");
+    } else {
+      lines = ['Use the crew. Switch to brand "' + name + '".',
+        "It is a new business with no drawer yet, so create it and run the brand context " +
+        "conversation with me now, then make it the active brand."];
+      if (siteLine) lines.push(siteLine);
+      if (about) lines.push("Also start from this: " + about);
+      lines.push("When you finish, confirm the active brand and tell me how to switch back" +
+        (current ? ' to "' + current + '".' : "."));
+    }
     const prompt = lines.join(" ");
     nbOut.classList.add("on");
-    nbOut.textContent = prompt +
-      "\n\nAfter that, New project here files under " + name + ". Reload this page and the brand name updates.";
+    nbOut.textContent = prompt + (isCurrent
+      ? "\n\nThis updates the brand you are already working in. Reload afterwards."
+      : "\n\nAfter that, New project here files under " + name + ". Reload this page and the brand name updates.");
     nbCopy.hidden = false;
     nbCopy.dataset.prompt = prompt;
   });

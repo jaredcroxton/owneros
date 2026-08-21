@@ -36,11 +36,14 @@ What happens next, all in the chat:
 
 3. **It runs the installer** with your answers, wires the always-on service, and opens
    your cockpit at `http://localhost:4890`.
-4. **It starts your first job.** If you have no brand context yet, that is a
-   ten-minute plain-language conversation with the crew's brand skill, right there in
-   the chat. It writes `~/.claude/crew-state/brand-context.md`, the one file every role
-   reads first. Today and Projects fill up from there. Then you open `/plays`, pick a
-   play, press Copy, and paste it back to Claude.
+4. **It starts your first job.** If you have no brand context yet, that is a short
+   plain-language conversation with the crew's brand skill, right there in the chat.
+   Give it your website and it reads your colours, fonts, logo, products and voice
+   from there, then asks only what the site does not answer. It writes
+   `~/.claude/crew-state/brand-context.md`, the one file every role reads first, and
+   everything the crew builds afterwards looks like your business. Today, Projects and
+   Roadmap fill up from there. Then you open `/plays`, pick a play, press Copy, and
+   paste it back to Claude.
 
 Afterwards, open `~/OwnerOS` as your workspace. `/setup-owneros` is then a slash
 command in the Claude Code panel, and "update OwnerOS" is a sentence, not a command.

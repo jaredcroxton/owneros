@@ -96,12 +96,17 @@ before guessing, then `"$OS/start-os.sh"`.
 ## 5. Start the first job, here in the chat
 
 - If step 1 said brand-missing, the first job is the brand conversation, and it
-  happens right here: invoke the `crew-core-brand-context` skill (it is installed at
+  happens right here. Ask one thing first: "Does the business have a website? Paste
+  the address." Then invoke the `crew-core-brand-context` skill (installed at
   `~/.claude/skills/crew-core-brand-context`; if it is not loaded in this session,
-  read its SKILL.md and follow it exactly, Step 0 and Final Step included). A short
-  plain-language conversation; it writes `~/.claude/crew-state/brand-context.md`,
-  the file every role reads first. Writing that file is the skill's job, not
-  OwnerOS's.
+  read its SKILL.md and follow it exactly, Step 0 and Final Step included). If they
+  gave a website, read it before asking anything and treat it as the main source:
+  name, what they do, products and prices, who buys, how they sound, and the visual
+  identity (brand colours as hex, fonts, the logo). Fill the skill's Visual identity
+  line and Found online from the site, then ask only what the site does not answer.
+  It writes `~/.claude/crew-state/brand-context.md`, the file every role reads first,
+  and every design and web skill builds to those colours from then on. Writing that
+  file is the skill's job, not OwnerOS's.
 - Then the first play: open `<url>/plays` for them, let them pick one, and when
   they paste it back, the `crew-core-using-crew` dispatcher routes it. The record
   it files lands in the cabinet and shows up in Projects on the next reload.

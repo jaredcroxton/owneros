@@ -246,6 +246,13 @@ new rooms, no new capabilities beyond that.
   still works by hand (add, edit, park, done) and says why drafting is off. Copy on a
   priority puts the matched play's own prompt on the clipboard for the owner's agent.
   Jared's five original items were seeded into his own priorities.json as `source: you`.
+- New brand (Projects room, beside New project): writes the prompt that has the crew
+  create a brand that does not exist yet via crew-core-brand-context's Switching brands
+  procedure, or, when the typed name is the active brand, the update prompt. A website
+  field hands the URL over with the instruction to read the site first and fill the
+  skill's Visual identity line (colours as hex, fonts, logo) and Found online, so every
+  design and web skill builds to the business's own look. The OS writes nothing; the
+  prompt is the whole feature.
 - Claude CLI resolution (`claude_bin()`, 2026-08-21). launchd starts the server with a
   bare PATH, so `shutil.which` alone found nothing on any Mac where the CLI was not in
   `~/.local/bin` ("Brock could not run: Claude CLI not found" on the first outside
