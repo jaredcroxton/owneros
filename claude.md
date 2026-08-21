@@ -90,6 +90,21 @@ most one drawer opens). `handoff_index()` is the app's only cache, memoised on a
 signature of (name, mtime_ns, size) so a hand-edited skill is live on next reload.
 A `crew-*` folder whose SKILL.md has no parseable `name` is skipped from the roster
 entirely. It is never deleted, moved, or "fixed".
+Brand fields: `brand_fields()` reads `~/.claude/crew-state/brand-context.md` as `Key: value`
+lines (the crew's format has NO markdown heading; line 1 is `BRAND CONTEXT FILE`, line 2 is
+`Brand: [name], [what they do]`). `brand_name()` is the text before the first comma of
+`Brand:`. Fixed 2026-08-21: the old parser wanted a `#` heading and said "Unknown brand"
+for every install, including the original.
+Priorities file: `~/.owneros/priorities.json` = `{source_sig, generated, goals_at_generation,
+items[]}`; item = `{id, name, why, play, prompt, source: brand|you, status: active|parked|
+done|dropped, order, edited, created, updated}`. `source_sig` is the brand file's
+`mtime_ns:size` at generation; a mismatch renders as "Goals changed" and offers Refresh.
+Refresh replaces only `source: brand` items that were never edited; owner-added and
+owner-edited items survive every refresh. Dropped is a status, never a delete. At most
+`PRIORITY_MAX` (5) drafted items per refresh. Drafting runs through `run_claude()` with the
+brand file and the live play titles as input and expects a bare JSON array back; a play
+title that does not match the library leaves `play` empty and the prompt falls back to
+"Use the crew. Start on this priority: ...".
 Owner file: `~/.owneros/owner.json` = `{name, initial, business, about, hermes}`, written by
 `install.sh` (prompts or flags), hand-editable. `hermes` is a bool: the second-runtime switch.
 Key absent = auto (on when `~/.hermes` is a directory), so an install that predates the key
@@ -222,6 +237,15 @@ new rooms, no new capabilities beyond that.
   exist only for Antigravity's own (Gemini) agent and point at the same files; they are
   not the primary path. One clarification, not a new rule: the OS never writes the
   cabinet, but a CREW skill run by any agent writes exactly what its own SKILL.md says.
+- Roadmap (route /roadmap, 2026-08-21, replaces the hardcoded list of Jared's own build
+  ideas that every install was showing). The room is the owner's priorities, drawn from
+  their brand context: `GET /api/roadmap` returns brand, the `Goals (6 months)` line and
+  its state (`ok` | `not_provided` | `no_brand`), `stale`, and the items; `POST
+  /api/roadmap` takes `{action: generate | add | edit | status}`. Generation is Brock
+  (claude CLI) drafting up to five priorities tied to real plays; no CLI means the room
+  still works by hand (add, edit, park, done) and says why drafting is off. Copy on a
+  priority puts the matched play's own prompt on the clipboard for the owner's agent.
+  Jared's five original items were seeded into his own priorities.json as `source: you`.
 - Claude CLI resolution (`claude_bin()`, 2026-08-21). launchd starts the server with a
   bare PATH, so `shutil.which` alone found nothing on any Mac where the CLI was not in
   `~/.local/bin` ("Brock could not run: Claude CLI not found" on the first outside

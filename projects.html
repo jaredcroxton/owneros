@@ -370,6 +370,7 @@
         <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
           <input id="filter" type="search" placeholder="Filter projects…" aria-label="Filter projects"></label>
         <button class="btn" id="npBtn" type="button">New project</button>
+        <button class="btn ghost" id="nbBtn" type="button">New brand</button>
       </div>
       <div class="glass panel-card">
         <div id="projectList"></div>
@@ -393,8 +394,8 @@
   <div class="npbox">
     <h2>Open a new project</h2>
     <p class="npsub">The crew creates the drawer, not the OS. This form writes the
-      perfect kickoff prompt; paste it into Claude and the project births itself
-      into the cabinet.</p>
+      kickoff prompt; paste it to Claude and the project births itself into the
+      cabinet. Working for a different business? Close this and use New brand first.</p>
     <div class="npf">
       <label>Project name
         <input id="npName" type="text" placeholder="spring-campaign-sep15">
@@ -414,6 +415,28 @@
       <button class="btn" id="npGen" type="button">Generate prompt</button>
       <button class="btn ghost" id="npCopy" type="button" hidden>Copy prompt</button>
       <button class="btn ghost" id="npClose" type="button"
+              style="margin-left:auto">Close</button>
+    </div>
+  </div>
+</div>
+<div class="npveil" id="nbVeil">
+  <div class="npbox">
+    <h2>Set up a new brand</h2>
+    <p class="npsub">One cabinet, one active brand at a time. The crew creates the brand,
+      not the OS: paste this prompt to Claude, answer its short brand conversation, and
+      the new brand becomes the active one. Your current brand's projects are parked in
+      its own drawer, and one more prompt brings them back.</p>
+    <div class="npf">
+      <label>Business name
+        <input id="nbName" type="text" placeholder="Cookie Moments"></label>
+      <label>One line on what it does (optional)
+        <textarea id="nbAbout" placeholder="Home-kitchen bakery making cookie gift boxes for offices"></textarea></label>
+    </div>
+    <div class="npout" id="nbOut"></div>
+    <div class="npacts">
+      <button class="btn" id="nbGen" type="button">Generate prompt</button>
+      <button class="btn ghost" id="nbCopy" type="button" hidden>Copy prompt</button>
+      <button class="btn ghost" id="nbClose" type="button"
               style="margin-left:auto">Close</button>
     </div>
   </div>
@@ -457,7 +480,7 @@
     setTimeout(() => { btn.textContent = old; }, 1200);
   });
   const resumeCmd = (name) =>
-    'claude "restore context for project ' + name + ' and continue"';
+    "Use the crew. Restore context for project " + name + " and continue.";
   const lightMd = (text) => esc(text)
     .replace(/^### (.*)$/gm, "<strong>$1</strong>")
     .replace(/^## (.*)$/gm, "<strong>$1</strong>")
@@ -718,7 +741,7 @@
         (r.days != null ? " · " + r.days + "d ago" : "") + '</span></div>' +
         '<ul>' + r.points.map((p) => "<li>" + esc(p) + "</li>").join("") +
         "</ul></div>").join("") ||
-        '<div class="empty">No lessons recorded yet — run something and the ' +
+        '<div class="empty">No lessons recorded yet. Run something and the ' +
         'crew writes what it learned into this drawer.</div>';
     } catch (err) {
       dLearned.innerHTML = '<div class="err">Could not read the lessons.</div>';
@@ -829,7 +852,7 @@
     if (date) lines.push("Deadline: " + date + ".");
     if (first) lines.push("First move: " + first + ".");
     lines.push("When you stop, save a context handoff so the cabinet has a record.");
-    const prompt = 'claude "' + lines.join(" ").replace(/"/g, "'") + '"';
+    const prompt = lines.join(" ");
     npOut.classList.add("on");
     npOut.textContent = prompt;
     npCopy.hidden = false;
@@ -844,6 +867,48 @@
     }
   });
   npCopy.addEventListener("click", () => copy(npCopy.dataset.prompt, npCopy));
+
+  // New brand: the crew's own switch procedure creates a brand that does not
+  // exist yet (crew-core-brand-context, Switching brands). The OS only writes
+  // the prompt.
+  const nbVeil = document.getElementById("nbVeil");
+  const nbOut = document.getElementById("nbOut");
+  const nbCopy = document.getElementById("nbCopy");
+  document.getElementById("nbBtn").addEventListener("click", async () => {
+    nbVeil.classList.add("on"); document.getElementById("nbName").focus();
+    if (!npActiveBrand) {
+      try { npActiveBrand = (await (await fetch("/api/brands")).json()).active || ""; }
+      catch (e) {}
+    }
+  });
+  document.getElementById("nbClose").addEventListener("click",
+    () => nbVeil.classList.remove("on"));
+  nbVeil.addEventListener("click", (e) => {
+    if (e.target === nbVeil) nbVeil.classList.remove("on"); });
+  document.getElementById("nbGen").addEventListener("click", () => {
+    const name = document.getElementById("nbName").value.trim();
+    const about = document.getElementById("nbAbout").value.trim();
+    if (!name) {
+      nbOut.classList.add("on");
+      nbOut.textContent = "Give the business a name first.";
+      return;
+    }
+    const current = npActiveBrand && npActiveBrand !== "Unknown brand" ? npActiveBrand : "";
+    const lines = [
+      'Use the crew. Switch to brand "' + name + '".',
+      "It is a new business with no drawer yet, so run the full brand context " +
+      "conversation with me now, write its brand-context.md, and make it the active brand."];
+    if (about) lines.push("Start from this: " + about);
+    lines.push("When you finish, confirm the active brand and tell me how to switch back" +
+      (current ? ' to "' + current + '".' : "."));
+    const prompt = lines.join(" ");
+    nbOut.classList.add("on");
+    nbOut.textContent = prompt +
+      "\n\nAfter that, New project here files under " + name + ". Reload this page and the brand name updates.";
+    nbCopy.hidden = false;
+    nbCopy.dataset.prompt = prompt;
+  });
+  nbCopy.addEventListener("click", () => copy(nbCopy.dataset.prompt, nbCopy));
 </script>
 <script>fetch("/api/owner").then(function(r){return r.json()}).then(function(o){
   document.querySelectorAll(".avatar").forEach(function(a){a.textContent=o.initial;});

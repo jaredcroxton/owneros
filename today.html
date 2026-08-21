@@ -555,8 +555,8 @@
         "Clear runway. Nothing waits on you.") + "</div>";
     document.querySelectorAll("[data-resume]").forEach((b) =>
       b.addEventListener("click", () => copy(
-        'claude "restore context for project ' + b.dataset.resume +
-        ' and continue"', b)));
+        "Use the crew. Restore context for project " + b.dataset.resume +
+        " and continue.", b)));
   }
 
   let lastData = null;

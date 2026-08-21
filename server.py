@@ -147,7 +147,7 @@ def scan_projects():
                 "days": days_since(max(mtimes)),
                 "stale": days_since(max(mtimes)) > STALE_DAYS,
                 "needs_me": [r for r in records if r["status"] in NEEDS_ME],
-                "resume": f'claude "restore context for project {entry.name} and continue"',
+                "resume": f"Use the crew. Restore context for project {entry.name} and continue.",
             })
         elif entry.suffix == ".md":
             out.append({
@@ -158,7 +158,7 @@ def scan_projects():
                 "days": days_since(entry.stat().st_mtime),
                 "stale": days_since(entry.stat().st_mtime) > STALE_DAYS,
                 "needs_me": [],
-                "resume": f'claude "restore context for project {entry.stem} and continue"',
+                "resume": f"Use the crew. Restore context for project {entry.stem} and continue.",
                 "note": "unparsed record: loose file in projects/, no handoff structure",
             })
     return out
@@ -275,9 +275,33 @@ def api_backup():
     return 200, {"ok": True, "file": str(path), "bytes": path.stat().st_size}
 
 
-def brand_name():
-    text = read_text(CREW / "brand-context.md") or ""
+BRAND_FILE = CREW / "brand-context.md"
+
+
+def brand_fields():
+    """The crew's brand file is `Key: value` lines under a `BRAND CONTEXT FILE`
+    header (crew-core-brand-context, Output format). Returns {key: value} with
+    keys as written ("Brand", "Goals (6 months)", ...). Empty dict when absent."""
+    text = read_text(BRAND_FILE) or ""
+    out = {}
     for ln in text.splitlines():
+        m = re.match(r"^([A-Z][A-Za-z0-9 ()/+-]{1,40}):\s*(.*)$", ln)
+        if m and m.group(1) not in out:
+            out[m.group(1)] = m.group(2).strip()
+    return out
+
+
+def brand_name():
+    """`Brand: [name], [what they do and why it matters]`, so the name is the
+    part before the first comma. A `#` heading is honoured for any older
+    hand-written file. "Unknown brand" only when there is no file at all."""
+    fields = brand_fields()
+    raw = fields.get("Brand", "")
+    if raw:
+        name = raw.split(", ", 1)[0].strip().rstrip(",")
+        if name:
+            return name
+    for ln in (read_text(BRAND_FILE) or "").splitlines():
         if ln.startswith("#"):
             return ln.lstrip("# ").split("·")[0].strip()
     return "Unknown brand"
@@ -415,7 +439,7 @@ def api_project(name):
                         if f.is_file() and not f.name.endswith("-handoff.md"))
         return {"name": name, "kind": "project", "records": records,
                 "other_files": extras,
-                "resume": f'claude "restore context for project {name} and continue"'}
+                "resume": f"Use the crew. Restore context for project {name} and continue."}
     loose = PROJECTS / f"{name}.md"
     if loose.is_file():
         return {"name": name, "kind": "loose",
@@ -424,7 +448,7 @@ def api_project(name):
                              "days": days_since(loose.stat().st_mtime),
                              "stale": False, "body": read_text(loose)}],
                 "other_files": [],
-                "resume": f'claude "restore context for project {name} and continue"'}
+                "resume": f"Use the crew. Restore context for project {name} and continue."}
     return None
 
 
@@ -971,8 +995,10 @@ def run_claude(args, timeout):
     exe = claude_bin()
     if not exe:
         raise FileNotFoundError(CLAUDE_MISSING)
+    # stdin closed on purpose: the CLI otherwise waits three seconds for piped
+    # input and logs a warning to stderr, and under launchd there is no tty.
     return subprocess.run([exe] + list(args), capture_output=True, text=True,
-                          timeout=timeout, env=claude_env())
+                          timeout=timeout, env=claude_env(), stdin=subprocess.DEVNULL)
 
 
 BRIEF_DIR = OWN / "briefings"
@@ -2055,6 +2081,227 @@ def api_brands():
     return {"active": active, "drawers": drawers}
 
 
+PRIORITIES_FILE = OWN / "priorities.json"
+PRIORITY_STATUSES = ("active", "parked", "done", "dropped")
+PRIORITY_MAX = 5
+PRIORITY_PROMPT = """You are Brock, {name}'s AI chief of staff inside OwnerOS, the local \
+cockpit for the business {business}. Read the brand context below and draft the {n} \
+priorities that would move this business toward its goals over the next six months. \
+Lean on the "Goals (6 months)" line when it is filled in. When it says Not provided, \
+draw the priorities from "Where we fall short", "Why they leave", the product and the \
+customer lines instead, and say so in the first priority's why. Each priority is a piece \
+of work the owner could start this month, not a wish.
+
+For each priority pick ONE play from the list below whose title fits the work, and use \
+that exact title. Use an empty string if nothing fits.
+
+Return ONLY a JSON array, no prose and no markdown fence. Each element is an object: \
+{{"name": "<up to 6 words>", "why": "<one sentence, up to 22 words, naming the goal or \
+gap it serves>", "play": "<exact play title, or empty string>"}}. Order by impact. Plain \
+words, active voice, no hype, no em dashes, never the name Sarah.
+
+BRAND CONTEXT:
+{brand}
+
+PLAYS (title: when to use it):
+{plays}
+"""
+
+
+def brand_signature():
+    try:
+        st = BRAND_FILE.stat()
+        return f"{st.st_mtime_ns}:{st.st_size}"
+    except OSError:
+        return ""
+
+
+def read_priorities():
+    try:
+        data = json.loads(read_text(PRIORITIES_FILE) or "{}")
+    except ValueError:
+        data = {}
+    items = [it for it in data.get("items", [])
+             if isinstance(it, dict) and it.get("id") and it.get("name")]
+    return {"source_sig": str(data.get("source_sig", "")),
+            "generated": str(data.get("generated", "")),
+            "goals_at_generation": str(data.get("goals_at_generation", "")),
+            "items": items}
+
+
+def write_priorities(data):
+    OWN.mkdir(parents=True, exist_ok=True)
+    PRIORITIES_FILE.write_text(json.dumps(data, indent=1), encoding="utf-8")
+
+
+def goals_state(fields):
+    if not fields:
+        return "", "no_brand"
+    goals = fields.get("Goals (6 months)", "")
+    if not goals or goals.lower().startswith("not provided"):
+        return goals, "not_provided"
+    return goals, "ok"
+
+
+def play_index():
+    """title (lowercased) -> play, from the live library."""
+    out = {}
+    for cat in parse_playbook().get("categories", []):
+        for play in cat.get("plays", []):
+            out[play["title"].strip().lower()] = play
+    return out
+
+
+def match_play(title, plays):
+    """Exact title first, then containment either way, then the best token
+    overlap (two words or more). Brock paraphrases titles now and then."""
+    t = (title or "").strip().lower()
+    if not t:
+        return None
+    if t in plays:
+        return plays[t]
+    for k, p in plays.items():
+        if t in k or k in t:
+            return p
+    stop = {"a", "an", "the", "of", "for", "and", "in", "on", "to", "your", "you",
+            "that", "into", "it", "one", "before", "with"}
+
+    def words(text):
+        # light stemming: posts -> post, invoices -> invoice
+        return {w[:-1] if len(w) > 4 and w.endswith("s") else w
+                for w in re.findall(r"[a-z0-9]+", text)} - stop
+    tw = words(t)
+    best, score = None, 0
+    for k, p in plays.items():
+        shared = tw & words(k)
+        # two shared words, or one distinctive word (pipeline, proposal, invoice)
+        ov = len(shared) if len(shared) >= 2 else (1 if any(len(w) >= 7 for w in shared) else 0)
+        if ov > score:
+            best, score = p, ov
+    return best
+
+
+def priority_prompt_for(name, why, play):
+    if play and play.get("prompt"):
+        return play["prompt"] + "\nContext: this is my priority \"" + name + "\". " + why
+    return "Use the crew. Start on this priority: " + name + ". " + why
+
+
+def api_roadmap():
+    fields = brand_fields()
+    goals, state = goals_state(fields)
+    data = read_priorities()
+    sig = brand_signature()
+    stale = bool(data["generated"]) and bool(sig) and data["source_sig"] != sig
+    items = [it for it in data["items"] if it.get("status") != "dropped"]
+    items.sort(key=lambda it: (it.get("order", 999), it.get("created", "")))
+    return {"brand": brand_name() if fields else "", "goals": goals,
+            "goals_state": state, "brand_updated": fields.get("Updated", ""),
+            "generated": data["generated"], "stale": stale, "items": items,
+            "claude": bool(claude_bin()), "max": PRIORITY_MAX}
+
+
+def priorities_generate():
+    """Brock drafts up to PRIORITY_MAX priorities from the brand file. Replaces
+    only drafted items the owner never edited; owner-added and owner-edited
+    items survive, statuses intact."""
+    fields = brand_fields()
+    if not fields:
+        return 409, {"ok": False, "error": "No brand context on file yet. First job: "
+                     "tell the crew, build my brand context."}
+    plays = play_index()
+    play_lines = "\n".join(p["title"] + ": " + (p.get("when") or "")
+                           for p in plays.values())[:12000]
+    o = owner()
+    prompt = PRIORITY_PROMPT.format(
+        name=o["name"], business=o["business"], n=PRIORITY_MAX,
+        brand=(read_text(BRAND_FILE) or "")[:8000], plays=play_lines)
+    try:
+        proc = run_claude(["-p", prompt], 150)
+    except FileNotFoundError:
+        return 501, {"ok": False, "error": CLAUDE_MISSING}
+    except subprocess.TimeoutExpired:
+        return 504, {"ok": False, "error": "Brock took too long, try again"}
+    raw = proc.stdout.strip()
+    if proc.returncode != 0 and raw and "[" not in raw:
+        # The CLI's own short message ("Not logged in · Please run /login").
+        return 502, {"ok": False, "error": raw[:160]}
+    start, end = raw.find("["), raw.rfind("]")
+    try:
+        drafted = json.loads(raw[start:end + 1]) if start >= 0 and end > start else []
+    except ValueError:
+        drafted = []
+    drafted = [d for d in drafted if isinstance(d, dict) and str(d.get("name", "")).strip()]
+    if not drafted:
+        sys.stderr.write("roadmap draft unusable. stdout: %r stderr: %r\n"
+                         % (raw[:400], proc.stderr.strip()[:200]))
+        return 502, {"ok": False,
+                     "error": "Brock did not return a usable list. Try Refresh once more."}
+    now = datetime.now()
+    stamp = now.strftime("%Y%m%d%H%M%S")
+    data = read_priorities()
+    kept = [it for it in data["items"]
+            if it.get("source") == "you" or it.get("edited")]
+    fresh = []
+    for i, d in enumerate(drafted[:PRIORITY_MAX]):
+        name = str(d.get("name", "")).strip()[:80]
+        why = str(d.get("why", "")).strip()[:240]
+        play = match_play(str(d.get("play", "")), plays)
+        fresh.append({"id": f"p-{stamp}-{i + 1}", "name": name, "why": why,
+                      "play": play["title"] if play else "",
+                      "prompt": priority_prompt_for(name, why, play),
+                      "source": "brand", "status": "active", "order": i + 1,
+                      "edited": False, "created": now.isoformat(timespec="seconds"),
+                      "updated": now.isoformat(timespec="seconds")})
+    for j, it in enumerate(kept):
+        it["order"] = len(fresh) + j + 1
+    goals, _ = goals_state(fields)
+    write_priorities({"source_sig": brand_signature(),
+                      "generated": now.strftime("%Y-%m-%d %H:%M"),
+                      "goals_at_generation": goals, "items": fresh + kept})
+    return 200, dict(api_roadmap(), ok=True)
+
+
+def api_roadmap_set(payload):
+    action = (payload.get("action") or "").strip()
+    if action == "generate":
+        return priorities_generate()
+    data = read_priorities()
+    now = datetime.now().isoformat(timespec="seconds")
+    if action == "add":
+        name = str(payload.get("name") or "").strip()[:80]
+        why = str(payload.get("why") or "").strip()[:240]
+        if not name:
+            return 400, {"ok": False, "error": "A priority needs a name"}
+        order = max([it.get("order", 0) for it in data["items"]] + [0]) + 1
+        data["items"].append({
+            "id": "p-" + datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3], "name": name,
+            "why": why, "play": "", "prompt": priority_prompt_for(name, why, None),
+            "source": "you", "status": "active", "order": order, "edited": False,
+            "created": now, "updated": now})
+        write_priorities(data)
+        return 200, dict(api_roadmap(), ok=True)
+    item = next((it for it in data["items"] if it.get("id") == payload.get("id")), None)
+    if item is None:
+        return 404, {"ok": False, "error": "Unknown priority"}
+    if action == "edit":
+        name = str(payload.get("name") or item["name"]).strip()[:80] or item["name"]
+        why = str(payload.get("why") if payload.get("why") is not None
+                  else item.get("why", "")).strip()[:240]
+        item.update({"name": name, "why": why, "edited": True, "updated": now})
+        play = match_play(str(item.get("play", "")), play_index())
+        item["prompt"] = priority_prompt_for(name, why, play)
+    elif action == "status":
+        status = str(payload.get("status") or "")
+        if status not in PRIORITY_STATUSES:
+            return 400, {"ok": False, "error": "Bad status"}
+        item.update({"status": status, "updated": now})
+    else:
+        return 400, {"ok": False, "error": "Unknown action"}
+    write_priorities(data)
+    return 200, dict(api_roadmap(), ok=True)
+
+
 def api_dates_set(payload):
     project = (payload.get("project") or "").strip()
     date_str = (payload.get("date") or "").strip()
@@ -2171,6 +2418,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(api_sessions())
         if url.path == "/api/owner":
             return self.send_json(dict(owner(), hermes=hermes_enabled()))
+        if url.path == "/api/roadmap":
+            return self.send_json(api_roadmap())
         if url.path == "/api/role":
             data = api_role((q.get("name") or [""])[0])
             return self.send_json(data if data else {"error": "unknown role"},
@@ -2287,6 +2536,13 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError:
                 return self.send_json({"ok": False, "error": "bad json"}, 400)
             code, result = api_dates_set(payload)
+            return self.send_json(result, code)
+        if url.path == "/api/roadmap":
+            try:
+                payload = json.loads(raw.decode("utf-8")) if raw else {}
+            except ValueError:
+                return self.send_json({"ok": False, "error": "bad json"}, 400)
+            code, result = api_roadmap_set(payload)
             return self.send_json(result, code)
         if url.path == "/api/brock-chat":
             try:

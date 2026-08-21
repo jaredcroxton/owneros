@@ -115,6 +115,40 @@
   .btn:disabled { opacity: .55; cursor: default; }
 
   .err { color: var(--ember); }
+
+  /* ---- priorities ---- */
+  .goalline { margin: 22px auto 0; max-width: 760px; font-family: var(--f-body);
+              font-size: 17px; line-height: 1.55; color: var(--read); }
+  .goalline em { font-style: normal; color: var(--ink); }
+  .chips { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+           margin-top: 18px; }
+  .chip { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em;
+          text-transform: uppercase; color: var(--mid); padding: 7px 12px;
+          border: 1px solid var(--line); border-radius: 980px; }
+  .chip.hot { background: var(--ember); color: #08090a; border-color: var(--ember);
+              font-weight: 500; }
+  .chip.hot:hover { background: var(--ember-hover); }
+  .chip.act:hover { background: var(--g2); color: var(--ink); }
+  .gname[contenteditable], .gdesc[contenteditable] { outline: none; border-radius: 4px; }
+  .gname[contenteditable]:focus, .gdesc[contenteditable]:focus {
+    box-shadow: 0 0 0 1px var(--line); background: var(--g2); }
+  .play { font-family: var(--f-mono); font-size: 11px; letter-spacing: .12em;
+          text-transform: uppercase; color: var(--mid); margin-top: 10px; }
+  .play b { font-weight: 500; color: var(--ink); }
+  .acts { display: flex; gap: 8px; flex-wrap: wrap; flex-shrink: 0; }
+  .goal.parked, .goal.done { opacity: .72; }
+  .goal.done .gname { text-decoration: line-through; text-decoration-color: var(--mid); }
+  .addrow { display: flex; gap: 10px; margin-top: 18px; }
+  .addrow input { flex: 1; min-width: 0; background: var(--g1); color: var(--ink);
+                  border: 1px solid var(--line); border-radius: 980px;
+                  padding: 11px 18px; font: inherit; font-size: 15px; }
+  .addrow input::placeholder { color: var(--faint); }
+  .addrow input:focus { outline: none; border-color: var(--mid); }
+  .sub-h { font-family: var(--f-statement); font-size: 19px; font-weight: 600;
+           letter-spacing: -.01em; margin: 38px 0 0; text-align: left; }
+  .empty { text-align: left; color: var(--mid); font-size: 15px; padding: 26px 30px;
+           border: 1px dashed var(--line); border-radius: 12px; margin-top: 34px; }
+  .empty b { color: var(--ink); font-weight: 500; }
   .foot-note { text-align: center; font-size: 14px; color: var(--mid);
                margin-top: 30px;
                animation: rise .5s cubic-bezier(.2,.7,.3,1) backwards; }
@@ -164,13 +198,28 @@
     <div class="band-in">
       <div class="datechip mono" id="dateChip"></div>
       <div class="greet">
-        <h2>Parked, on purpose<span class="cursor">_</span></h2>
-        <p>Listed so they stop occupying your head. Nothing here is built.</p>
+        <h2>What matters next<span class="cursor">_</span></h2>
+        <p>Your priorities, drawn from the goals in your brand context.
+          Copy one and hand it to the crew.</p>
       </div>
 
+      <div class="goalline" id="goalline"></div>
+      <div class="chips" id="chips"></div>
+
       <div class="goals" id="goals"></div>
-      <p class="foot-note" id="foot">Promote one when you are ready to build it.
-        Your next build session knows where to look.</p>
+      <div class="addrow" id="addrow">
+        <input id="addName" type="text" maxlength="80" placeholder="Add a priority of your own">
+        <button class="btn ghost" id="addBtn" type="button">Add</button>
+      </div>
+
+      <div id="parkedWrap" hidden>
+        <h3 class="sub-h">Parked, on purpose</h3>
+        <p class="foot-note" style="text-align:left;margin-top:6px">Listed so they stop
+          occupying your head. Bring one back when it is time.</p>
+        <div class="goals" id="parked" style="margin-top:14px"></div>
+      </div>
+      <p class="foot-note" id="foot">Click a name or a line to edit it. Edits stay through
+        every refresh.</p>
     </div>
   </section>
 </main>
@@ -191,43 +240,102 @@
     setTimeout(() => { btn.textContent = old; btn.classList.remove("copied"); }, 1200);
   });
 
-  const ITEMS = [
-    { name: "Workshop seat tracker",
-      desc: "Seats sold, seats left, per workshop. Reads a simple sheet or capture notes." },
-    { name: "Content calendar",
-      desc: "What publishes where, this week and next. Feeds from the marketing crew skills." },
-    { name: "Money snapshot",
-      desc: "Cash position and invoices at a glance. NSE stays in units." },
-    { name: "Client list",
-      desc: "Who, where, last touch. A list, deliberately not a CRM." },
-    { name: "Voice extras",
-      desc: "Spoken answers on Capture and Today, reusing the Brain's voice pipeline." }
-  ];
+  let data = null;
+  const $ = (id) => document.getElementById(id);
+  const api = (body) => fetch("/api/roadmap", { method: "POST",
+    headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+    .then((r) => r.json());
+
+  function card(it, i, parked) {
+    const acts = parked
+      ? '<button class="btn ghost" data-act="status" data-s="active" data-id="' + esc(it.id) + '">Bring back</button>'
+      : '<button class="btn ghost" data-act="copy" data-id="' + esc(it.id) + '">Copy the play</button>' +
+        (it.status === "done"
+          ? '<button class="btn ghost" data-act="status" data-s="active" data-id="' + esc(it.id) + '">Reopen</button>'
+          : '<button class="btn ghost" data-act="status" data-s="done" data-id="' + esc(it.id) + '">Done</button>' +
+            '<button class="btn ghost" data-act="status" data-s="parked" data-id="' + esc(it.id) + '">Park</button>');
+    return '<div class="goal glass ' + esc(it.status) + '" style="animation-delay:' + (i * 70) + 'ms">' +
+      '<span class="num">' + String(i + 1).padStart(2, "0") + '</span>' +
+      '<div class="who"><div class="gname" contenteditable="true" spellcheck="false" data-edit="name" data-id="' +
+        esc(it.id) + '">' + esc(it.name) + '</div>' +
+      '<div class="gdesc" contenteditable="true" spellcheck="false" data-edit="why" data-id="' +
+        esc(it.id) + '">' + esc(it.why || "") + '</div>' +
+      '<div class="play">' + (it.play ? 'Play · <b>' + esc(it.play) + '</b>' : 'No play matched · the crew will route it') +
+        ' · ' + (it.source === "you" ? "yours" : "drafted from your goals") + '</div></div>' +
+      '<div class="acts">' + acts + '</div></div>';
+  }
 
   function render() {
-    document.getElementById("goals").innerHTML = ITEMS.map((it, i) =>
-      '<div class="goal glass" style="animation-delay:' + (i * 70) + 'ms">' +
-      '<span class="tick"></span>' +
-      '<span class="num">' + String(i + 1).padStart(2, "0") + '</span>' +
-      '<div class="who"><div class="gname">' + esc(it.name) +
-      '</div><div class="gdesc">' + esc(it.desc) + '</div></div>' +
-      '<button class="btn ghost" type="button" data-i="' + i + '">Promote</button>' +
-      '</div>').join("");
-    document.getElementById("foot").style.animationDelay =
-      (ITEMS.length * 70 + 60) + "ms";
-    document.querySelectorAll("[data-i]").forEach((b) =>
-      b.addEventListener("click", () => {
-        const n = Number(b.dataset.i) + 1;
-        copy('claude "read /Users/jc/OS System/task_plan.md and build roadmap item ' +
-          n + ': ' + ITEMS[n - 1].name + '"', b);
-      }));
+    const d = data;
+    const gl = $("goalline");
+    if (d.goals_state === "no_brand") {
+      gl.innerHTML = "No brand context on file yet. Your first job: tell the crew, " +
+        "<em>build my brand context</em>. Ten minutes, and this room fills itself.";
+    } else if (d.goals_state === "not_provided") {
+      gl.innerHTML = "Your brand context has no six-month goals yet. Tell the crew, " +
+        "<em>update my brand context with my six-month goals</em>, then Refresh here.";
+    } else {
+      gl.innerHTML = "<em>" + esc(d.brand) + "</em>, winning in six months: " + esc(d.goals);
+    }
+    const chips = [];
+    if (d.generated) chips.push('<span class="chip">drafted ' + esc(d.generated) + '</span>');
+    if (d.goals_state !== "no_brand") {
+      if (!d.claude) chips.push('<span class="chip" title="' + esc("Drafting needs the Claude CLI; add priorities by hand below") + '">drafting off · no claude cli</span>');
+      else if (d.stale) chips.push('<button class="chip hot" data-act="generate" type="button">goals changed · refresh</button>');
+      else chips.push('<button class="chip act" data-act="generate" type="button">' + (d.generated ? "refresh from my goals" : "draft from my goals") + '</button>');
+    }
+    $("chips").innerHTML = chips.join("");
+    const live = d.items.filter((it) => it.status !== "parked");
+    const parked = d.items.filter((it) => it.status === "parked");
+    $("goals").innerHTML = live.length ? live.map((it, i) => card(it, i, false)).join("") :
+      (d.goals_state === "no_brand" ? "" :
+        '<div class="empty"><b>Nothing here yet.</b> Draft from your goals, or add one of your own below.</div>');
+    $("parkedWrap").hidden = !parked.length;
+    $("parked").innerHTML = parked.map((it, i) => card(it, i, true)).join("");
+    $("foot").style.animationDelay = (live.length * 70 + 60) + "ms";
+
+    document.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", async () => {
+      const act = b.dataset.act;
+      if (act === "copy") {
+        const it = d.items.find((x) => x.id === b.dataset.id);
+        return copy(it.prompt || ("Use the crew. Start on this priority: " + it.name), b);
+      }
+      b.disabled = true;
+      if (act === "generate") b.textContent = "Brock is drafting…";
+      const res = await api(act === "generate" ? { action: "generate" }
+        : { action: "status", id: b.dataset.id, status: b.dataset.s });
+      if (res.ok) { data = res; render(); }
+      else { b.disabled = false; b.textContent = res.error || "Could not do that"; b.classList.add("err"); }
+    }));
+    document.querySelectorAll("[data-edit]").forEach((el) => {
+      el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
+      el.addEventListener("blur", async () => {
+        const it = d.items.find((x) => x.id === el.dataset.id);
+        const val = el.textContent.trim();
+        if (!it || val === (it[el.dataset.edit] || "")) return;
+        const res = await api({ action: "edit", id: it.id, [el.dataset.edit]: val });
+        if (res.ok) { data = res; render(); }
+      });
+    });
   }
+
+  async function add() {
+    const name = $("addName").value.trim();
+    if (!name) return;
+    $("addBtn").disabled = true;
+    const res = await api({ action: "add", name });
+    $("addBtn").disabled = false;
+    if (res.ok) { $("addName").value = ""; data = res; render(); }
+  }
+  $("addBtn").addEventListener("click", add);
+  $("addName").addEventListener("keydown", (e) => { if (e.key === "Enter") add(); });
 
   try {
     document.getElementById("dateChip").textContent =
       new Date().toLocaleDateString("en-AU",
         { weekday: "short", day: "numeric", month: "short", year: "numeric" });
-    render();
+    fetch("/api/roadmap").then((r) => r.json()).then((d) => { data = d; render(); })
+      .catch(() => { $("goals").innerHTML = '<span class="err">Could not read your priorities.</span>'; });
   } catch (err) {
     document.getElementById("goals").innerHTML =
       '<span class="err">Could not render the roadmap.</span>';
