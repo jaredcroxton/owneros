@@ -86,6 +86,11 @@ most one drawer opens). `handoff_index()` is the app's only cache, memoised on a
 signature of (name, mtime_ns, size) so a hand-edited skill is live on next reload.
 A `crew-*` folder whose SKILL.md has no parseable `name` is skipped from the roster
 entirely. It is never deleted, moved, or "fixed".
+Owner file: `~/.owneros/owner.json` = `{name, initial, business, about, hermes}`, written by
+`install.sh` (prompts or flags), hand-editable. `hermes` is a bool: the second-runtime switch.
+Key absent = auto (on when `~/.hermes` is a directory), so an install that predates the key
+behaves exactly as before. `hermes_enabled()` is the only reader; it never infers from the
+CLI, the skills tree or the session log, only from the flag or the directory.
 Skill card: frontmatter `name` + `description` from `~/.claude/skills/crew-*/SKILL.md`;
 pack membership from `pack-map.json` (generated from `~/Desktop/cluade/crew-skill-packs/packs/`,
 regenerate by rerunning the build snippet in progress.md when packs change).
@@ -98,6 +103,10 @@ document for the day. Two things it depends on that must not be broken:
 Connections proof row (delete it and the row honestly reverts to "not yet"), and the live
 demo must run in the DEFAULT Hermes profile, because the 13 named profiles carry no crew
 skills.
+
+Lifted in one place on 2026-08-21: the GitHub onboarding scope (installer questions,
+the Hermes runtime switch, start/stop scripts, AGENTS.md and the Antigravity workflow). No
+new rooms, no new capabilities beyond that.
 
 ## Maintenance log
 - Serve: LaunchAgent `com.jared.owneros` (RunAtLoad + KeepAlive), binds 127.0.0.1, port walk
@@ -168,5 +177,30 @@ skills.
   fallback: it is used when the live source is missing, unparseable, has no chains, or
   names a step that resolves to no installed skill, and the Plays room says
   "play library fallback active" when that happens.
+- Runtime switch (`hermes` in owner.json). Off: every room drops the Hermes nav link
+  (the same per-page `/api/owner` snippet that sets the avatar initial), `/hermes` answers
+  302 to `/today`, `/api/sessions` does not open any Hermes store and reports
+  `hermes.enabled:false`, and the Sessions room hides the Claude/Hermes toggle. On: nothing
+  changes from before; the Hermes room and Connections panel stay honest about what is
+  and is not on disk. `/api/owner` and `/api/health` both carry the flag. Never gate a
+  read on the flag that the constitution already calls read-only; the flag hides, it does
+  not protect (the read-only rule does that).
+- Install (`install.sh`, from the cloned folder). Asks five things: first name, business,
+  one line on the business, "do you run Hermes Agent on this Mac" (y/N), and an optional
+  Fish Audio key. Every answer is also a flag (`--name --business --about --hermes yes|no
+  --fish-key --no-open`) so an agent driving the install from Antigravity or Claude Code
+  can ask in chat and run it non-interactively; `--yes` accepts defaults. Before asking it
+  checks python3, the claude CLI, the CREW skills count and the cabinet, and says plainly
+  what is missing. It writes only `~/.owneros/*` and the LaunchAgent plist (`com.owneros`).
+  Hermes yes runs `hermes-sync.sh`: copies `~/.claude/skills/crew-*` into
+  `~/.hermes/skills/crew/` (copies, not links, the layout verified with `hermes skills
+  list` on 2026-08-16), refuses to run if `~/.hermes/crew-state` exists (split brain), and
+  reports how many crew skills Hermes can see. Re-run it after a CREW update. It never
+  touches profiles: crew skills run in the DEFAULT Hermes profile only.
+- `start-os.sh` / `stop-os.sh` find the plist by label (`com.owneros` first, the original
+  `com.jared.owneros` second) and only touch the Brain agent if its plist exists.
+- Antigravity / agent-driven setup: `AGENTS.md` at the root is the cross-tool context file
+  (what this is, the hard rules, how to install), and `.agents/workflows/setup-owneros.md`
+  is the `/setup-owneros` workflow. Both restate the invariants; neither adds a rule.
 - Fonts are local (`fonts/`). No CDN at runtime.
 - Debug: `tail -20 ~/.owneros/os.log`; `curl localhost:4890/api/health`.

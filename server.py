@@ -183,6 +183,21 @@ def owner():
                       "an agent catalogue").strip()}
 
 
+def hermes_enabled():
+    """The second-runtime switch. `hermes` in owner.json, written by the
+    installer, wins when it is a real bool. Key absent = auto: on when
+    ~/.hermes is a directory, so an install that predates the key behaves
+    exactly as before. Nothing else is consulted."""
+    try:
+        data = json.loads(read_text(OWNER_FILE) or "{}")
+    except ValueError:
+        data = {}
+    flag = data.get("hermes")
+    if isinstance(flag, bool):
+        return flag
+    return HERMES.is_dir()
+
+
 OVERLAY_FILE = OWN / "overlay.json"
 
 
@@ -1879,7 +1894,9 @@ def api_sessions():
     """Both runtimes, metadata only. No transcript text, no prompt bodies, no
     message content is read or returned by this endpoint on either side."""
     cc, cc_total = cc_sessions()
-    hm, hm_total, agents = hermes_sessions()
+    on = hermes_enabled()
+    # Switch off: no Hermes store is opened at all, and the payload says so.
+    hm, hm_total, agents = hermes_sessions() if on else ([], 0, set())
 
     up_dirs = [d for d in UPLOADS.iterdir() if d.is_dir()] \
         if UPLOADS.is_dir() else []
@@ -1902,8 +1919,10 @@ def api_sessions():
             "root": str(CC_PROJECTS),
         },
         "hermes": {
+            "enabled": on,
             "sessions": hm, "total": hm_total, "counted": len(hm),
-            "agents": len(agents), "stores": len(hermes_profile_dbs()),
+            "agents": len(agents),
+            "stores": len(hermes_profile_dbs()) if on else 0,
             "messages": sum(s["messages"] or 0 for s in hm),
             "root": str(HERMES),
         },
@@ -2004,7 +2023,7 @@ def api_health():
     except Exception:
         pass
     return {"ok": True, "brain": brain, "brain_url": BRAIN_URL,
-            "fish": FISH_KEY_FILE.is_file(),
+            "fish": FISH_KEY_FILE.is_file(), "hermes": hermes_enabled(),
             "inbox": str(INBOX), "crew_state": str(CREW)}
 
 
@@ -2091,7 +2110,7 @@ class Handler(BaseHTTPRequestHandler):
         if url.path == "/api/sessions":
             return self.send_json(api_sessions())
         if url.path == "/api/owner":
-            return self.send_json(owner())
+            return self.send_json(dict(owner(), hermes=hermes_enabled()))
         if url.path == "/api/role":
             data = api_role((q.get("name") or [""])[0])
             return self.send_json(data if data else {"error": "unknown role"},
@@ -2119,6 +2138,13 @@ class Handler(BaseHTTPRequestHandler):
                                   (q.get("path") or [""])[0])
             return self.send_json(data if data else {"error": "not a safe zone"},
                                   200 if data else 404)
+        if url.path == "/hermes" and not hermes_enabled():
+            # Switch off: the room is not on the map. Honest, not an error.
+            self.send_response(302)
+            self.send_header("Location", "/today")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            return None
         if url.path in ROUTES:
             return self.send_file(ROUTES[url.path])
         return self.send_file(url.path)
