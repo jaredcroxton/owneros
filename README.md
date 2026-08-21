@@ -7,66 +7,53 @@ capture, the full skill deck, a plain-words playbook, and safe file management.
 Everything runs on your Mac. Nothing leaves it (one optional exception: the
 Fish voice, key-gated).
 
-## Before you install
+## Set up, in Antigravity, no terminal
 
-Three things need to be on the Mac first. The workshop covers all three.
+The workshop put Claude Code and the CREW skills on your Mac (and Hermes Agent, if
+you chose it). From there you never open a terminal. Your agent does the typing.
 
-1. **Claude Code**, installed and logged in (run `claude` once, then `/login`).
-2. **The CREW skills** in `~/.claude/skills`:
-   `git clone https://github.com/jaredcroxton/Crew-Agents.git && cd Crew-Agents && bash install.sh --all --global`
-3. **Hermes Agent**, only if you want the second runtime. Optional. OwnerOS runs
-   without it and simply does not show the Hermes room.
-
-## Install (3 lines)
+Open Antigravity and paste this into the agent chat:
 
 ```
-git clone https://github.com/jaredcroxton/owneros.git ~/OwnerOS
-cd ~/OwnerOS
-./install.sh
+Set up OwnerOS for me. Clone https://github.com/jaredcroxton/owneros.git into ~/OwnerOS
+(pull if it is already there), then read ~/OwnerOS/AGENTS.md and follow
+~/OwnerOS/.agents/workflows/setup-owneros.md step by step. Ask me the questions one at a
+time. Run every command yourself; I will not use a terminal.
 ```
 
-The installer checks what is on the Mac, then asks five things:
+What happens next, all in the chat:
 
-| Question | Why |
-|---|---|
-| Your first name | The avatar initial and how Brock addresses you |
-| Your business name | Shown across the rooms |
-| One line on what the business does | Brock's briefing context |
-| **Do you run Hermes Agent on this Mac? (y/n)** | **Yes**: copies the CREW skills into `~/.hermes/skills/crew` so Hermes can run them, and keeps the Hermes room and the Sessions toggle. **No**: the cockpit loads without the Hermes room, the Sessions toggle, or any Hermes read. Change it later in `~/.owneros/owner.json` |
-| Fish Audio key (optional) | Brock's real voice. Enter to skip; the browser voice takes over |
+1. **It checks the Mac.** python3, Claude Code, how many CREW skills are installed,
+   whether your brand context exists yet, whether Hermes is there. Anything missing is
+   named, with what it means, and setup carries on.
+2. **It asks you five things, one at a time.**
 
-Then it wires the always-on service and opens your cockpit.
+   | Question | Why |
+   |---|---|
+   | Your first name | The avatar initial and how Brock addresses you |
+   | Your business name | Shown across the rooms |
+   | One line on what the business does | Brock's briefing context |
+   | **Do you run Hermes Agent on this Mac?** | **Yes**: copies the CREW skills into `~/.hermes/skills/crew` so Hermes can run them, and keeps the Hermes room and the Sessions toggle. **No**: the cockpit loads without the Hermes room, the Sessions toggle, or any Hermes read. Either answer can be changed later |
+   | A Fish Audio key, if you have one | Brock's real voice. Skip it and the browser voice takes over |
 
-Every question is also a flag, so an agent can ask you in chat and run the install
-without prompts (this is what the Antigravity workflow does):
+3. **It runs the installer** with your answers, wires the always-on service, and opens
+   your cockpit at `http://localhost:4890`.
+4. **It starts your first job.** If you have no brand context yet, that is a
+   ten-minute plain-language conversation, right there in the chat. It writes
+   `~/.claude/crew-state/brand-context.md`, the one file every role reads first. Today
+   and Projects fill up from there. Then you open `/plays`, pick a play, press Copy,
+   and paste it back to the agent.
 
-```
-./install.sh --name Jo --business "Jo's Plumbing" --about "domestic plumbing, Brisbane" \
-             --hermes no --fish-key "" --no-open
-```
-
-`./install.sh --help` lists the rest (`--yes` accepts every default).
-
-### First job after install
-
-If the installer said "Brand context: not yet", open Claude Code anywhere and say
-**"use the crew, build my brand context"**. Ten minutes of plain questions writes
-`~/.claude/crew-state/brand-context.md`, the one file every role reads first. Today
-and Projects fill up from there. Then open `/plays`, pick a play, Copy, paste.
-
-### Setting up from Antigravity
-
-Open the cloned folder in Antigravity and type `/setup-owneros` in the agent chat.
-The workflow (`.agents/workflows/setup-owneros.md`) checks the prerequisites, asks
-you the five questions in chat, runs the installer with flags, and walks you to your
-first play. `AGENTS.md` carries the rules any agent must keep while working in here.
+Afterwards, open `~/OwnerOS` as your workspace in Antigravity. `/setup-owneros` and
+the OwnerOS rules are then on hand, and "update OwnerOS" is a sentence, not a command.
 
 ### If you said yes to Hermes
 
 - Run crew skills in the **default** Hermes profile (plain `hermes`). Named profiles
   (`hermes -p name`) keep their own skill folders and do not see the CREW skills.
-- After a CREW update, run `./hermes-sync.sh` to refresh the copy Hermes reads.
-- One brain: both runtimes read and write `~/.claude/crew-state`. Never create
+- After a CREW update, ask your agent to run `hermes-sync.sh` to refresh the copy
+  Hermes reads.
+- One brain: every runtime reads and writes `~/.claude/crew-state`. Never create
   `~/.hermes/crew-state`; the sync script refuses to run while it exists.
 
 ## The rooms
@@ -91,18 +78,33 @@ first play. `AGENTS.md` carries the rules any agent must keep while working in h
 - The OS writes only to its own home (`~/.owneros`).
 - No cloud at runtime; Fish voice activates only if `~/.owneros/fish.key` exists.
 
-## Update
+## Under the hood
+
+What the agent runs, for anyone who would rather do it by hand:
 
 ```
-git pull
-./start-os.sh
+git clone https://github.com/jaredcroxton/owneros.git ~/OwnerOS
+cd ~/OwnerOS
+./install.sh
 ```
 
-`start-os.sh` reloads the service so the new code is live. `./stop-os.sh` stops it.
+`install.sh` asks the same five questions, or takes them as flags so an agent can
+answer without prompts (`./install.sh --help`):
+
+```
+./install.sh --name Jo --business "Jo's Plumbing" --about "domestic plumbing, Brisbane" \
+             --hermes no --fish-key "" --no-open
+```
+
+It writes only `~/.owneros/*` and `~/Library/LaunchAgents/com.owneros.plist`.
+`hermes-sync.sh` is the Hermes copy. `start-os.sh` starts or restarts the service
+(so `git pull` then `./start-os.sh` is the update); `stop-os.sh` stops it.
+`AGENTS.md` is the contract any agent keeps while working in here; `.agents/rules`
+and `.agents/workflows` are the Antigravity-native copies of it.
 
 ## Customise
 
 - `~/.owneros/owner.json`: your name, initial, business, and `hermes` true/false (the installer writes it)
-- `~/.owneros/fish-voice.txt` — a Fish voice model id for Brock's voice
-- `playbook.md` — the plays library; edit and reload
-- `assets/` — the cinematic plates; swap for your own world
+- `~/.owneros/fish-voice.txt`: a Fish voice model id for Brock's voice
+- `playbook.md`: the validated fallback plays library, used only if the live CREW library is missing
+- `assets/`: the cinematic plates; swap for your own world

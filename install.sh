@@ -178,12 +178,12 @@ echo "OwnerOS is live: $URL"
 echo ""
 echo "Next:"
 if [[ $HAVE_BRAND -eq 0 ]]; then
-  echo "  1. Open Claude Code in any folder and say:  use the crew, build my brand context"
+  echo "  1. Tell your agent (Antigravity or Claude Code):  use the crew, build my brand context"
   echo "     Ten minutes of plain questions. It writes ~/.claude/crew-state/brand-context.md,"
   echo "     the file every role reads first. Today and Projects fill up from there."
-  echo "  2. Then run your first play: open $URL/plays, pick one, Copy, paste into Claude Code."
+  echo "  2. Then your first play: open $URL/plays, pick one, Copy, paste it to your agent."
 else
-  echo "  1. Open $URL/plays, pick a play, Copy, paste into Claude Code."
+  echo "  1. Open $URL/plays, pick a play, Copy, paste it to your agent."
 fi
 if [[ $HERMES_ON -eq 1 ]]; then
   echo "  Hermes: run crew skills in the default profile (plain 'hermes'). The record lands"

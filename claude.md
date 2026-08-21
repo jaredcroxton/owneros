@@ -199,8 +199,15 @@ new rooms, no new capabilities beyond that.
   touches profiles: crew skills run in the DEFAULT Hermes profile only.
 - `start-os.sh` / `stop-os.sh` find the plist by label (`com.owneros` first, the original
   `com.jared.owneros` second) and only touch the Brain agent if its plist exists.
-- Antigravity / agent-driven setup: `AGENTS.md` at the root is the cross-tool context file
-  (what this is, the hard rules, how to install), and `.agents/workflows/setup-owneros.md`
-  is the `/setup-owneros` workflow. Both restate the invariants; neither adds a rule.
+- Antigravity is the front door; the owner never opens a terminal (Jared, 2026-08-21).
+  The README opens with one paste-prompt: the agent clones to `~/OwnerOS`, reads
+  `AGENTS.md`, follows `.agents/workflows/setup-owneros.md` (`/setup-owneros` once the
+  folder is the workspace), asks the five questions in chat, runs `install.sh` with
+  flags, opens the cockpit, and starts the brand conversation in the same chat by
+  following `crew-core-brand-context/SKILL.md`. `.agents/rules/owneros.md` is the
+  auto-loaded rules copy. All three restate the invariants with one clarification, not
+  a new rule: the OS never writes the cabinet, but a CREW skill run by any agent writes
+  exactly what its own SKILL.md says. That is the same contract Hermes proved on
+  2026-08-16; Antigravity is a third reader of the same files, untested as of this note.
 - Fonts are local (`fonts/`). No CDN at runtime.
 - Debug: `tail -20 ~/.owneros/os.log`; `curl localhost:4890/api/health`.
